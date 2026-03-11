@@ -1,0 +1,76 @@
+# Hotel Management System — Walkthrough
+
+## What Was Built
+
+A comprehensive **Hotel Management System** for a single property with 3 room types, built as a Next.js/TypeScript application.
+
+---
+
+## Pages & Features
+
+| Page | Features |
+|------|----------|
+| **Dashboard** | KPIs (Occupancy, In-house guests, Arrivals, Departures, Revenue), today's arrivals/departures, alerts, room breakdown, recent bookings |
+| **Bookings** | Month calendar view (color-coded by room type) + list view, create/edit/delete bookings, meal plan & status |
+| **Quick Check-in** | 3-step wizard: search guest → verify profile → assign room + meal plan → QR key success screen |
+| **Guests** | Full guest profiles (passport, DOB, nationality, loyalty tier, dietary pref, VIP flag), booking history, stats |
+| **Room Types** | CRUD with 20+ attributes per room, amenity picker |
+| **Meal Plans** | EP / CP / MAP / AP cards with meal inclusions, dietary accommodations, adoption stats |
+| **Housekeeping** | Color-coded room board (Clean/Dirty/Inspected/DND/Out-of-Order), click-to-edit, staff workload |
+| **Maintenance** | Issue tracker with priority/status/assignment, quick-resolve button |
+| **Pricing** | Base + weekend + seasonal pricing + Airbnb-style smart discount rules |
+| **Availability** | Room inventory, min/max stay, blackout dates |
+| **Amenity Manager** | Category + facility CRUD |
+| **Hotel Overview** | Core hotel info editor |
+
+**Smart Search (`Ctrl+K`)**: Global overlay searching across bookings, guests, and rooms.
+
+---
+
+## File Structure Created
+
+```
+app/
+├── page.tsx                    # Main shell, sidebar, all state, routing
+├── components/
+│   ├── types.ts                # Shared TypeScript interfaces
+│   ├── ui.tsx                  # Shared primitives (GlobalStyles, icons, Btn, Badge, etc.)
+│   ├── Dashboard.tsx           # Dashboard page
+│   ├── Bookings.tsx            # Calendar + list view
+│   ├── CheckIn.tsx             # Quick check-in wizard
+│   ├── Customers.tsx           # Guest management
+│   ├── MealPlans.tsx           # Meal plan management
+│   ├── Housekeeping.tsx        # HK board
+│   └── Maintenance.tsx         # Maintenance tracker
+└── api/
+    ├── bookings/route.ts       # Full CRUD
+    ├── customers/route.ts      # Full CRUD
+    ├── pricing-rules/route.ts  # CRUD
+    ├── housekeeping/route.ts   # GET + PUT
+    ├── maintenance/route.ts    # GET + POST + PUT
+    ├── meal-plans/route.ts     # GET
+    └── seed/route.ts           # Populates dummy data
+```
+
+---
+
+## Screenshots
+
+![Dashboard with demo data](C:/Users/Laksh/.gemini/antigravity/brain/1aaa8711-e26c-428d-a52e-43b4df777eea/dashboard.png)
+*Dashboard: KPIs, Arrivals/Departures, Alerts, Room Breakdown*
+
+![Housekeeping board](C:/Users/Laksh/.gemini/antigravity/brain/1aaa8711-e26c-428d-a52e-43b4df777eea/housekeeping.png)
+*Color-coded room status board*
+
+![Ctrl+K search](C:/Users/Laksh/.gemini/antigravity/brain/1aaa8711-e26c-428d-a52e-43b4df777eea/search.png)
+*Global smart search overlay (Ctrl+K)*
+
+---
+
+## Getting Started
+
+1. **Start the dev server:** `npm run dev` → opens on `http://localhost:3000`
+2. **Load demo data:** Click the **"🌱 Load Demo Data"** button in the top bar (runs `GET /api/seed`)
+3. **Search:** Press `Ctrl+K` anywhere to open global search
+
+> Demo data includes: 30 customers, 60+ bookings, meal plans, housekeeping tasks, maintenance issues, and pricing rules.
