@@ -16,7 +16,7 @@ interface Props {
 }
 
 const ROOM_COLORS: Record<string, string> = {
-    rm1: "#3b82f6", rm2: "#8b5cf6", rm3: "#16a34a",
+    rm1: "#E4C581", rm2: "#8b5cf6", rm3: "#16a34a",
 };
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -37,7 +37,8 @@ function buildBlankBooking(rooms: Room[], mealPlans: MealPlan[]): Booking {
         totalRoomCost: 0, totalMealCost: 0, grandTotal: 0, currency: "USD",
         status: "confirmed", bookingSource: "Direct", specialRequests: "",
         earlyCheckIn: false, lateCheckOut: false, earlyCheckInTime: "", lateCheckOutTime: "",
-        checkInActual: null, checkOutActual: null, createdAt: tod,
+        checkInActual: null, checkOutActual: null, primaryAadharNo: "", primaryAadharFileUrl: "",
+        overrideRoomPrice: undefined, createdAt: tod,
     };
 }
 
@@ -52,35 +53,76 @@ function isRoomConflict(roomNumber: string, roomTypeId: string, checkIn: string,
     );
 }
 
-function CoGuestSection({ coGuests, onChange }: { coGuests: CoGuest[]; onChange: (g: CoGuest[]) => void }) {
-    const add = () => onChange([...coGuests, { id: uid(), name: "", passportNo: "", nationality: "", dob: "", dietaryPref: "Non-Veg", phone: "" }]);
-    const remove = (id: string) => onChange(coGuests.filter(g => g.id !== id));
-    const upd = (id: string, f: keyof CoGuest, v: string) => onChange(coGuests.map(g => g.id === id ? { ...g, [f]: v } : g));
+function CoGuestSection({
+    coGuests, adults, children, onChange
+}: {
+    coGuests: CoGuest[];
+    adults: number;
+    children: number;
+    onChange: (g: CoGuest[]) => void;
+}) {
+    // Total additional guests = (adults - 1) for co-adults + all children
+    const totalAdditional = Math.max(0, Number(adults) - 1) + Math.max(0, Number(children));
+
+    // When adults/children count changes, auto-sync co-guest list length
+    React.useEffect(() => {
+        if (coGuests.length === totalAdditional) return;
+        if (coGuests.length < totalAdditional) {
+            // Add slots
+            const toAdd = totalAdditional - coGuests.length;
+            const newGuests = [...coGuests];
+            for (let i = 0; i < toAdd; i++) {
+                // First fill adult slots, then children
+                const currentAdults = newGuests.filter(g => !g.isChild).length;
+                const needMoreAdults = currentAdults < Math.max(0, Number(adults) - 1);
+                newGuests.push({ id: uid(), name: "", aadharNo: "", aadharFileUrl: "", nationality: "", dob: "", dietaryPref: "Non-Veg", phone: "", isChild: !needMoreAdults });
+            }
+            onChange(newGuests);
+        } else {
+            // Remove extra slots from the end
+            onChange(coGuests.slice(0, totalAdditional));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [adults, children]);
+
+    const upd = (id: string, f: keyof CoGuest, v: string | boolean) =>
+        onChange(coGuests.map(g => g.id === id ? { ...g, [f]: v } : g));
 
     return (
         <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#f9fafb", borderBottom: coGuests.length ? "1px solid #e5e7eb" : "none" }}>
-                <span style={{ fontWeight: 600, fontSize: 13 }}>👥 Additional Guests ({coGuests.length})</span>
-                <Btn size="sm" variant="outline" onClick={add}><Ic.Plus /> Add Guest</Btn>
+                <span style={{ fontWeight: 600, fontSize: 13 }}>👥 All Guests ({1 + coGuests.length}) — {adults} Adult(s) + {children} Child(ren)</span>
+                {totalAdditional === 0 && <span style={{ fontSize: 12, color: "#9ca3af" }}>Increase Adults or Children count to add guests</span>}
             </div>
-            {coGuests.map((g, i) => (
-                <div key={g.id} style={{ padding: "12px 14px", borderBottom: i < coGuests.length - 1 ? "1px solid #f3f4f6" : "none", background: "#fff" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                        <span style={{ fontWeight: 600, fontSize: 12.5, color: "#6b7280" }}>Guest {i + 2}</span>
-                        <button onClick={() => remove(g.id)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
-                    </div>
-                    <div className="grid-3" style={{ gap: 8 }}>
-                        <Field label="Full Name"><Inp value={g.name} onChange={e => upd(g.id, "name", e.target.value)} placeholder="Guest name" /></Field>
-                        <Field label="Passport/ID"><Inp value={g.passportNo} onChange={e => upd(g.id, "passportNo", e.target.value)} placeholder="ID number" /></Field>
-                        <Field label="Nationality"><Inp value={g.nationality} onChange={e => upd(g.id, "nationality", e.target.value)} placeholder="Country" /></Field>
-                    </div>
-                    <div className="grid-3" style={{ gap: 8, marginTop: 8 }}>
-                        <Field label="Date of Birth"><Inp type="date" value={g.dob} onChange={e => upd(g.id, "dob", e.target.value)} /></Field>
-                        <Field label="Phone"><Inp value={g.phone} onChange={e => upd(g.id, "phone", e.target.value)} placeholder="+1 234 567" /></Field>
-                        <Field label="Dietary Pref"><Sel value={g.dietaryPref} onChange={e => upd(g.id, "dietaryPref", e.target.value)} opts={DIETARY_PREFS} /></Field>
-                    </div>
+            {coGuests.length === 0 && (
+                <div style={{ padding: "14px 16px", fontSize: 13, color: "#9ca3af", textAlign: "center" }}>
+                    📝 Increase the number of Adults or Children in the main tab to register their details here.
                 </div>
-            ))}
+            )}
+            {coGuests.map((g, i) => {
+                const isChild = !!g.isChild;
+                const adultsBefore = coGuests.slice(0, i).filter(x => !x.isChild).length;
+                const childrenBefore = coGuests.slice(0, i).filter(x => x.isChild).length;
+                const label = isChild ? `👦 Child ${childrenBefore + 1}` : `🧑 Adult ${adultsBefore + 2}`;
+                return (
+                    <div key={g.id} style={{ padding: "12px 14px", borderBottom: i < coGuests.length - 1 ? "1px solid #f3f4f6" : "none", background: "#fff" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 12.5, color: isChild ? "#7c3aed" : "#E4C581", background: isChild ? "#faf5ff" : "#fcf8ed", border: `1px solid ${isChild ? "#e9d5ff" : "#E4C581"}`, borderRadius: 6, padding: "2px 10px" }}>{label}</span>
+                        </div>
+                        <div className="grid-3" style={{ gap: 8 }}>
+                            <Field label="Full Name"><Inp value={g.name} onChange={e => upd(g.id, "name", e.target.value)} placeholder="Guest name" /></Field>
+                            <Field label="Aadhar Number"><Inp value={g.aadharNo} onChange={e => upd(g.id, "aadharNo", e.target.value)} placeholder="Aadhar number" /></Field>
+                            <Field label="Upload Aadhar"><Inp type="file" value="" style={{ padding: "6px" }} onChange={e => upd(g.id, "aadharFileUrl", e.target.value)} /></Field>
+                        </div>
+                        <div className="grid-4" style={{ gap: 8, marginTop: 8 }}>
+                            <Field label="Nationality"><Inp value={g.nationality} onChange={e => upd(g.id, "nationality", e.target.value)} placeholder="Country" /></Field>
+                            <Field label="Date of Birth"><Inp type="date" value={g.dob} onChange={e => upd(g.id, "dob", e.target.value)} /></Field>
+                            <Field label="Phone"><Inp value={g.phone} onChange={e => upd(g.id, "phone", e.target.value)} placeholder="+91 98765 43210" /></Field>
+                            {!isChild && <Field label="Dietary Pref"><Sel value={g.dietaryPref} onChange={e => upd(g.id, "dietaryPref", e.target.value)} opts={DIETARY_PREFS} /></Field>}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }
@@ -120,9 +162,9 @@ function RoomPicker({ roomNumbers, roomTypeId, checkIn, checkOut, selected, book
                             title={conflict ? "Already booked for these dates" : (r.status === "maintenance" || r.status === "out-of-order" ? `Room is ${r.status}` : `Assign Room ${n}`)}
                             style={{
                                 padding: "6px 14px", borderRadius: 7, fontWeight: 700, fontSize: 14, cursor: conflict ? "not-allowed" : "pointer",
-                                border: `2px solid ${isSelected ? (conflict ? "#fecaca" : "#2563eb") : "#d1d5db"}`,
-                                background: isSelected ? (conflict ? "#fef2f2" : "#eff6ff") : "#fff",
-                                color: isSelected ? (conflict ? "#dc2626" : "#2563eb") : "#374151",
+                                border: `2px solid ${isSelected ? (conflict ? "#fecaca" : "#E4C581") : "#d1d5db"}`,
+                                background: isSelected ? (conflict ? "#fef2f2" : "#fcf8ed") : "#fff",
+                                color: isSelected ? (conflict ? "#dc2626" : "#E4C581") : "#374151",
                                 opacity: conflict ? 0.7 : 1,
                                 position: "relative",
                             }}>
@@ -133,7 +175,7 @@ function RoomPicker({ roomNumbers, roomTypeId, checkIn, checkOut, selected, book
                 })}
             </div>
             <div style={{ fontSize: 11, color: "#9ca3af", display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <span><span style={{ display: "inline-block", width: 8, height: 8, background: "#eff6ff", border: "1px solid #2563eb", borderRadius: 2, marginRight: 4 }} />Selected</span>
+                <span><span style={{ display: "inline-block", width: 8, height: 8, background: "#fcf8ed", border: "1px solid #E4C581", borderRadius: 2, marginRight: 4 }} />Selected</span>
                 {hasConflictVisible && <span><span style={{ display: "inline-block", width: 8, height: 8, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 2, marginRight: 4 }} />Occupied & Unavailable</span>}
                 <span><span style={{ display: "inline-block", width: 8, height: 8, background: "#fff", border: "1px solid #d1d5db", borderRadius: 2, marginRight: 4 }} />Available</span>
             </div>
@@ -269,7 +311,7 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                 <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #f0f0f0", padding: "0 24px" }}>
                     {(["main", "guests", "special"] as const).map(t => (
                         <button key={t} onClick={() => setTab(t)}
-                            style={{ padding: "10px 18px", borderBottom: `2px solid ${tab === t ? "#2563eb" : "transparent"}`, background: "none", border: "none", borderBottomColor: tab === t ? "#2563eb" : "transparent", borderBottomWidth: 2, borderBottomStyle: "solid", cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 700 : 500, color: tab === t ? "#2563eb" : "#6b7280" }}>
+                            style={{ padding: "10px 18px", borderBottom: `2px solid ${tab === t ? "#E4C581" : "transparent"}`, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 700 : 500, color: tab === t ? "#E4C581" : "#6b7280" }}>
                             {t === "main" ? "📋 Booking" : t === "guests" ? `👥 Guests (${1 + (b.coGuests?.length ?? 0)})` : "⚙️ Special"}
                         </button>
                     ))}
@@ -281,6 +323,10 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                             <Field label="Primary Guest Name *"><Inp value={b.guestName} onChange={s("guestName")} placeholder="Full name" autoFocus /></Field>
                             <Field label="Booking Ref"><Inp value={b.bookingRef} onChange={s("bookingRef")} /></Field>
                         </div>
+                        <div className="grid-2 mb-12">
+                            <Field label="Aadhar Number"><Inp value={b.primaryAadharNo || ""} onChange={s("primaryAadharNo" as keyof Booking)} placeholder="Aadhar number" /></Field>
+                            <Field label="Upload Aadhar"><Inp type="file" value="" style={{ padding: "6px" }} onChange={s("primaryAadharFileUrl" as keyof Booking)} /></Field>
+                        </div>
                         <div className="grid-3 mb-12">
                             <Field label="Email"><Inp value={b.guestEmail} onChange={s("guestEmail")} type="email" /></Field>
                             <Field label="Phone"><Inp value={b.guestPhone} onChange={s("guestPhone")} /></Field>
@@ -291,7 +337,7 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                             {/* Check-in button */}
                             <Field label="Check-in">
                                 <button onClick={() => setShowPicker("in")}
-                                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, border: `1.5px solid ${showPicker === "in" ? "#3b82f6" : "#d1d5db"}`, background: showPicker === "in" ? "#eff6ff" : "#fff", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, border: `1.5px solid ${showPicker === "in" ? "#E4C581" : "#d1d5db"}`, background: showPicker === "in" ? "#fcf8ed" : "#fff", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
                                     <span style={{ fontSize: 15 }}>📅</span>
                                     <div>
                                         {b.checkIn
@@ -303,13 +349,13 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                             {/* Check-out button */}
                             <Field label="Check-out">
                                 <button onClick={() => setShowPicker("out")}
-                                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, border: `1.5px solid ${showPicker === "out" ? "#3b82f6" : "#d1d5db"}`, background: showPicker === "out" ? "#eff6ff" : "#fff", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                                    style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 8, border: `1.5px solid ${showPicker === "out" ? "#E4C581" : "#d1d5db"}`, background: showPicker === "out" ? "#fcf8ed" : "#fff", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
                                     <span style={{ fontSize: 15 }}>🛫</span>
                                     <div>
                                         {b.checkOut
                                             ? <div>
                                                 <span style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{fmtPick(b.checkOut)}</span>
-                                                {b.checkIn && b.checkOut && <span style={{ fontSize: 11, color: "#2563eb", marginLeft: 8, fontWeight: 600 }}>🌙 {b.nights}N</span>}
+                                                {b.checkIn && b.checkOut && <span style={{ fontSize: 11, color: "#E4C581", marginLeft: 8, fontWeight: 600 }}>🌙 {b.nights}N</span>}
                                             </div>
                                             : <span style={{ fontSize: 13, color: "#9ca3af" }}>Select date</span>}
                                     </div>
@@ -329,33 +375,72 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                             <Field label="Meal Plan"><Sel value={b.mealPlanId} onChange={s("mealPlanId")} opts={activeMealPlans.map(mp => ({ v: mp.id, l: `${mp.code} – ${mp.name}` }))} /></Field>
                             <Field label="Status"><Sel value={b.status} onChange={s("status")} opts={ALL_STATUSES} /></Field>
                         </div>
-                        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "12px 16px" }}>
+                        <div style={{ background: "#f0fdf4", border: `1px solid ${b.overrideRoomPrice !== undefined ? "#fde68a" : "#bbf7d0"}`, borderRadius: 10, padding: "12px 16px" }}>
                             <div style={{ display: "flex", gap: 28, fontSize: 13, flexWrap: "wrap" }}>
                                 <span>🌙 <b>{b.nights}</b> nights</span>
-                                <span>🏨 Room: <b>${b.totalRoomCost.toLocaleString()}</b></span>
-                                <span>🍽️ Meals: <b>${b.totalMealCost.toLocaleString()}</b></span>
-                                <span style={{ fontSize: 15, fontWeight: 800, color: "#16a34a", marginLeft: "auto" }}>Total: ${b.grandTotal.toLocaleString()}</span>
+                                <span>🏨 Room: <b>₹{b.totalRoomCost.toLocaleString()}</b>{b.overrideRoomPrice !== undefined && <span style={{ fontSize: 11, color: "#d97706", marginLeft: 4 }}>(🏷 Custom)</span>}</span>
+                                <span>🍽️ Meals: <b>₹{b.totalMealCost.toLocaleString()}</b></span>
+                                <span style={{ fontSize: 15, fontWeight: 800, color: "#16a34a", marginLeft: "auto" }}>Total: ₹{b.grandTotal.toLocaleString()}</span>
                             </div>
                         </div>
                     </>)}
 
                     {tab === "guests" && (
                         <div>
-                            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
-                                <div style={{ fontWeight: 600, marginBottom: 4 }}>Primary Guest: {b.guestName || "(Not set)"}</div>
-                                <div style={{ fontSize: 12.5, color: "#6b7280" }}>
-                                    {b.adults} Adult(s) + {b.children} Child(ren) · Total: {1 + (b.coGuests?.length ?? 0)} guests registered
-                                </div>
+                            <div style={{ background: "#fcf8ed", border: "1px solid #E4C581", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+                                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 14 }}>👤 Primary Guest: {b.guestName || "(Not set)"}</div>
+                                <div style={{ fontSize: 12.5, color: "#6b7280" }}>Aadhar: {b.primaryAadharNo || "—"} · {b.adults} Adult(s) + {b.children} Child(ren)</div>
                             </div>
-                            <CoGuestSection coGuests={b.coGuests ?? []} onChange={cg => setB(p => ({ ...p, coGuests: cg }))} />
+                            <CoGuestSection coGuests={b.coGuests ?? []} adults={b.adults} children={b.children} onChange={cg => setB(p => ({ ...p, coGuests: cg }))} />
                             <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>
-                                💡 Add all adults staying in the room. Each co-guest's ID is required for hotel registration compliance.
+                                💡 Guest slots are auto-generated based on Adults &amp; Children count. Aadhar details required for compliance.
                             </div>
                         </div>
                     )}
 
                     {tab === "special" && (
                         <div>
+                            {/* Price Override */}
+                            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "14px 16px", marginBottom: 16 }}>
+                                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>💰 Custom Price Override</div>
+                                <div style={{ fontSize: 12.5, color: "#6b7280", marginBottom: 10 }}>Override the standard room price for this booking (e.g. staff rate, friend discount). Leave blank to use the default room price.</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>₹</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder={`Standard: ${roomTypes.find(r => r.id === b.roomTypeId)?.basePrice ?? 0} / night`}
+                                            value={b.overrideRoomPrice ?? ""}
+                                            onChange={e => {
+                                                const val = e.target.value === "" ? undefined : Number(e.target.value);
+                                                const rt2 = roomTypes.find(r => r.id === b.roomTypeId);
+                                                const mp2 = mealPlans.find(m => m.id === b.mealPlanId);
+                                                const pricePerNight = val !== undefined ? val : (rt2?.basePrice ?? 0);
+                                                const totalRoomCost = pricePerNight * b.nights;
+                                                const totalMealCost = (mp2?.pricePerPersonPerNight ?? 0) * (Number(b.adults) + Number(b.children)) * b.nights;
+                                                setB(p => ({ ...p, overrideRoomPrice: val, totalRoomCost, grandTotal: totalRoomCost + totalMealCost }));
+                                            }}
+                                            className="inp"
+                                            style={{ flex: 1 }}
+                                        />
+                                        {b.overrideRoomPrice !== undefined && (
+                                            <button onClick={() => {
+                                                const rt2 = roomTypes.find(r => r.id === b.roomTypeId);
+                                                const mp2 = mealPlans.find(m => m.id === b.mealPlanId);
+                                                const totalRoomCost = (rt2?.basePrice ?? 0) * b.nights;
+                                                const totalMealCost = (mp2?.pricePerPersonPerNight ?? 0) * (Number(b.adults) + Number(b.children)) * b.nights;
+                                                setB(p => ({ ...p, overrideRoomPrice: undefined, totalRoomCost, grandTotal: totalRoomCost + totalMealCost }));
+                                            }} style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 6, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>✕ Remove</button>
+                                        )}
+                                    </div>
+                                </div>
+                                {b.overrideRoomPrice !== undefined && (
+                                    <div style={{ marginTop: 8, fontSize: 12, color: "#92400e", background: "#fef3c7", padding: "6px 10px", borderRadius: 6 }}>
+                                        ⚠️ Using custom price ₹{b.overrideRoomPrice}/night instead of standard ₹{roomTypes.find(r => r.id === b.roomTypeId)?.basePrice ?? 0}/night
+                                    </div>
+                                )}
+                            </div>
                             <Field label="Special Requests" style={{ marginBottom: 16 }}>
                                 <textarea className="textarea" value={b.specialRequests} onChange={e => setB(p => ({ ...p, specialRequests: e.target.value }))} placeholder="Honeymoon setup, high floor, quiet room, extra pillows..." style={{ minHeight: 90 }} />
                             </Field>
@@ -513,9 +598,9 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                         {/* Scrollable Sticky Dates Header */}
                         <div ref={headerSyncRef} style={{ display: "flex", height: 50, background: "#f9fafb", overflow: "hidden", position: "relative", flexGrow: 1 }}>
                             {timelineDates.map(d => (
-                                <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: d.date === todStr ? "#eff6ff" : "transparent" }}>
-                                    <div style={{ fontSize: 10, fontWeight: 600, color: d.date === todStr ? "#2563eb" : "#9ca3af", textTransform: "uppercase" }}>{d.dayStr}</div>
-                                    <div style={{ fontSize: 14, fontWeight: d.date === todStr ? 800 : 600, color: d.date === todStr ? "#2563eb" : "#374151" }}>{d.tDay}</div>
+                                <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: d.date === todStr ? "#fcf8ed" : "transparent" }}>
+                                    <div style={{ fontSize: 10, fontWeight: 600, color: d.date === todStr ? "#E4C581" : "#9ca3af", textTransform: "uppercase" }}>{d.dayStr}</div>
+                                    <div style={{ fontSize: 14, fontWeight: d.date === todStr ? 800 : 600, color: d.date === todStr ? "#E4C581" : "#374151" }}>{d.tDay}</div>
                                 </div>
                             ))}
                         </div>
@@ -523,7 +608,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
 
                     {/* --- SCROLLABLE BODY --- */}
                     <div ref={scrollRef} onScroll={onScrollSync} style={{ display: "flex", overflow: "auto", maxHeight: "calc(100vh - 340px)", position: "relative", borderRadius: "0 0 10px 10px", background: "#f3f4f6" }}>
-                        
+
                         {/* Left Column (Sticky Rooms) */}
                         <div style={{ width: 140, flexShrink: 0, position: "sticky", left: 0, background: "#fff", zIndex: 20, boxShadow: "2px 0 8px rgba(0,0,0,0.05)" }}>
                             {unassignedBookings.length > 0 && <div style={{ height: Math.max(50, unassignedBookings.length * 40 + 10), borderBottom: "1px solid #e5e7eb", padding: "8px 12px", background: "#fef2f2", fontWeight: 700, fontSize: 13, color: "#dc2626", borderRight: "1px solid #fecaca" }}>Unassigned</div>}
@@ -546,7 +631,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
 
                         {/* Right Timelines Grid */}
                         <div style={{ position: "relative", minHeight: "100%", background: "#fff", flexGrow: 1 }}>
-                            
+
                             {/* Grid background lines */}
                             <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0, display: "flex", pointerEvents: "none", zIndex: 1 }}>
                                 {timelineDates.map(d => (
@@ -611,8 +696,8 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                                                             if (renderWidth <= 0) return null;
 
                                                             const isCheckedIn = b.status === "checked-in";
-                                                            const color = isCheckedIn ? "#16a34a" : b.status === "confirmed" ? "#2563eb" : "#d97706";
-                                                            const bg = isCheckedIn ? "#dcfce7" : b.status === "confirmed" ? "#eff6ff" : "#fef3c7";
+                                                            const color = isCheckedIn ? "#16a34a" : b.status === "confirmed" ? "#E4C581" : "#d97706";
+                                                            const bg = isCheckedIn ? "#dcfce7" : b.status === "confirmed" ? "#fcf8ed" : "#fef3c7";
 
                                                             return (
                                                                 <div key={b.id} onClick={() => setModal(b)} style={{
@@ -671,12 +756,12 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                             <tbody>
                                 {filteredBookings.map(b => (
                                     <tr key={b.id}>
-                                        <td style={{ fontWeight: 600, color: "#2563eb", fontSize: 12 }}>{b.bookingRef}</td>
+                                        <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>{b.bookingRef}</td>
                                         <td>
                                             <div style={{ fontWeight: 500 }}>{b.guestName}</div>
                                             <div style={{ fontSize: 11, color: "#9ca3af" }}>{b.bookingSource}</div>
                                         </td>
-                                        <td style={{ fontSize: 12 }}>{b.roomTypeName}<br />{b.roomNumber ? <span style={{ color: "#2563eb", fontWeight: 600 }}>Rm {b.roomNumber}</span> : <span style={{ color: "#9ca3af" }}>Unassigned</span>}</td>
+                                        <td style={{ fontSize: 12 }}>{b.roomTypeName}<br />{b.roomNumber ? <span style={{ color: "#E4C581", fontWeight: 600 }}>Rm {b.roomNumber}</span> : <span style={{ color: "#9ca3af" }}>Unassigned</span>}</td>
                                         <td style={{ fontSize: 12 }}>{fmtDate(b.checkIn)}<br /><span style={{ color: "#9ca3af" }}>{fmtDate(b.checkOut)} ({b.nights}N)</span></td>
                                         <td style={{ fontSize: 12 }}>{b.adults}A{b.children > 0 ? ` ${b.children}C` : ""}{b.coGuests?.length > 0 && <span style={{ color: "#7c3aed", display: "block", fontSize: 11 }}>+{b.coGuests.length} co</span>}</td>
                                         <td><Badge color="indigo">{b.mealPlanCode}</Badge></td>

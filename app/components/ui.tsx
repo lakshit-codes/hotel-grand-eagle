@@ -15,15 +15,15 @@ export const GlobalStyles = () => (
     .sidebar { width: 220px; min-width: 220px; background: #0f1623; display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: width 0.25s ease, min-width 0.25s ease; flex-shrink: 0; position: relative; z-index: 10; }
     .sidebar.collapsed { width: 60px; min-width: 60px; }
     .sidebar-logo { display: flex; align-items: center; gap: 12px; padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); overflow: hidden; white-space: nowrap; }
-    .sidebar-logo-icon { width: 34px; height: 34px; border-radius: 8px; background: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: white; flex-shrink: 0; }
+    .sidebar-logo-icon { width: 70px; height: 70px; margin: 0 auto; border-radius: 8px; background: #E4C581; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: white; flex-shrink: 0; }
     .sidebar-logo-name { font-size: 13px; font-weight: 600; color: #f9fafb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sidebar-logo-sub { font-size: 11px; color: #3b82f6; font-weight: 500; }
+    .sidebar-logo-sub { font-size: 11px; color: #E4C581; font-weight: 500; }
     .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
     .nav-group-label { font-size: 10px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px; white-space: nowrap; overflow: hidden; }
     .sidebar.collapsed .nav-group-label { display: none; }
     .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: #9ca3af; transition: background 0.15s, color 0.15s; white-space: nowrap; overflow: hidden; border: none; background: none; width: 100%; text-align: left; margin-bottom: 1px; }
     .nav-item:hover { background: rgba(255,255,255,0.05); color: #f9fafb; }
-    .nav-item.active { background: #2563eb; color: #fff; }
+    .nav-item.active { background: #E4C581; color: #fff; }
     .nav-item-icon { flex-shrink: 0; display: flex; align-items: center; }
     .sidebar.collapsed .nav-item { justify-content: center; padding: 10px; }
     .sidebar.collapsed .nav-item-label { display: none; }
@@ -54,18 +54,18 @@ export const GlobalStyles = () => (
     /* Forms */
     .field-label { display: block; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
     .inp { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
-    .inp:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .inp:focus { border-color: #E4C581; box-shadow: 0 0 0 3px rgba(212,175,55,0.12); }
     .inp::placeholder { color: #c4c4c4; }
     .sel { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; outline: none; cursor: pointer; transition: border-color 0.15s; }
-    .sel:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .sel:focus { border-color: #E4C581; box-shadow: 0 0 0 3px rgba(212,175,55,0.12); }
     .textarea { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; outline: none; resize: vertical; min-height: 72px; transition: border-color 0.15s; }
-    .textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .textarea:focus { border-color: #E4C581; box-shadow: 0 0 0 3px rgba(212,175,55,0.12); }
 
     /* Toggle */
     .toggle-wrap { display: flex; align-items: center; gap: 10px; }
     .toggle-track { position: relative; width: 44px; height: 24px; border-radius: 12px; cursor: pointer; transition: background 0.2s; border: none; padding: 0; flex-shrink: 0; }
     .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.2s; }
-    .toggle-track.on { background: #2563eb; }
+    .toggle-track.on { background: #E4C581; }
     .toggle-track.off { background: #d1d5db; }
     .toggle-track.on .toggle-thumb { transform: translateX(20px); }
 
@@ -76,16 +76,16 @@ export const GlobalStyles = () => (
     .btn-sm { padding: 7px 12px; font-size: 12px; }
     .btn-md { padding: 9px 16px; }
     .btn-lg { padding: 11px 20px; font-size: 14px; }
-    .btn-primary { background: #2563eb; color: #fff; }
-    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary { background: #E4C581; color: #fff; }
+    .btn-primary:hover { background: #b8962d; }
     .btn-secondary { background: #fff; color: #374151; border: 1px solid #d1d5db; }
     .btn-secondary:hover { background: #f9fafb; }
     .btn-danger { background: #dc2626; color: #fff; }
     .btn-danger:hover { background: #b91c1c; }
     .btn-ghost { background: transparent; color: #6b7280; }
     .btn-ghost:hover { background: #f3f4f6; color: #111827; }
-    .btn-outline { background: transparent; color: #2563eb; border: 1px solid #2563eb; }
-    .btn-outline:hover { background: #eff6ff; }
+    .btn-outline { background: transparent; color: #E4C581; border: 1px solid #E4C581; }
+    .btn-outline:hover { background: #fcf8ed; }
     .btn-success { background: #16a34a; color: #fff; }
     .btn-success:hover { background: #15803d; }
     .btn-warn { background: #d97706; color: #fff; }
@@ -93,7 +93,7 @@ export const GlobalStyles = () => (
 
     /* Badges */
     .badge { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 500; border: 1px solid transparent; }
-    .badge-blue   { background: #eff6ff;  color: #1d4ed8; border-color: #bfdbfe; }
+    .badge-blue   { background: #fcf8ed;  color: #b8962d; border-color: #bfdbfe; }
     .badge-green  { background: #f0fdf4;  color: #15803d; border-color: #bbf7d0; }
     .badge-amber  { background: #fffbeb;  color: #92400e; border-color: #fde68a; }
     .badge-red    { background: #fef2f2;  color: #b91c1c; border-color: #fecaca; }
@@ -145,10 +145,10 @@ export const GlobalStyles = () => (
     .cal-header-cell { text-align: center; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; padding: 8px 0; }
     .cal-day { min-height: 86px; border-radius: 8px; border: 1px solid #e5e7eb; padding: 6px; background: #fafafa; position: relative; transition: background 0.1s; cursor: pointer; }
     .cal-day:hover { background: #f0f0f0; }
-    .cal-day.today { border-color: #3b82f6; background: #eff6ff; }
+    .cal-day.today { border-color: #E4C581; background: #fcf8ed; }
     .cal-day.other-month { opacity: 0.4; }
     .cal-day-num { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px; }
-    .cal-day.today .cal-day-num { color: #2563eb; }
+    .cal-day.today .cal-day-num { color: #E4C581; }
     .cal-booking-chip { border-radius: 4px; padding: 2px 5px; font-size: 10.5px; font-weight: 500; color: #fff; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 
     /* Room cards */
@@ -166,7 +166,7 @@ export const GlobalStyles = () => (
     .hk-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
     .hk-card.clean       { background: #f0fdf4; border-color: #86efac; }
     .hk-card.dirty       { background: #fef9c3; border-color: #fde047; }
-    .hk-card.inspected   { background: #eff6ff; border-color: #93c5fd; }
+    .hk-card.inspected   { background: #fcf8ed; border-color: #93c5fd; }
     .hk-card.dnd         { background: #faf5ff; border-color: #c4b5fd; }
     .hk-card.out-of-order{ background: #fef2f2; border-color: #fca5a5; }
     .hk-room-num { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
@@ -214,8 +214,8 @@ export const GlobalStyles = () => (
     .amen-pick-pills { display: flex; flex-wrap: wrap; gap: 6px; }
     .amen-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid; transition: all 0.15s; }
     .amen-pill.off { border-color: #d1d5db; color: #6b7280; background: #fff; }
-    .amen-pill.off:hover { border-color: #93c5fd; color: #1d4ed8; background: #eff6ff; }
-    .amen-pill.on { border-color: #2563eb; color: #fff; background: #2563eb; }
+    .amen-pill.off:hover { border-color: #93c5fd; color: #b8962d; background: #fcf8ed; }
+    .amen-pill.on { border-color: #E4C581; color: #fff; background: #E4C581; }
 
     /* Num input */
     .num-wrap { position: relative; display: flex; align-items: center; }
@@ -234,10 +234,10 @@ export const GlobalStyles = () => (
 
     /* Check-in wizard */
     .checkin-step { background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 2px solid #e5e7eb; }
-    .checkin-step.active { border-color: #3b82f6; background: #eff6ff; }
+    .checkin-step.active { border-color: #E4C581; background: #fcf8ed; }
     .checkin-step.done { border-color: #22c55e; background: #f0fdf4; }
     .step-num { width: 28px; height: 28px; border-radius: 50%; background: #e5e7eb; color: #6b7280; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-    .step-num.active { background: #3b82f6; color: #fff; }
+    .step-num.active { background: #E4C581; color: #fff; }
     .step-num.done { background: #22c55e; color: #fff; }
 
     /* QR display */
@@ -246,8 +246,8 @@ export const GlobalStyles = () => (
     /* Meal plan card */
     .meal-card { border-radius: 12px; border: 2px solid #e5e7eb; padding: 20px; cursor: pointer; transition: all 0.15s; }
     .meal-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
-    .meal-card.selected { border-color: #2563eb; background: #eff6ff; }
-    .meal-code { font-size: 28px; font-weight: 800; color: #2563eb; }
+    .meal-card.selected { border-color: #E4C581; background: #fcf8ed; }
+    .meal-code { font-size: 28px; font-weight: 800; color: #E4C581; }
     .meal-name { font-size: 14px; font-weight: 600; color: #111827; margin-top: 4px; }
     .meal-desc { font-size: 12px; color: #6b7280; margin-top: 6px; line-height: 1.5; }
     .meal-price { font-size: 16px; font-weight: 700; color: #16a34a; margin-top: 10px; }
@@ -285,7 +285,7 @@ export const GlobalStyles = () => (
     .mb-4 { margin-bottom: 4px; } .mb-8 { margin-bottom: 8px; } .mb-12 { margin-bottom: 12px; }
     .mb-16 { margin-bottom: 16px; } .mb-20 { margin-bottom: 20px; }
     .w-full { width: 100%; } .text-sm { font-size: 12.5px; } .text-gray { color: #6b7280; }
-    .text-blue { color: #2563eb; } .text-green { color: #16a34a; } .text-red { color: #dc2626; }
+    .text-blue { color: #E4C581; } .text-green { color: #16a34a; } .text-red { color: #dc2626; }
     .text-amber { color: #d97706; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; }
     .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .divider { height: 1px; background: #f0f0f0; margin: 20px 0; }
@@ -324,7 +324,7 @@ export const NumInp = ({ value, onChange, min = 0, max = 999999 }: NumInpProps) 
         <div className="num-wrap">
             <input type="number" value={value} onChange={onChange} min={min} max={max}
                 style={{ width: "100%", padding: "9px 32px 9px 12px", border: "1px solid #d1d5db", borderRadius: 8, fontSize: 13.5, fontFamily: "inherit", outline: "none", background: "#fff" }}
-                onFocus={e => (e.target.style.borderColor = "#3b82f6")} onBlur={e => (e.target.style.borderColor = "#d1d5db")} />
+                onFocus={e => (e.target.style.borderColor = "#E4C581")} onBlur={e => (e.target.style.borderColor = "#d1d5db")} />
             <div className="num-arrows">
                 <button className="num-arrow" onClick={() => change(1)}>▲</button>
                 <button className="num-arrow" onClick={() => change(-1)}>▼</button>

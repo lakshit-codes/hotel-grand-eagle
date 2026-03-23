@@ -176,7 +176,7 @@ export default function CheckInPage({ bookings, customers, rooms, mealPlans, ava
                                             <div>🌍 {guestCustomer.nationality} &middot; {guestCustomer.loyaltyTier} Member</div>
                                             <div>📞 {guestCustomer.phone}</div>
                                             <div>📧 {guestCustomer.email}</div>
-                                            <div>🪪 Passport: {guestCustomer.passportNo}</div>
+                                            <div>🪪 Aadhar: {guestCustomer.aadharNo}</div>
                                             <div>🍽️ Dietary: {guestCustomer.dietaryPref}</div>
                                             {guestCustomer.notes && <div style={{ color: "#2563eb" }}>💡 {guestCustomer.notes}</div>}
                                         </div>

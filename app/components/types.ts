@@ -90,11 +90,13 @@ export interface Hotel {
 export interface CoGuest {
     id: string;
     name: string;
-    passportNo: string;
+    aadharNo: string;
+    aadharFileUrl?: string;
     nationality: string;
     dob: string;
     dietaryPref: string;
     phone: string;
+    isChild?: boolean;
 }
 
 export interface Customer {
@@ -104,7 +106,7 @@ export interface Customer {
     email: string;
     phone: string;
     nationality: string;
-    passportNo: string;
+    aadharNo: string;
     dob: string;
     loyaltyTier: "Bronze" | "Silver" | "Gold" | "Platinum";
     vip: boolean;
@@ -146,6 +148,9 @@ export interface Booking {
     lateCheckOutTime: string;
     checkInActual: string | null;
     checkOutActual: string | null;
+    primaryAadharNo?: string;
+    primaryAadharFileUrl?: string;
+    overrideRoomPrice?: number;
     createdAt: string;
 }
 

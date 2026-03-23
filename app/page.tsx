@@ -36,10 +36,10 @@ const DEFAULT_CATS: AmenityCat[] = [
 
 // Mock static data
 const MOCK_HOTEL: Hotel = {
-    name: "Grand Aventara Palace", shortDescription: "Iconic 5-star urban retreat with panoramic city views.",
-    address: "88 Skyline Boulevard, Downtown District", city: "Dubai", country: "UAE",
-    contactNumber: "+971 4 800 1234", email: "reservations@grandaventara.com",
-    checkInTime: "14:00", checkOutTime: "12:00", starRating: 5,
+    name: "HOTEL GRAND EAGLE", shortDescription: "Iconic 5-star urban retreat with panoramic city views.",
+    address: "123 Eagle Avenue, Downtown District", city: "Metropolis", country: "United Arab Emirates",
+    contactNumber: "+91 63678 50548", email: "reservations@hotelgrandeagle.com",
+    checkInTime: "15:00", checkOutTime: "12:00", starRating: 5,
 };
 
 const MOCK_ROOMS: Room[] = [
@@ -93,13 +93,13 @@ const NAV_GROUPS = [
 function Sidebar({ page, onNav, collapsed, onToggle, hotelName }: { page: string; onNav: (p: string) => void; collapsed: boolean; onToggle: () => void; hotelName: string }) {
     return (
         <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-            <div className="sidebar-logo">
-                <div className="sidebar-logo-icon">H</div>
-                <div className="sidebar-logo-text">
+            {/* <div className="sidebar-logo"> */}
+            <div className="sidebar-logo-icon" style={{ background: "none" }}><img src="/logo.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "lighten" }} /></div>
+            {/* <div className="sidebar-logo-text">
                     <div className="sidebar-logo-name truncate">{hotelName}</div>
                     <div className="sidebar-logo-sub">Management</div>
-                </div>
-            </div>
+                </div> */}
+            {/* </div> */}
             <nav className="sidebar-nav">
                 {NAV_GROUPS.map(group => (
                     <div key={group.label}>
@@ -133,7 +133,7 @@ function SearchOverlay({ bookings, customers, rooms, onClose, onNav }: { booking
         const res: { type: string; main: string; sub: string; page: string }[] = [];
         bookings.filter(b => b.guestName.toLowerCase().includes(lq) || b.bookingRef.toLowerCase().includes(lq)).slice(0, 5)
             .forEach(b => res.push({ type: "Booking", main: `${b.bookingRef} — ${b.guestName}`, sub: `${b.roomTypeName} · ${b.status}`, page: "bookings" }));
-        customers.filter(c => `${c.firstName} ${c.lastName} ${c.email} ${c.passportNo}`.toLowerCase().includes(lq)).slice(0, 5)
+        customers.filter(c => `${c.firstName} ${c.lastName} ${c.email} ${c.aadharNo}`.toLowerCase().includes(lq)).slice(0, 5)
             .forEach(c => res.push({ type: "Guest", main: `${c.firstName} ${c.lastName}`, sub: `${c.nationality} · ${c.loyaltyTier}`, page: "customers" }));
         rooms.filter(r => r.roomName.toLowerCase().includes(lq)).slice(0, 3)
             .forEach(r => res.push({ type: "Room Type", main: r.roomName, sub: `${r.roomCategory} · $${r.basePrice}/night`, page: "room-types" }));
@@ -644,15 +644,15 @@ export default function App() {
     };
 
     // Booking actions
-    const addBooking = async (b: Booking) => { 
-        await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) }); 
+    const addBooking = async (b: Booking) => {
+        await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
         setBookings(p => [...p, b]);
         // Sync rooms status
         fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
     };
-    const updateBooking = async (b: Booking) => { 
-        await fetch("/api/bookings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) }); 
-        setBookings(p => p.map(x => x.id === b.id ? b : x)); 
+    const updateBooking = async (b: Booking) => {
+        await fetch("/api/bookings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
+        setBookings(p => p.map(x => x.id === b.id ? b : x));
         // Sync rooms status
         fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
     };

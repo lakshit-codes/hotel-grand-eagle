@@ -13,7 +13,7 @@ interface Props {
 
 const BLANK_CUSTOMER: Customer = {
     id: "", firstName: "", lastName: "", email: "", phone: "", nationality: "",
-    passportNo: "", dob: "", loyaltyTier: "Bronze", vip: false,
+    aadharNo: "", dob: "", loyaltyTier: "Bronze", vip: false,
     preferredRoom: "", dietaryPref: "Non-Veg", address: "", company: "", notes: "",
 };
 
@@ -41,7 +41,7 @@ function CustomerModal({ cust: init, onSave, onClose }: { cust: Customer; onSave
                         <Field label="Date of Birth"><Inp value={c.dob} onChange={s("dob")} type="date" /></Field>
                     </div>
                     <div className="grid-3 mb-12">
-                        <Field label="Passport / ID No"><Inp value={c.passportNo} onChange={s("passportNo")} /></Field>
+                        <Field label="Aadhar Number"><Inp value={c.aadharNo} onChange={s("aadharNo")} /></Field>
                         <Field label="Company / Corp Account"><Inp value={c.company} onChange={s("company")} /></Field>
                         <Field label="Address"><Inp value={c.address} onChange={s("address")} /></Field>
                     </div>
@@ -87,7 +87,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
         return customers.filter(c => {
-            const match = !q || `${c.firstName} ${c.lastName} ${c.email} ${c.phone} ${c.nationality} ${c.passportNo}`.toLowerCase().includes(q);
+            const match = !q || `${c.firstName} ${c.lastName} ${c.email} ${c.phone} ${c.nationality} ${c.aadharNo}`.toLowerCase().includes(q);
             const tier = tierFilter === "all" || c.loyaltyTier === tierFilter;
             return match && tier;
         });
@@ -144,7 +144,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                                                 {c.vip && <span style={{ fontSize: 12, color: "#7c3aed", marginRight: 4 }}>👑</span>}
                                                 {c.firstName} {c.lastName}
                                             </div>
-                                            <div style={{ fontSize: 11.5, color: "#9ca3af" }}>{c.passportNo} &middot; DOB: {c.dob || "—"}</div>
+                                            <div style={{ fontSize: 11.5, color: "#9ca3af" }}>{c.aadharNo} &middot; DOB: {c.dob || "—"}</div>
                                         </td>
                                         <td>
                                             <div style={{ fontSize: 13 }}>{c.phone}</div>
@@ -197,7 +197,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                                     <div>📞 {selected.phone}</div>
                                     <div>✉️ {selected.email}</div>
                                     <div>🌍 {selected.nationality}</div>
-                                    <div>🪪 {selected.passportNo}</div>
+                                    <div>🪪 {selected.aadharNo}</div>
                                     <div>🎂 {selected.dob || "—"}</div>
                                     <div>🏠 {selected.address || "—"}</div>
                                     <div>🍽️ {selected.dietaryPref}</div>
