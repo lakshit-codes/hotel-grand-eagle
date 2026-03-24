@@ -175,6 +175,7 @@ export default function StaffPage({ staff, onAdd, onUpdate, onDelete }: Props) {
                         {SHIFTS.map(s => <option key={s} value={s}>{s.split("(")[0].trim()}</option>)}
                     </select>
                 </div>
+                <div style={{ overflowX: "auto" }}>
                 <table className="data-table">
                     <thead><tr><th>Employee</th><th>Role</th><th>Shift</th><th>Contact</th><th>Status</th><th>Attendance</th><th></th></tr></thead>
                     <tbody>
@@ -212,6 +213,7 @@ export default function StaffPage({ staff, onAdd, onUpdate, onDelete }: Props) {
                         ))}
                     </tbody>
                 </table>
+                </div>
                 {filtered.length === 0 && <div className="card-body text-gray text-center">No staff found.</div>}
             </div>
         </div>

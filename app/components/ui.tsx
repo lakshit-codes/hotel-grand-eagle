@@ -292,15 +292,154 @@ export const GlobalStyles = () => (
     .text-center { text-align: center; }
     .border-r { border-right: 1px solid #e5e7eb; }
     .rounded { border-radius: 8px; }
+    .search-label-desktop { display: inline; }
 
+    /* ── Mobile hamburger button (hidden on desktop) ──────────────── */
+    .mobile-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      border: none; background: none;
+      cursor: pointer; color: #374151;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .mobile-menu-btn:hover { background: #f3f4f6; }
+
+    /* Sidebar overlay (mobile only) */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 40;
+      background: rgba(0,0,0,0.45);
+    }
+
+    /* ── 900px — tablet breakpoint ───────────────────────────────── */
     @media (max-width: 900px) {
       .grid-4 { grid-template-columns: 1fr 1fr; }
-      .grid-kpi { grid-template-columns: 1fr 1fr; }
+      .grid-kpi { grid-template-columns: repeat(2, 1fr); }
       .room-attrs { grid-template-columns: 1fr 1fr; }
+      .topbar { padding: 0 16px; }
+      .page-content { padding: 20px 16px; }
+      .seasonal-row { grid-template-columns: 1fr 1fr; }
     }
-    @media (max-width: 600px) {
+
+    /* ── 640px — mobile breakpoint ───────────────────────────────── */
+    @media (max-width: 640px) {
+      /* Off-canvas sidebar */
+      .sidebar {
+        position: fixed; top: 0; left: 0; height: 100%;
+        z-index: 50; transform: translateX(-100%);
+        transition: transform 0.25s ease, width 0.25s ease;
+        width: 240px !important; min-width: 240px !important;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+      }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .sidebar.collapsed { transform: translateX(-100%); }
+      .sidebar-overlay { display: block; }
+      .sidebar-overlay.hidden { display: none; }
+
+      /* Show hamburger, hide collapse toggle */
+      .mobile-menu-btn { display: flex; }
+      .sidebar-footer { display: none; }
+
+      /* Nav item labels always visible on mobile drawer */
+      .sidebar .nav-item-label { display: inline !important; }
+      .sidebar .nav-item { justify-content: flex-start !important; padding: 9px 12px !important; }
+      .sidebar .nav-group-label { display: block !important; }
+
+      /* Main area takes full width */
+      .main-area { width: 100%; }
+      /* App shell: let fixed sidebar overlay */
+      .app-shell { overflow: visible; }
+      /* Hide search text label, keep icon only */
+      .search-label-desktop { display: none; }
+
+      /* Topbar compact */
+      .topbar { padding: 0 12px; height: 52px; gap: 8px; }
+      .topbar-breadcrumb { font-size: 12px; gap: 4px; }
+      .topbar-right { gap: 8px; }
+      /* Hide lower-priority topbar items on mobile */
+      .topbar-right > span:not(.live-badge) { display: none; }
+
+      /* Page content */
+      .page-content { padding: 16px 12px; }
+
+      /* Grids stack to single column */
       .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .grid-kpi { grid-template-columns: 1fr 1fr; }
       .overview-grid { grid-template-columns: 1fr; }
+      .room-attrs { grid-template-columns: 1fr 1fr; }
+
+      /* Page header: stack title + action button */
+      .page-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+
+      /* Cards */
+      .card-body { padding: 14px; }
+      .card-header { padding: 12px 14px; }
+
+      /* Tables: horizontal scroll */
+      .table-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .card-body { overflow-x: auto; }
+      .data-table th, .data-table td { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
+
+      /* Modals: full-screen on mobile */
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .modal-box { border-radius: 16px 16px 0 0; max-width: 100%; max-height: 92vh; width: 100%; }
+      .modal-box-lg, .modal-box-sm { max-width: 100%; }
+
+      /* Search overlay */
+      .search-overlay { padding-top: 0; align-items: flex-start; }
+      .search-box { border-radius: 0 0 14px 14px; max-width: 100%; }
+
+      /* Pricing rows */
+      .seasonal-row { grid-template-columns: 1fr; }
+      .rule-row { flex-wrap: wrap; gap: 10px; }
+      .pricing-header { flex-direction: column; gap: 8px; align-items: flex-start; }
+      .pricing-body { padding: 14px; }
+
+      /* Availability */
+      .avail-header { flex-direction: column; gap: 6px; align-items: flex-start; }
+      .avail-body { padding: 0 14px 14px; }
+      .avail-bar { margin: 0 14px 14px; }
+
+      /* Room card header */
+      .room-card-header { flex-direction: column; gap: 10px; align-items: flex-start; padding: 14px 14px 10px; }
+      .room-actions { width: 100%; justify-content: flex-end; }
+      .room-attrs { padding: 0 14px 10px; }
+      .room-amenities { padding: 8px 14px 14px; }
+
+      /* HK grid */
+      .hk-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+
+      /* Tabs: scrollable */
+      .tab-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+      .tab-btn { flex: none; }
+
+      /* KPI card font */
+      .kpi-value { font-size: 20px; }
+      .kpi-card { padding: 14px 16px; }
+
+      /* Amenity manager */
+      .amen-cat-header { padding: 10px 14px; }
+      .amen-fac-list { padding: 8px 14px; }
+      .amen-add-row { padding: 8px 14px; }
+
+      /* Breakdown rows */
+      .breakdown-row { flex-wrap: wrap; gap: 8px; padding: 10px 14px; font-size: 12px; }
+
+      /* Maintenance rows */
+      .maint-row { padding: 10px 14px; }
+
+      /* Toggle label font */
+      .toggle-wrap span { font-size: 12.5px; }
+
+      /* Button sizes on mobile */
+      .btn-lg { padding: 10px 16px; font-size: 13px; }
+
+      /* Check-in steps */
+      .checkin-step { padding: 16px; }
     }
   `}</style>
 );

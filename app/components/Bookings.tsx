@@ -576,7 +576,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
             {view === "calendar" && (
                 <div className="card">
                     <div className="card-header" style={{ flexWrap: "wrap", gap: 12 }}>
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                             <Btn variant="outline" size="sm" onClick={() => shiftStart(-7)}>« 7d</Btn>
                             <Btn variant="outline" size="sm" onClick={() => shiftStart(-1)}>‹ 1d</Btn>
                             <input type="date" value={startDateStr} onChange={e => setStartDateStr(e.target.value)} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, fontFamily: "inherit" }} />
@@ -584,30 +584,33 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                             <Btn variant="outline" size="sm" onClick={() => shiftStart(7)}>7d »</Btn>
                             <Btn variant="outline" size="sm" onClick={() => { const d = new Date(); d.setDate(d.getDate() - 3); setStartDateStr(d.toISOString().slice(0, 10)); }}>Today</Btn>
                         </div>
-                        <div style={{ marginLeft: "auto", display: "flex", gap: 12, fontSize: 13, alignItems: "center" }}>
+                        <div style={{ marginLeft: "auto", display: "flex", gap: 12, fontSize: 13, alignItems: "center", flexWrap: "wrap" }}>
                             {unassignedBookings.length > 0 && <span style={{ color: "#dc2626", fontWeight: 700 }}>⚠ {unassignedBookings.length} Unassigned</span>}
                             <span>Total Bookings: <b>{bookings.length}</b></span>
                         </div>
                     </div>
-                    {/* --- FIXED COMBINED HEADER --- */}
-                    <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", background: "#f3f4f6" }}>
-                        {/* Fixed Left Top Corner */}
-                        <div style={{ width: 140, flexShrink: 0, height: 50, display: "flex", alignItems: "center", padding: "0 12px", background: "#f9fafb", fontWeight: 700, fontSize: 13, color: "#6b7280", borderRight: "1px solid #e5e7eb", zIndex: 30 }}>
-                            Room
+
+                    <div style={{ overflow: "auto", maxHeight: "calc(100vh - 300px)", position: "relative", borderRadius: "0 0 10px 10px", background: "#f3f4f6" }}>
+                        {/* --- FIXED COMBINED HEADER --- */}
+                        <div style={{ display: "flex", borderBottom: "1px solid #e5e7eb", background: "#f3f4f6", position: "sticky", top: 0, zIndex: 40 }}>
+                            {/* Fixed Left Top Corner */}
+                            <div style={{ width: 140, flexShrink: 0, height: 50, display: "flex", alignItems: "center", padding: "0 12px", background: "#f9fafb", fontWeight: 700, fontSize: 13, color: "#6b7280", borderRight: "1px solid #e5e7eb", position: "sticky", left: 0, zIndex: 50 }}>
+                                Room
+                            </div>
+                            {/* Scrollable Sticky Dates Header */}
+                            <div style={{ display: "flex", height: 50, background: "#f9fafb", position: "relative", flexGrow: 1 }}>
+                                {timelineDates.map(d => (
+                                    <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: d.date === todStr ? "#fcf8ed" : "transparent" }}>
+                                        <div style={{ fontSize: 10, fontWeight: 600, color: d.date === todStr ? "#E4C581" : "#9ca3af", textTransform: "uppercase" }}>{d.dayStr}</div>
+                                        <div style={{ fontSize: 14, fontWeight: d.date === todStr ? 800 : 600, color: d.date === todStr ? "#E4C581" : "#374151" }}>{d.tDay}</div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        {/* Scrollable Sticky Dates Header */}
-                        <div ref={headerSyncRef} style={{ display: "flex", height: 50, background: "#f9fafb", overflow: "hidden", position: "relative", flexGrow: 1 }}>
-                            {timelineDates.map(d => (
-                                <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px solid #e5e7eb", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: d.date === todStr ? "#fcf8ed" : "transparent" }}>
-                                    <div style={{ fontSize: 10, fontWeight: 600, color: d.date === todStr ? "#E4C581" : "#9ca3af", textTransform: "uppercase" }}>{d.dayStr}</div>
-                                    <div style={{ fontSize: 14, fontWeight: d.date === todStr ? 800 : 600, color: d.date === todStr ? "#E4C581" : "#374151" }}>{d.tDay}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+
 
                     {/* --- SCROLLABLE BODY --- */}
-                    <div ref={scrollRef} onScroll={onScrollSync} style={{ display: "flex", overflow: "auto", maxHeight: "calc(100vh - 340px)", position: "relative", borderRadius: "0 0 10px 10px", background: "#f3f4f6" }}>
+                    <div style={{ display: "flex", position: "relative" }}>
 
                         {/* Left Column (Sticky Rooms) */}
                         <div style={{ width: 140, flexShrink: 0, position: "sticky", left: 0, background: "#fff", zIndex: 20, boxShadow: "2px 0 8px rgba(0,0,0,0.05)" }}>
@@ -722,6 +725,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                                         </React.Fragment>
                                     );
                                 })}
+                            </div>
                             </div>
                         </div>
                     </div>

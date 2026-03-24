@@ -178,7 +178,8 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                     <span className="card-title">📋 Recent Bookings</span>
                     <button className="btn btn-sm btn-secondary" onClick={() => onNav("bookings")}>View All</button>
                 </div>
-                <table className="data-table">
+                <div style={{ overflowX: "auto" }}>
+                    <table className="data-table">
                     <thead>
                         <tr><th>Ref</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Guests</th><th>Meal</th><th>Status</th><th>Total</th></tr>
                     </thead>
@@ -198,6 +199,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );

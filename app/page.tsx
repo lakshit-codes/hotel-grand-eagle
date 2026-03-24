@@ -90,37 +90,36 @@ const NAV_GROUPS = [
     },
 ];
 
-function Sidebar({ page, onNav, collapsed, onToggle, hotelName }: { page: string; onNav: (p: string) => void; collapsed: boolean; onToggle: () => void; hotelName: string }) {
+function Sidebar({ page, onNav, collapsed, onToggle, hotelName, mobileOpen, onMobileClose }: { page: string; onNav: (p: string) => void; collapsed: boolean; onToggle: () => void; hotelName: string; mobileOpen: boolean; onMobileClose: () => void; }) {
+    const handleNav = (id: string) => { onNav(id); onMobileClose(); };
     return (
-        <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-            {/* <div className="sidebar-logo"> */}
-            <div className="sidebar-logo-icon" style={{ background: "none" }}><img src="/logo.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "lighten" }} /></div>
-            {/* <div className="sidebar-logo-text">
-                    <div className="sidebar-logo-name truncate">{hotelName}</div>
-                    <div className="sidebar-logo-sub">Management</div>
-                </div> */}
-            {/* </div> */}
-            <nav className="sidebar-nav">
-                {NAV_GROUPS.map(group => (
-                    <div key={group.label}>
-                        <div className="nav-group-label">{group.label}</div>
-                        {group.items.map(({ id, label, Icon }) => (
-                            <button key={id} onClick={() => onNav(id)} title={collapsed ? label : ""}
-                                className={`nav-item ${page === id ? "active" : ""}`}>
-                                <span className="nav-item-icon"><Icon /></span>
-                                <span className="nav-item-label">{label}</span>
-                            </button>
-                        ))}
-                    </div>
-                ))}
-            </nav>
-            <div className="sidebar-footer">
-                <button onClick={onToggle} className="nav-item">
-                    <span className="nav-item-icon"><Ic.Chev r={collapsed} /></span>
-                    {!collapsed && <span className="nav-item-label">Collapse</span>}
-                </button>
-            </div>
-        </aside>
+        <>
+            {/* Dark overlay behind drawer on mobile */}
+            <div className={`sidebar-overlay ${mobileOpen ? "" : "hidden"}`} onClick={onMobileClose} />
+            <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+                <div className="sidebar-logo-icon" style={{ background: "none" }}><img src="/logo.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "lighten" }} /></div>
+                <nav className="sidebar-nav">
+                    {NAV_GROUPS.map(group => (
+                        <div key={group.label}>
+                            <div className="nav-group-label">{group.label}</div>
+                            {group.items.map(({ id, label, Icon }) => (
+                                <button key={id} onClick={() => handleNav(id)} title={collapsed ? label : ""}
+                                    className={`nav-item ${page === id ? "active" : ""}`}>
+                                    <span className="nav-item-icon"><Icon /></span>
+                                    <span className="nav-item-label">{label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    ))}
+                </nav>
+                <div className="sidebar-footer">
+                    <button onClick={onToggle} className="nav-item">
+                        <span className="nav-item-icon"><Ic.Chev r={collapsed} /></span>
+                        {!collapsed && <span className="nav-item-label">Collapse</span>}
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 }
 
@@ -581,6 +580,7 @@ function HotelOverview({ hotel, onSave }: { hotel: Hotel; onSave: (h: Hotel) => 
 export default function App() {
     const [page, setPage] = useState("dashboard");
     const [collapsed, setCollapsed] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [hotel, setHotel] = useState<Hotel>(MOCK_HOTEL);
     const [roomTypes, setRoomTypes] = useState<Room[]>([]);
@@ -721,10 +721,14 @@ export default function App() {
             <GlobalStyles />
             {searchOpen && <SearchOverlay bookings={bookings} customers={customers} rooms={effectiveRooms} onClose={() => setSearchOpen(false)} onNav={p => { setPage(p); setSearchOpen(false); }} />}
             <div className="app-shell">
-                <Sidebar page={page} onNav={setPage} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} hotelName={hotel.name} />
+                <Sidebar page={page} onNav={setPage} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} hotelName={hotel.name} mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
                 <div className="main-area">
                     {/* Topbar */}
                     <div className="topbar">
+                        {/* Hamburger — visible on mobile only */}
+                        <button className="mobile-menu-btn" onClick={() => setMobileNavOpen(o => !o)} aria-label="Open navigation">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                        </button>
                         <div className="topbar-breadcrumb">
                             <span>{hotel.name}</span><span style={{ color: "#d1d5db", margin: "0 4px" }}>/</span>
                             <span className="topbar-breadcrumb-active">{pageLabel}</span>
@@ -734,7 +738,8 @@ export default function App() {
                             {!seeded && bookings.length === 0 && <button className="btn btn-sm btn-warn" onClick={runSeed}>🌱 Load Demo Data</button>}
                             {seeded && <span style={{ fontSize: 12, color: "#16a34a", fontWeight: 600 }}>✅ Demo data loaded</span>}
                             <button onClick={() => setSearchOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "pointer", fontSize: 13, color: "#6b7280" }}>
-                                <Ic.Search /> Search <kbd style={{ fontSize: 11, color: "#9ca3af", background: "#fff", border: "1px solid #e5e7eb", padding: "1px 5px", borderRadius: 4 }}>⌘K</kbd>
+                                <Ic.Search />
+                                <span className="search-label-desktop">Search <kbd style={{ fontSize: 11, color: "#9ca3af", background: "#fff", border: "1px solid #e5e7eb", padding: "1px 5px", borderRadius: 4 }}>⌘K</kbd></span>
                             </button>
                             <span style={{ color: "#f59e0b" }}>{"★".repeat(hotel.starRating)}</span>
                             <span>{hotel.city}, {hotel.country}</span>

@@ -183,6 +183,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                 <div className="card">
                     <div className="card-header"><span className="card-title">🛏️ In-House Guests ({inHouse.length})</span><span style={{ fontSize: 12, color: "#9ca3af" }}>{inHouse.reduce((s, b) => s + b.adults + b.children, 0)} persons total</span></div>
                     {inHouse.length === 0 && <div className="card-body text-gray text-center">No guests currently checked in.</div>}
+                    <div style={{ overflowX: "auto" }}>
                     <table className="data-table">
                         <thead><tr><th>Room</th><th>Guest</th><th>Co-Guests</th><th>Check-in</th><th>Check-out</th><th>Nights Left</th><th>Meal</th><th>Special</th></tr></thead>
                         <tbody>
@@ -206,6 +207,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                             })}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
 

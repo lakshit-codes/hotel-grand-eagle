@@ -129,7 +129,8 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                             {LOYALTY_TIERS.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
-                    <table className="data-table">
+                    <div style={{ overflowX: "auto" }}>
+                        <table className="data-table">
                         <thead>
                             <tr><th>Guest</th><th>Contact</th><th>Nationality</th><th>Loyalty</th><th>Diet</th><th>Bookings</th><th></th></tr>
                         </thead>
@@ -166,6 +167,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                             })}
                         </tbody>
                     </table>
+                    </div>
                     {filtered.length === 0 && <div className="card-body text-gray text-center">No guests match your search.</div>}
                 </div>
 
