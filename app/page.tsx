@@ -725,24 +725,27 @@ export default function App() {
                 <div className="main-area">
                     {/* Topbar */}
                     <div className="topbar">
-                        {/* Hamburger — visible on mobile only */}
-                        <button className="mobile-menu-btn" onClick={() => setMobileNavOpen(o => !o)} aria-label="Open navigation">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-                        </button>
-                        <div className="topbar-breadcrumb">
-                            <span>{hotel.name}</span><span style={{ color: "#d1d5db", margin: "0 4px" }}>/</span>
-                            <span className="topbar-breadcrumb-active">{pageLabel}</span>
+                        <div className="topbar-left">
+                            {/* Hamburger — visible on mobile only */}
+                            <button className="mobile-menu-btn" onClick={() => setMobileNavOpen(o => !o)} aria-label="Open navigation">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                            </button>
+                            <div className="topbar-breadcrumb">
+                                <span className="hide-mobile">{hotel.name}</span>
+                                <span className="topbar-breadcrumb-active">{pageLabel}</span>
+                            </div>
                         </div>
                         <div className="topbar-right">
                             {/* Seed button */}
                             {!seeded && bookings.length === 0 && <button className="btn btn-sm btn-warn" onClick={runSeed}>🌱 Load Demo Data</button>}
-                            {seeded && <span style={{ fontSize: 12, color: "#16a34a", fontWeight: 600 }}>✅ Demo data loaded</span>}
-                            <button onClick={() => setSearchOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "pointer", fontSize: 13, color: "#6b7280" }}>
+                            <div className="search-trigger" onClick={() => setSearchOpen(true)}>
                                 <Ic.Search />
-                                <span className="search-label-desktop">Search <kbd style={{ fontSize: 11, color: "#9ca3af", background: "#fff", border: "1px solid #e5e7eb", padding: "1px 5px", borderRadius: 4 }}>⌘K</kbd></span>
-                            </button>
-                            <span style={{ color: "#f59e0b" }}>{"★".repeat(hotel.starRating)}</span>
-                            <span>{hotel.city}, {hotel.country}</span>
+                                <span className="search-label-desktop">Search <kbd>⌘K</kbd></span>
+                            </div>
+                            <div className="topbar-info-badges hide-tablet">
+                                <span className="star-rating">{"★".repeat(hotel.starRating)}</span>
+                                <span className="location-text">{hotel.city}, {hotel.country}</span>
+                            </div>
                             <span className="live-badge"><span className="live-dot" />Live</span>
                         </div>
                     </div>
