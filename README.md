@@ -27,7 +27,7 @@ The application is built as a full-stack Next.js web application utilizing the A
 
 ## 3. Directory & File Structure
 ```text
-hotel-aventara/
+hotel-grand-eagle/
 ├── .env                  # Environment variables (e.g., MongoDB URI)
 ├── package.json          # Project metadata, scripts, and dependencies
 ├── app/                  # Next.js App Router root directory
@@ -58,7 +58,7 @@ hotel-aventara/
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd hotel-aventara
+   cd hotel-grand-eagle
    ```
 2. **Install dependencies:**
    ```bash
