@@ -528,7 +528,7 @@ export const GlobalStyles = () => (
 export const clamp = (v: number, mn: number, mx: number) => Math.min(Math.max(Number(v) || 0, mn), mx);
 export const slugify = (s: string) => s.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 export const uid = () => `id_${Math.random().toString(36).slice(2, 9)}`;
-export const fmt = (n: number) => n.toLocaleString();
+export const fmt = (n: number) => (n || 0).toLocaleString();
 export const fmtDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 export const today = () => new Date().toISOString().slice(0, 10);
 

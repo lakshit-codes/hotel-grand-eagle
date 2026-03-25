@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "HOTEL GRAND EAGLE",
-  description: "Hotel Management Admin Panel",
+  description: "Premium Hotel Experience",
 };
 
 export default function RootLayout({

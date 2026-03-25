@@ -183,19 +183,20 @@ function RoomModal({ room, rooms: roomTypes, onSave, onClose }: {
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export default function RoomsPage({ inventory: roomsList, rooms: roomTypes, onAdd, onUpdate, onDelete }: {
+export default function RoomsPage({ inventory: roomsList, rooms: roomTypes, onAdd, onUpdate, onDelete, onDeleteFloor }: {
     inventory: RoomItem[];
     rooms: Room[];
     onAdd: (r: RoomItem) => void;
     onUpdate: (r: RoomItem) => void;
     onDelete: (id: string) => void;
+    onDeleteFloor: (floor: number) => void;
 }) {
     const [filterType, setFilterType] = useState("all");
     const [filterStatus, setFilterStatus] = useState("all");
     const [filterFloor, setFilterFloor] = useState("all");
     const [search, setSearch] = useState("");
     const [modal, setModal] = useState<Partial<RoomItem> | null | false>(false);
-    const [confirm, setConfirm] = useState<{ id: string; num: string } | null>(null);
+    const [confirm, setConfirm] = useState<{ id?: string; num?: string; floor?: number } | null>(null);
 
     // Derived data
     const floors = useMemo(() => [...new Set(roomsList.map(r => r.floor))].sort((a, b) => a - b), [roomsList]);
@@ -240,9 +241,19 @@ export default function RoomsPage({ inventory: roomsList, rooms: roomTypes, onAd
             )}
             {confirm && (
                 <Confirm
-                    title="Delete Room"
-                    msg={`Remove room ${confirm.num} from inventory? This cannot be undone.`}
-                    onOk={() => { onDelete(confirm.id); setConfirm(null); }}
+                    title={confirm.floor !== undefined ? "Delete Floor" : "Delete Room"}
+                    msg={confirm.floor !== undefined 
+                        ? `Remove all rooms on Floor ${confirm.floor}? This cannot be undone.`
+                        : `Remove room ${confirm.num} from inventory? This cannot be undone.`
+                    }
+                    onOk={() => { 
+                        if (confirm.floor !== undefined) {
+                            onDeleteFloor(confirm.floor);
+                        } else if (confirm.id) {
+                            onDelete(confirm.id);
+                        }
+                        setConfirm(null); 
+                    }}
                     onCancel={() => setConfirm(null)}
                 />
             )}
@@ -309,6 +320,15 @@ export default function RoomsPage({ inventory: roomsList, rooms: roomTypes, onAd
                 <div key={floor} style={{ marginBottom: 24 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                         <div style={{ fontWeight: 700, fontSize: 14, color: "#374151" }}>Floor {floor}</div>
+                        <button
+                            onClick={() => setConfirm({ floor })}
+                            style={{ background: "none", cursor: "pointer", padding: "2px 6px", borderRadius: 4, color: "#dc2626", fontSize: 11, opacity: 0.4, transition: "opacity .2s", border: "1px solid transparent" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; (e.currentTarget as HTMLElement).style.borderColor = "#fee2e2"; (e.currentTarget as HTMLElement).style.background = "#fff"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.4"; (e.currentTarget as HTMLElement).style.borderColor = "transparent"; (e.currentTarget as HTMLElement).style.background = "none"; }}
+                            title={`Delete all rooms on floor ${floor}`}
+                        >
+                            🗑️ Delete Floor
+                        </button>
                         <div style={{ height: 1, flex: 1, background: "#e5e7eb" }} />
                         <span style={{ fontSize: 12, color: "#9ca3af" }}>{roomsOnFloor.length} room{roomsOnFloor.length !== 1 ? "s" : ""}</span>
                     </div>

@@ -9,7 +9,7 @@ import { getDatabase } from "@/app/utils/getDatabase";
  * {
  *   id: string,
  *   roomNumber: string,     // "101", "202"
- *   roomTypeId: string,     // ref to rooms collection
+ *   roomTypeId: string,     // ref to room_types collection
  *   roomTypeName: string,   // denormalized for display
  *   floor: number,
  *   status: "available" | "occupied" | "cleaning" | "maintenance" | "out-of-order" | "blocked",
@@ -19,16 +19,46 @@ import { getDatabase } from "@/app/utils/getDatabase";
  *   lastCleaned: string,    // ISO date
  *   createdAt: string,
  * }
+ *
+ * Query params for GET:
+ *   ?roomTypeId=   — filter by room type
+ *   ?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&roomTypeId=  — additionally exclude rooms with
+ *       overlapping active bookings (returns only bookable rooms for the date range)
  */
 
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const roomTypeId = searchParams.get("roomTypeId");
+        const checkIn = searchParams.get("checkIn");
+        const checkOut = searchParams.get("checkOut");
+
         const db = await getDatabase();
-        const filter = roomTypeId ? { roomTypeId } : {};
+
+        // Base filter by roomTypeId if provided
+        const filter: Record<string, unknown> = roomTypeId ? { roomTypeId } : {};
         const rooms = await db.collection("rooms").find(filter).sort({ floor: 1, roomNumber: 1 }).toArray();
-        const clean = rooms.map(({ _id, ...rest }) => rest);
+        let clean = rooms.map(({ _id, ...rest }) => rest);
+
+        // Date-range availability filtering: exclude rooms with overlapping active bookings
+        if (checkIn && checkOut && roomTypeId) {
+            const overlapping = await db.collection("bookings").find({
+                roomTypeId,
+                roomNumber: { $ne: null, $exists: true },
+                status: { $nin: ["cancelled", "checked-out", "no-show"] },
+                checkIn: { $lt: checkOut },
+                checkOut: { $gt: checkIn },
+            }).toArray();
+
+            const occupiedRooms = new Set(overlapping.map((b) => String(b.roomNumber)));
+
+            clean = clean.filter((r) => {
+                const hasDateConflict = occupiedRooms.has(String(r.roomNumber));
+                const isUnavailableStatus = r.status === "maintenance" || r.status === "out-of-order";
+                return !hasDateConflict && !isUnavailableStatus;
+            });
+        }
+
         return NextResponse.json(clean);
     } catch {
         return NextResponse.json({ error: "Failed to fetch room inventory" }, { status: 500 });
@@ -83,12 +113,24 @@ export async function DELETE(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
-        if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+        const floor = searchParams.get("floor");
+
         const db = await getDatabase();
-        const result = await db.collection("rooms").deleteOne({ id });
-        if (result.deletedCount === 0) return NextResponse.json({ error: "Room not found" }, { status: 404 });
-        return NextResponse.json({ success: true });
+
+        if (id) {
+            const result = await db.collection("rooms").deleteOne({ id });
+            if (result.deletedCount === 0) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+            return NextResponse.json({ success: true });
+        }
+
+        if (floor) {
+            const floorNum = parseInt(floor);
+            const result = await db.collection("rooms").deleteMany({ floor: floorNum });
+            return NextResponse.json({ success: true, deletedCount: result.deletedCount });
+        }
+
+        return NextResponse.json({ error: "id or floor required" }, { status: 400 });
     } catch {
-        return NextResponse.json({ error: "Failed to delete room" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
     }
 }

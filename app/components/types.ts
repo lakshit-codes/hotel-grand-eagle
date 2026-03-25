@@ -85,6 +85,10 @@ export interface Hotel {
     checkInTime: string;
     checkOutTime: string;
     starRating: number;
+    logoUrl?: string;
+    gstNumber?: string;
+    website?: string;
+    bankDetails?: string;
 }
 
 export interface CoGuest {
@@ -168,6 +172,7 @@ export interface HousekeepingTask {
     id: string;
     roomTypeId: string;
     roomNumber: string;
+    floor: number;
     status: "clean" | "dirty" | "inspected" | "dnd" | "out-of-order";
     priority: "low" | "medium" | "high";
     assignedTo: string;

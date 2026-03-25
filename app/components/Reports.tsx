@@ -13,11 +13,34 @@ interface Props {
 const TODAY = new Date().toISOString().slice(0, 10);
 function addDays(d: string, n: number) { const dt = new Date(d + "T00:00:00"); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); }
 
+/** Last 7 months including current */
+function getMonthOptions() {
+    const opts: { label: string; from: string; to: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const from = d.toISOString().slice(0, 10);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        const to = last.toISOString().slice(0, 10);
+        const label = d.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+        opts.push({ label, from, to });
+    }
+    return opts;
+}
+const MONTH_OPTIONS = getMonthOptions();
+
 export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Props) {
-    const [tab, setTab] = useState<"occupancy" | "arrivals" | "inhouse" | "revenue" | "nightaudit">("occupancy");
+    const [tab, setTab] = useState<"occupancy" | "arrivals" | "inhouse" | "revenue" | "cancellations" | "nightaudit">("occupancy");
     const [dateFrom, setDateFrom] = useState(addDays(TODAY, -30));
     const [dateTo, setDateTo] = useState(TODAY);
     const [nightAuditDone, setNightAuditDone] = useState(false);
+    const [activeMonth, setActiveMonth] = useState<string | null>(null); // null = custom range
+
+    const applyMonth = (from: string, to: string, key: string) => {
+        setDateFrom(from);
+        setDateTo(to);
+        setActiveMonth(key);
+    };
 
     // ── Occupancy ──────────────────────────────────────────────────────────────
     const occupancyData = useMemo(() => {
@@ -51,7 +74,8 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
 
     // ── Revenue ───────────────────────────────────────────────────────────────
     const revData = useMemo(() => {
-        const relevant = bookings.filter(b => b.status !== "cancelled" && b.status !== "no-show" && b.checkIn >= dateFrom && b.checkIn <= dateTo);
+        // Use date-overlap so bookings spanning month boundaries are correctly included
+        const relevant = bookings.filter(b => b.status !== "cancelled" && b.status !== "no-show" && b.checkIn <= dateTo && b.checkOut >= dateFrom);
         const bySource: Record<string, number> = {};
         const byMeal: Record<string, number> = {};
         const byRoom: Record<string, number> = {};
@@ -68,6 +92,15 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
         return { total, roomTotal, mealTotal, bySource, byMeal, byRoom, count: relevant.length };
     }, [bookings, mealPlans, dateFrom, dateTo]);
 
+    // ── Cancellations ─────────────────────────────────────────────────────────
+    const cancData = useMemo(() => {
+        const total = bookings.filter(b => b.checkIn <= dateTo && b.checkOut >= dateFrom);
+        const cancelled = total.filter(b => b.status === "cancelled" || b.status === "no-show");
+        const lostRevenue = cancelled.reduce((s, b) => s + b.grandTotal, 0);
+        const cancRate = total.length > 0 ? Math.round((cancelled.length / total.length) * 100) : 0;
+        return { cancelled, lostRevenue, cancRate, totalCount: total.length };
+    }, [bookings, dateFrom, dateTo]);
+
     // ── Night Audit ────────────────────────────────────────────────────────────
     const nightAuditData = useMemo(() => {
         const arrivals = bookings.filter(b => b.checkIn === TODAY && b.status === "confirmed");
@@ -79,10 +112,28 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
         return { arrivals, departures, noShows, todayRevenue, cleanRooms, dirtyRooms };
     }, [bookings, hkTasks]);
 
+    /** Month pills + custom date range filter */
     const dateFilter = (
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 16 }}>
-            <div><label className="field-label">From</label><input type="date" className="inp" value={dateFrom} max={dateTo} onChange={e => { const v = e.target.value; if (v <= dateTo) setDateFrom(v); else setDateFrom(dateTo); }} style={{ width: 160 }} /></div>
-            <div><label className="field-label">To</label><input type="date" className="inp" value={dateTo} min={dateFrom} onChange={e => { const v = e.target.value; if (v >= dateFrom) setDateTo(v); else setDateTo(dateFrom); }} style={{ width: 160 }} /></div>
+        <div>
+            {/* Month pills */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.5, marginRight: 4 }}>Period:</span>
+                {MONTH_OPTIONS.map(m => (
+                    <button key={m.from} onClick={() => applyMonth(m.from, m.to, m.from)}
+                        style={{ padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${activeMonth === m.from ? "#E4C581" : "#e5e7eb"}`, background: activeMonth === m.from ? "#fcf8ed" : "#fff", color: activeMonth === m.from ? "#b45309" : "#6b7280", fontWeight: activeMonth === m.from ? 700 : 400, fontSize: 12, cursor: "pointer" }}>
+                        {m.label}
+                    </button>
+                ))}
+                <button onClick={() => setActiveMonth(null)}
+                    style={{ padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${activeMonth === null ? "#E4C581" : "#e5e7eb"}`, background: activeMonth === null ? "#fcf8ed" : "#fff", color: activeMonth === null ? "#b45309" : "#6b7280", fontWeight: activeMonth === null ? 700 : 400, fontSize: 12, cursor: "pointer" }}>
+                    Custom
+                </button>
+            </div>
+            {/* Custom date range */}
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 16 }}>
+                <div><label className="field-label">From</label><input type="date" className="inp" value={dateFrom} max={dateTo} onChange={e => { if (e.target.value <= dateTo) { setDateFrom(e.target.value); setActiveMonth(null); } }} style={{ width: 160 }} /></div>
+                <div><label className="field-label">To</label><input type="date" className="inp" value={dateTo} min={dateFrom} onChange={e => { if (e.target.value >= dateFrom) { setDateTo(e.target.value); setActiveMonth(null); } }} style={{ width: 160 }} /></div>
+            </div>
         </div>
     );
 
@@ -101,6 +152,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                     { id: "arrivals", label: "📅 Arrivals & Deps" },
                     { id: "inhouse", label: "🛏️ In-House List" },
                     { id: "revenue", label: "💰 Revenue" },
+                    { id: "cancellations", label: "📤 Cancellations" },
                     { id: "nightaudit", label: "🌙 Night Audit" },
                 ] as const).map(t => (
                     <button key={t.id} onClick={() => setTab(t.id)} className={`tab-btn ${tab === t.id ? "active" : ""}`} style={{ flex: "unset", padding: "9px 18px" }}>{t.label}</button>
@@ -122,7 +174,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                                 </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "#6b7280" }}>
                                     <span>{d.bookings} bookings · {d.nights} nights</span>
-                                    <span style={{ fontWeight: 700, color: "#16a34a" }}>${fmt(d.revenue)}</span>
+                                    <span style={{ fontWeight: 700, color: "#16a34a" }}>₹{fmt(d.revenue)}</span>
                                 </div>
                             </div>
                         </div>
@@ -134,7 +186,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                         <div style={{ display: "flex", gap: 32, flexWrap: "wrap", fontSize: 14 }}>
                             <div><div style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Total Bookings</div><div style={{ fontWeight: 700, fontSize: 22 }}>{occupancyData.reduce((s, d) => s + d.bookings, 0)}</div></div>
                             <div><div style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Total Nights Sold</div><div style={{ fontWeight: 700, fontSize: 22 }}>{occupancyData.reduce((s, d) => s + d.nights, 0)}</div></div>
-                            <div><div style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Room Revenue</div><div style={{ fontWeight: 700, fontSize: 22, color: "#16a34a" }}>${fmt(occupancyData.reduce((s, d) => s + d.revenue, 0))}</div></div>
+                            <div><div style={{ color: "#9ca3af", fontSize: 11, fontWeight: 600, textTransform: "uppercase", marginBottom: 4 }}>Room Revenue</div><div style={{ fontWeight: 700, fontSize: 22, color: "#16a34a" }}>₹{fmt(occupancyData.reduce((s, d) => s + d.revenue, 0))}</div></div>
                         </div>
                     </div>
                 </div>
@@ -216,9 +268,9 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                 {dateFilter}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
                     {[
-                        { label: "Total Revenue", value: `$${fmt(revData.total)}`, color: "#16a34a" },
-                        { label: "Room Revenue", value: `$${fmt(revData.roomTotal)}`, color: "#2563eb" },
-                        { label: "Meal Revenue", value: `$${fmt(revData.mealTotal)}`, color: "#8b5cf6" },
+                        { label: "Total Revenue", value: `₹${fmt(revData.total)}`, color: "#16a34a" },
+                        { label: "Room Revenue", value: `₹${fmt(revData.roomTotal)}`, color: "#2563eb" },
+                        { label: "Meal Revenue", value: `₹${fmt(revData.mealTotal)}`, color: "#8b5cf6" },
                     ].map(k => (
                         <div key={k.label} className="kpi-card"><div className="kpi-label">{k.label}</div><div style={{ fontSize: 24, fontWeight: 800, color: k.color }}>{k.value}</div><div className="kpi-sub">{revData.count} bookings</div></div>
                     ))}
@@ -238,7 +290,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                                     return (
                                         <div key={k} style={{ marginBottom: 10 }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
-                                                <span>{k}</span><span style={{ fontWeight: 700, color: "#16a34a" }}>${fmt(v)}</span>
+                                                <span>{k}</span><span style={{ fontWeight: 700, color: "#16a34a" }}>₹{fmt(v)}</span>
                                             </div>
                                             <div style={{ height: 5, background: "#f0f0f0", borderRadius: 3 }}>
                                                 <div style={{ width: `${pct}%`, height: "100%", background: barColor[(ci * 3 + i) % barColor.length], borderRadius: 3 }} />
@@ -250,6 +302,45 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                             </div>
                         </div>
                     ))}
+                </div>
+            </>)}
+
+            {/* ── Cancellations & No-Shows ─────────────────────── */}
+            {tab === "cancellations" && (<>
+                {dateFilter}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
+                    {[
+                        { label: "Cancellations & No-Shows", value: cancData.cancelled.length, color: "#dc2626", sub: `of ${cancData.totalCount} total bookings` },
+                        { label: "Lost Revenue", value: `₹${fmt(cancData.lostRevenue)}`, color: "#ef4444", sub: "Would-be earnings" },
+                        { label: "Cancellation Rate", value: `${cancData.cancRate}%`, color: cancData.cancRate >= 20 ? "#dc2626" : cancData.cancRate >= 10 ? "#d97706" : "#16a34a", sub: "% of all bookings in period" },
+                    ].map(k => (
+                        <div key={k.label} className="kpi-card"><div className="kpi-label">{k.label}</div><div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.value}</div><div className="kpi-sub">{k.sub}</div></div>
+                    ))}
+                </div>
+                <div className="card">
+                    <div className="card-header"><span className="card-title">📤 Cancelled & No-Show Bookings</span><span style={{ fontSize: 12, color: "#9ca3af" }}>{cancData.cancelled.length} records</span></div>
+                    {cancData.cancelled.length === 0
+                        ? <div className="card-body text-gray text-center">No cancellations or no-shows in the selected period.</div>
+                        : <div style={{ overflowX: "auto" }}>
+                            <table className="data-table">
+                                <thead><tr><th>Ref</th><th>Guest</th><th>Room Type</th><th>Check-in</th><th>Check-out</th><th>Nights</th><th>Status</th><th>Lost ₹</th></tr></thead>
+                                <tbody>
+                                    {cancData.cancelled.map(b => (
+                                        <tr key={b.id}>
+                                            <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>{b.bookingRef}</td>
+                                            <td>{b.guestName}</td>
+                                            <td style={{ fontSize: 12 }}>{b.roomTypeName}</td>
+                                            <td style={{ fontSize: 12 }}>{fmtDate(b.checkIn)}</td>
+                                            <td style={{ fontSize: 12 }}>{fmtDate(b.checkOut)}</td>
+                                            <td style={{ fontSize: 12 }}>{b.nights}N</td>
+                                            <td><span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: b.status === "cancelled" ? "#fef2f2" : "#fff7ed", color: b.status === "cancelled" ? "#dc2626" : "#d97706", fontWeight: 600 }}>{b.status}</span></td>
+                                            <td style={{ fontWeight: 700, color: "#dc2626" }}>₹{b.grandTotal.toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                 </div>
             </>)}
 
@@ -266,7 +357,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                             { label: "Arrivals Today", value: nightAuditData.arrivals.length, color: "#2563eb", sub: "Confirmed check-ins" },
                             { label: "Departures Today", value: nightAuditData.departures.length, color: "#d97706", sub: "Expected check-outs" },
                             { label: "No-Shows", value: nightAuditData.noShows.length, color: "#dc2626", sub: "Missed arrivals" },
-                            { label: "Today's Revenue", value: `$${fmt(nightAuditData.todayRevenue)}`, color: "#16a34a", sub: "Room + meal" },
+                            { label: "Today's Revenue", value: `₹${fmt(nightAuditData.todayRevenue)}`, color: "#16a34a", sub: "Room + meal" },
                         ].map(k => (
                             <div key={k.label} className="kpi-card"><div className="kpi-label">{k.label}</div><div className="kpi-value" style={{ color: k.color, fontSize: 22 }}>{k.value}</div><div className="kpi-sub">{k.sub}</div></div>
                         ))}
@@ -278,7 +369,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
                             {nightAuditData.arrivals.map(b => (
                                 <div key={b.id} style={{ padding: "10px 16px", borderBottom: "1px solid #f5f5f5", fontSize: 13 }}>
                                     <div style={{ fontWeight: 600 }}>{b.guestName}</div>
-                                    <div style={{ color: "#6b7280" }}>{b.roomTypeName}{b.roomNumber ? ` · Rm ${b.roomNumber}` : ""} · {b.mealPlanCode} · ${b.grandTotal.toLocaleString()}</div>
+                                    <div style={{ color: "#6b7280" }}>{b.roomTypeName}{b.roomNumber ? ` · Rm ${b.roomNumber}` : ""} · {b.mealPlanCode} · ₹{b.grandTotal.toLocaleString()}</div>
                                 </div>
                             ))}
                         </div>

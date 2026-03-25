@@ -1,20 +1,22 @@
 "use client";
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { GlobalStyles, Ic, Btn, Badge, Inp, Field, FieldLabel, Sel, NumInp, CurrencyInput, Toggle, Confirm, uid, statusColor, clamp, slugify, BOOKING_SOURCES } from "./components/ui";
-import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember } from "./components/types";
-import Dashboard from "./components/Dashboard";
-import BookingsPage from "./components/Bookings";
-import CheckInPage from "./components/CheckIn";
-import CustomersPage from "./components/Customers";
-import MealPlansPage from "./components/MealPlans";
-import HousekeepingPage from "./components/Housekeeping";
-import MaintenancePage from "./components/Maintenance";
-import StaffPage from "./components/Staff";
-import ReportsPage from "./components/Reports";
-import RoomsPage from "./components/Rooms";
+import { Ic, Btn, Badge, Inp, Field, FieldLabel, Sel, NumInp, CurrencyInput, Toggle, Confirm, uid, statusColor, clamp, slugify, BOOKING_SOURCES } from "../../components/ui";
+import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember } from "../../components/types";
+import Dashboard from "../../components/Dashboard";
+import BookingsPage from "../../components/Bookings";
+import CheckInPage from "../../components/CheckIn";
+import CustomersPage from "../../components/Customers";
+import MealPlansPage from "../../components/MealPlans";
+import HousekeepingPage from "../../components/Housekeeping";
+import MaintenancePage from "../../components/Maintenance";
+import StaffPage from "../../components/Staff";
+import ReportsPage from "../../components/Reports";
+import RoomsPage from "../../components/Rooms";
+import HotelOverview from "../../components/HotelOverview";
+import { useAdmin } from "../../components/AdminContext";
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const CURRENCIES = ["USD", "EUR", "GBP", "AED", "INR", "SGD", "AUD", "CAD", "JPY"];
+const CURRENCIES = ["INR"];
 const ROOM_CATS = ["Standard", "Superior", "Deluxe", "Premium", "Junior Suite", "Suite", "Grand Suite", "Penthouse", "Villa", "Studio"];
 const BED_TYPES = ["Single", "Twin", "Double", "Queen", "King", "Super King", "Bunk Bed"];
 const VIEWS = ["City View", "Garden View", "Pool View", "Ocean View", "Mountain View", "Courtyard View", "Panoramic", "Street View"];
@@ -43,15 +45,15 @@ const MOCK_HOTEL: Hotel = {
 };
 
 const MOCK_ROOMS: Room[] = [
-    { id: "rm1", roomName: "Deluxe King Room", slug: "deluxe-king-room", roomCategory: "Deluxe", bedType: "King", maxOccupancy: 2, roomSize: 42, view: "City View", smokingPolicy: "Non-Smoking", balconyAvailable: true, roomTheme: "Modern", soundproofingLevel: "Premium", inRoomWorkspace: true, entertainmentOptions: "Smart TV + Sound System", bathroomType: "Rain Shower + Tub", floorPreference: "Upper Floor", basePrice: 450, extraBedPrice: 80, refundable: true, currency: "USD", amenityIds: ["fb7", "fr6", "fr7", "fr10"], images: [], roomNumbers: ["101", "102", "103", "104", "105", "201", "202", "203"] },
-    { id: "rm2", roomName: "Royal Suite", slug: "royal-suite", roomCategory: "Suite", bedType: "Super King", maxOccupancy: 3, roomSize: 120, view: "Panoramic", smokingPolicy: "Non-Smoking", balconyAvailable: true, roomTheme: "Art Deco", soundproofingLevel: "Maximum", inRoomWorkspace: true, entertainmentOptions: "Home Theatre", bathroomType: "Spa Bathroom", floorPreference: "Top Floor", basePrice: 1800, extraBedPrice: 0, refundable: true, currency: "USD", amenityIds: ["fw3", "fr2", "fr3", "fr5", "fr9"], images: [], roomNumbers: ["501", "502", "503"] },
-    { id: "rm3", roomName: "Twin Standard", slug: "twin-standard", roomCategory: "Standard", bedType: "Twin", maxOccupancy: 2, roomSize: 28, view: "Garden View", smokingPolicy: "Non-Smoking", balconyAvailable: false, roomTheme: "Classic", soundproofingLevel: "Standard", inRoomWorkspace: false, entertainmentOptions: "Smart TV", bathroomType: "Walk-in Shower", floorPreference: "Lower Floor", basePrice: 220, extraBedPrice: 50, refundable: false, currency: "USD", amenityIds: ["fb7", "fr10"], images: [], roomNumbers: ["301", "302", "303", "304", "305", "306", "307", "308", "309", "310"] },
+    { id: "rm1", roomName: "Deluxe King Room", slug: "deluxe-king-room", roomCategory: "Deluxe", bedType: "King", maxOccupancy: 2, roomSize: 42, view: "City View", smokingPolicy: "Non-Smoking", balconyAvailable: true, roomTheme: "Modern", soundproofingLevel: "Premium", inRoomWorkspace: true, entertainmentOptions: "Smart TV + Sound System", bathroomType: "Rain Shower + Tub", floorPreference: "Upper Floor", basePrice: 35000, extraBedPrice: 2500, refundable: true, currency: "INR", amenityIds: ["fb7", "fr6", "fr7", "fr10"], images: [], roomNumbers: ["101", "102", "103", "104", "105", "201", "202", "203"] },
+    { id: "rm2", roomName: "Royal Suite", slug: "royal-suite", roomCategory: "Suite", bedType: "Super King", maxOccupancy: 3, roomSize: 120, view: "Panoramic", smokingPolicy: "Non-Smoking", balconyAvailable: true, roomTheme: "Art Deco", soundproofingLevel: "Maximum", inRoomWorkspace: true, entertainmentOptions: "Home Theatre", bathroomType: "Spa Bathroom", floorPreference: "Top Floor", basePrice: 150000, extraBedPrice: 0, refundable: true, currency: "INR", amenityIds: ["fw3", "fr2", "fr3", "fr5", "fr9"], images: [], roomNumbers: ["501", "502", "503"] },
+    { id: "rm3", roomName: "Twin Standard", slug: "twin-standard", roomCategory: "Standard", bedType: "Twin", maxOccupancy: 2, roomSize: 28, view: "Garden View", smokingPolicy: "Non-Smoking", balconyAvailable: false, roomTheme: "Classic", soundproofingLevel: "Standard", inRoomWorkspace: false, entertainmentOptions: "Smart TV", bathroomType: "Walk-in Shower", floorPreference: "Lower Floor", basePrice: 18000, extraBedPrice: 1500, refundable: false, currency: "INR", amenityIds: ["fb7", "fr10"], images: [], roomNumbers: ["301", "302", "303", "304", "305", "306", "307", "308", "309", "310"] },
 ];
 
 const MOCK_PRICING: Record<string, Pricing> = {
-    rm1: { roomId: "rm1", currency: "USD", weekendPricingEnabled: true, weekendPrice: 550, seasonalPricing: [{ id: "sp1", seasonName: "New Year", startDate: "2026-12-26", endDate: "2027-01-05", price: 720 }] },
-    rm2: { roomId: "rm2", currency: "USD", weekendPricingEnabled: true, weekendPrice: 2100, seasonalPricing: [] },
-    rm3: { roomId: "rm3", currency: "USD", weekendPricingEnabled: false, weekendPrice: 0, seasonalPricing: [] },
+    rm1: { roomId: "rm1", currency: "INR", weekendPricingEnabled: true, weekendPrice: 42000, seasonalPricing: [{ id: "sp1", seasonName: "New Year", startDate: "2026-12-26", endDate: "2027-01-05", price: 65000 }] },
+    rm2: { roomId: "rm2", currency: "INR", weekendPricingEnabled: true, weekendPrice: 185000, seasonalPricing: [] },
+    rm3: { roomId: "rm3", currency: "INR", weekendPricingEnabled: false, weekendPrice: 0, seasonalPricing: [] },
 };
 
 const MOCK_AVAIL: Record<string, Availability> = {
@@ -60,116 +62,7 @@ const MOCK_AVAIL: Record<string, Availability> = {
     rm3: { roomId: "rm3", totalRooms: 60, availableRooms: 48, minimumStay: 1, maximumStay: 30, blackoutDates: [] },
 };
 
-// ── Nav ──────────────────────────────────────────────────────────────────────
-const NAV_GROUPS = [
-    {
-        label: "Operations", items: [
-            { id: "dashboard", label: "Dashboard", Icon: Ic.Dashboard },
-            { id: "bookings", label: "Bookings", Icon: Ic.Bookings },
-            { id: "customers", label: "Guests", Icon: Ic.Customers },
-            { id: "reports", label: "Reports & Audit", Icon: Ic.Reports },
-        ]
-    },
-    {
-        label: "Hotel", items: [
-            { id: "room-types", label: "Room Types", Icon: Ic.Rooms },
-            { id: "rooms", label: "Rooms", Icon: Ic.Rooms },
-            { id: "meals", label: "Meal Plans", Icon: Ic.Meals },
-            { id: "hk", label: "Housekeeping", Icon: Ic.HK },
-            { id: "maint", label: "Maintenance", Icon: Ic.Maint },
-            { id: "staff", label: "Staff", Icon: Ic.Staff },
-        ]
-    },
-    {
-        label: "Configuration", items: [
-            { id: "pricing", label: "Pricing", Icon: Ic.Pricing },
-            { id: "avail", label: "Availability", Icon: Ic.Avail },
-            { id: "amenity", label: "Amenity Manager", Icon: Ic.Amenity },
-            { id: "overview", label: "Hotel Overview", Icon: Ic.Hotel },
-        ]
-    },
-];
-
-function Sidebar({ page, onNav, collapsed, onToggle, hotelName, mobileOpen, onMobileClose }: { page: string; onNav: (p: string) => void; collapsed: boolean; onToggle: () => void; hotelName: string; mobileOpen: boolean; onMobileClose: () => void; }) {
-    const handleNav = (id: string) => { onNav(id); onMobileClose(); };
-    return (
-        <>
-            {/* Dark overlay behind drawer on mobile */}
-            <div className={`sidebar-overlay ${mobileOpen ? "" : "hidden"}`} onClick={onMobileClose} />
-            <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
-                <div className="sidebar-logo-icon" style={{ background: "none" }}><img src="/logo.png" alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "lighten" }} /></div>
-                <nav className="sidebar-nav">
-                    {NAV_GROUPS.map(group => (
-                        <div key={group.label}>
-                            <div className="nav-group-label">{group.label}</div>
-                            {group.items.map(({ id, label, Icon }) => (
-                                <button key={id} onClick={() => handleNav(id)} title={collapsed ? label : ""}
-                                    className={`nav-item ${page === id ? "active" : ""}`}>
-                                    <span className="nav-item-icon"><Icon /></span>
-                                    <span className="nav-item-label">{label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    ))}
-                </nav>
-                <div className="sidebar-footer">
-                    <button onClick={onToggle} className="nav-item">
-                        <span className="nav-item-icon"><Ic.Chev r={collapsed} /></span>
-                        {!collapsed && <span className="nav-item-label">Collapse</span>}
-                    </button>
-                </div>
-            </aside>
-        </>
-    );
-}
-
-// ── Search overlay ────────────────────────────────────────────────────────────
-function SearchOverlay({ bookings, customers, rooms, onClose, onNav }: { bookings: Booking[]; customers: Customer[]; rooms: Room[]; onClose: () => void; onNav: (p: string) => void; }) {
-    const [q, setQ] = useState("");
-    const results = useMemo(() => {
-        if (!q.trim()) return [];
-        const lq = q.toLowerCase();
-        const res: { type: string; main: string; sub: string; page: string }[] = [];
-        bookings.filter(b => b.guestName.toLowerCase().includes(lq) || b.bookingRef.toLowerCase().includes(lq)).slice(0, 5)
-            .forEach(b => res.push({ type: "Booking", main: `${b.bookingRef} — ${b.guestName}`, sub: `${b.roomTypeName} · ${b.status}`, page: "bookings" }));
-        customers.filter(c => `${c.firstName} ${c.lastName} ${c.email} ${c.aadharNo}`.toLowerCase().includes(lq)).slice(0, 5)
-            .forEach(c => res.push({ type: "Guest", main: `${c.firstName} ${c.lastName}`, sub: `${c.nationality} · ${c.loyaltyTier}`, page: "customers" }));
-        rooms.filter(r => r.roomName.toLowerCase().includes(lq)).slice(0, 3)
-            .forEach(r => res.push({ type: "Room Type", main: r.roomName, sub: `${r.roomCategory} · $${r.basePrice}/night`, page: "room-types" }));
-        return res.slice(0, 10);
-    }, [q, bookings, customers, rooms]);
-
-    useEffect(() => {
-        const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-        window.addEventListener("keydown", handleKey);
-        return () => window.removeEventListener("keydown", handleKey);
-    }, [onClose]);
-
-    return (
-        <div className="search-overlay" onClick={onClose}>
-            <div className="search-box" onClick={e => e.stopPropagation()}>
-                <div className="search-input-wrap">
-                    <Ic.Search />
-                    <input autoFocus className="inp" style={{ flex: 1, border: "none", outline: "none", fontSize: 16 }} placeholder="Search guests, bookings, rooms..." value={q} onChange={e => setQ(e.target.value)} />
-                    <kbd style={{ fontSize: 11, color: "#9ca3af", background: "#f3f4f6", padding: "2px 6px", borderRadius: 4 }}>Esc</kbd>
-                </div>
-                <div className="search-results">
-                    {results.length === 0 && q && <div className="search-empty">No results for "{q}"</div>}
-                    {!q && <div className="search-empty">Type to search across all hotel data…</div>}
-                    {results.map((r, i) => (
-                        <div key={i} className="search-result-item" onClick={() => { onNav(r.page); onClose(); }}>
-                            <span className="search-result-type">{r.type}</span>
-                            <div>
-                                <div className="search-result-main">{r.main}</div>
-                                <div className="search-result-sub">{r.sub}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
+// Sidebar and SearchOverlay moved to AdminShell.tsx
 
 // ── Pricing page (kept from original, extended with rules) ────────────────────
 function PricingPage({ rooms, pricing, setPricing, pricingRules, setPricingRules, currency, setCurrency }: {
@@ -193,12 +86,12 @@ function PricingPage({ rooms, pricing, setPricing, pricingRules, setPricingRules
     return (
         <div>
             <div className="page-header"><div><div className="page-title">Pricing Management</div><div className="page-sub">Base, weekend, seasonal & smart discount rules</div></div></div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "none" }}>
                 <FieldLabel>Display Currency</FieldLabel>
                 <Sel value={currency} onChange={e => setCurrency(e.target.value)} opts={CURRENCIES} />
             </div>
             {rooms.map(room => {
-                const p = pricing[room.id] || { currency: "USD", weekendPricingEnabled: false, weekendPrice: 0, seasonalPricing: [] };
+                const p = pricing[room.id] || { currency: "INR", weekendPricingEnabled: false, weekendPrice: 0, seasonalPricing: [] };
                 const roomRules = pricingRules.filter(r => r.roomTypeId === room.id);
                 return (
                     <div className="card pricing-room" key={room.id}>
@@ -435,7 +328,7 @@ function AmenityManager({ cats, setCats }: { cats: AmenityCat[]; setCats: React.
 }
 
 // ── Room Form ─────────────────────────────────────────────────────────────────
-const BLANK_ROOM: Room = { id: "", roomName: "", slug: "", roomCategory: "Deluxe", bedType: "King", maxOccupancy: 2, roomSize: 30, view: "City View", smokingPolicy: "Non-Smoking", balconyAvailable: false, roomTheme: "Modern", soundproofingLevel: "Standard", inRoomWorkspace: false, entertainmentOptions: "Smart TV", bathroomType: "Walk-in Shower", floorPreference: "Any", basePrice: 100, extraBedPrice: 0, refundable: true, currency: "USD", amenityIds: [], images: [], roomNumbers: [] };
+const BLANK_ROOM: Room = { id: "", roomName: "", slug: "", roomCategory: "Deluxe", bedType: "King", maxOccupancy: 2, roomSize: 30, view: "City View", smokingPolicy: "Non-Smoking", balconyAvailable: false, roomTheme: "Modern", soundproofingLevel: "Standard", inRoomWorkspace: false, entertainmentOptions: "Smart TV", bathroomType: "Walk-in Shower", floorPreference: "Any", basePrice: 10000, extraBedPrice: 0, refundable: true, currency: "INR", amenityIds: [], images: [], roomNumbers: [] };
 
 function RoomForm({ initial, amenityCats, onSave, onCancel }: { initial?: Room; amenityCats: AmenityCat[]; onSave: (r: Room) => void; onCancel: () => void; }) {
     const [f, setF] = useState<Room>(() => initial ? { ...initial } : { ...BLANK_ROOM, id: uid() });
@@ -486,7 +379,7 @@ function RoomForm({ initial, amenityCats, onSave, onCancel }: { initial?: Room; 
                 <div style={{ display: "flex", gap: 32 }}><Toggle checked={f.balconyAvailable} onChange={sb("balconyAvailable")} label="Balcony Available" /><Toggle checked={f.inRoomWorkspace} onChange={sb("inRoomWorkspace")} label="In-Room Workspace" /></div>
             </div></div>
             <div className="card mb-16"><div className="card-header"><span className="card-title">Pricing</span></div><div className="card-body">
-                <div className="grid-4"><Field label="Currency"><Sel value={f.currency} onChange={s("currency")} opts={CURRENCIES} /></Field><Field label={`Base Price (${f.currency})`}><CurrencyInput currency={f.currency} value={f.basePrice} onChange={sn("basePrice", 0, 999999)} /></Field><Field label={`Extra Bed (${f.currency})`}><CurrencyInput currency={f.currency} value={f.extraBedPrice} onChange={sn("extraBedPrice", 0, 999999)} /></Field><Field label="Cancellation"><div style={{ paddingTop: 6 }}><Toggle checked={f.refundable} onChange={sb("refundable")} label={f.refundable ? "Refundable" : "Non-Refundable"} /></div></Field></div>
+                <div className="grid-4"><Field label="Currency"><div style={{ padding: "8px 10px", fontSize: 13, fontWeight: 600 }}>INR (₹)</div></Field><Field label={`Base Price (₹)`}><CurrencyInput currency="INR" value={f.basePrice} onChange={sn("basePrice", 0, 9999999)} /></Field><Field label={`Extra Bed (₹)`}><CurrencyInput currency="INR" value={f.extraBedPrice} onChange={sn("extraBedPrice", 0, 9999999)} /></Field><Field label="Cancellation"><div style={{ paddingTop: 6 }}><Toggle checked={f.refundable} onChange={sb("refundable")} label={f.refundable ? "Refundable" : "Non-Refundable"} /></div></Field></div>
             </div></div>
             <div className="card mb-20"><div className="card-header"><span className="card-title">Amenities</span><span style={{ fontSize: 13, color: "#6b7280" }}>{f.amenityIds.length} selected</span></div><div className="card-body"><div className="amen-picker">{amenityCats.map(cat => (<div className="amen-pick-cat" key={cat.id}><div className="amen-pick-cat-name">{cat.name}</div><div className="amen-pick-pills">{cat.facilities.map(fc => { const on = f.amenityIds.includes(fc.id); return (<button key={fc.id} onClick={() => toggleAmen(fc.id)} className={`amen-pill ${on ? "on" : "off"}`}>{fc.name}</button>); })}</div></div>))}</div></div></div>
 
@@ -562,99 +455,48 @@ function RoomManagement({ rooms, amenityCats, onAdd, onEdit, onDelete }: { rooms
     );
 }
 
-function HotelOverview({ hotel, onSave }: { hotel: Hotel; onSave: (h: Hotel) => void; }) {
-    const [editing, setEditing] = useState(false); const [d, setD] = useState(hotel); const s = (f: keyof Hotel) => (e: React.ChangeEvent<HTMLInputElement>) => setD(p => ({ ...p, [f]: e.target.value }));
-    const fields: [string, keyof Hotel][] = [["Hotel Name", "name"], ["Short Description", "shortDescription"], ["City", "city"], ["Country", "country"], ["Address", "address"], ["Contact", "contactNumber"], ["Email", "email"], ["Check-in", "checkInTime"], ["Check-out", "checkOutTime"]];
-    return (
-        <div>
-            <div className="page-header"><div><div className="page-title">Hotel Overview</div><div className="page-sub">Core hotel information</div></div>{!editing ? <Btn variant="secondary" onClick={() => setEditing(true)}>Edit</Btn> : <div style={{ display: "flex", gap: 8 }}><Btn onClick={() => { onSave(d); setEditing(false); }}>Save</Btn><Btn variant="secondary" onClick={() => { setD(hotel); setEditing(false); }}>Cancel</Btn></div>}</div>
-            <div className="card">
-                {editing ? <div className="card-body"><div className="grid-2" style={{ marginBottom: 16 }}>{fields.map(([lbl, key]) => <Field label={lbl} key={key}><Inp value={String(d[key])} onChange={s(key)} type={String(key).includes("Time") ? "time" : "text"} /></Field>)}</div><Field label="Star Rating"><div style={{ display: "flex", gap: 4, paddingTop: 4 }}>{[1, 2, 3, 4, 5].map(n => <button key={n} onClick={() => setD(p => ({ ...p, starRating: n }))} style={{ fontSize: 24, background: "none", border: "none", cursor: "pointer", color: n <= d.starRating ? "#f59e0b" : "#d1d5db" }}>★</button>)}</div></Field></div>
-                    : <div className="overview-grid">{[...fields, ["Star Rating", "starRating"] as [string, keyof Hotel]].map(([lbl, key]) => <div className="overview-cell" key={key}><div className="overview-cell-label">{lbl}</div><div className="overview-cell-value">{key === "starRating" ? <span style={{ color: "#f59e0b", fontSize: 18 }}>{"★".repeat(Number(hotel[key]))}{"☆".repeat(5 - Number(hotel[key]))}</span> : String(hotel[key])}</div></div>)}</div>}
-            </div>
-        </div>
-    );
-}
-
 // ── ROOT ─────────────────────────────────────────────────────────────────────
-export default function App() {
-    const [page, setPage] = useState("dashboard");
-    const [collapsed, setCollapsed] = useState(false);
-    const [mobileNavOpen, setMobileNavOpen] = useState(false);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [hotel, setHotel] = useState<Hotel>(MOCK_HOTEL);
-    const [roomTypes, setRoomTypes] = useState<Room[]>([]);
-    const [pricing, setPricing] = useState<Record<string, Pricing>>(MOCK_PRICING);
-    const [availability, setAvailability] = useState<Record<string, Availability>>(MOCK_AVAIL);
-    const [amenityCats, setAmenityCats] = useState<AmenityCat[]>(DEFAULT_CATS);
-    const [currency, setCurrency] = useState("USD");
-    const [bookings, setBookings] = useState<Booking[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>([]);
-    const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
-    const [hkTasks, setHkTasks] = useState<HousekeepingTask[]>([]);
-    const [maintenance, setMaintenance] = useState<MaintenanceItem[]>([]);
-    const [pricingRules, setPricingRules] = useState<PricingRule[]>([]);
-    const [staff, setStaff] = useState<StaffMember[]>([]);
-    const [rooms, setRooms] = useState<RoomItem[]>([]);
-    const [seeded, setSeeded] = useState(false);
-
-    // Load data from APIs
-    useEffect(() => { fetch("/api/room-types").then(r => r.json()).then(d => { if (d.length) setRoomTypes(d); }).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/amenities").then(r => r.json()).then(d => { if (d.length) setAmenityCats(d); }).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/bookings").then(r => r.json()).then(d => setBookings(d)).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/customers").then(r => r.json()).then(d => setCustomers(d)).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/meal-plans").then(r => r.json()).then(d => { if (d.length) setMealPlans(d); }).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/housekeeping").then(r => r.json()).then(d => setHkTasks(d)).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/maintenance").then(r => r.json()).then(d => setMaintenance(d)).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/pricing-rules").then(r => r.json()).then(d => { if (d.length) setPricingRules(d); }).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/staff").then(r => r.json()).then(d => { if (d.length) setStaff(d); }).catch(() => { }); }, []);
-    useEffect(() => { fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { }); }, []);
-
-    // Ctrl+K search
-    useEffect(() => {
-        const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); setSearchOpen(o => !o); } };
-        window.addEventListener("keydown", h);
-        return () => window.removeEventListener("keydown", h);
-    }, []);
-
-    const runSeed = async () => {
-        const res = await fetch("/api/seed");
-        const data = await res.json();
-        if (data.success) {
-            const [b, c, mp, hk, mn, pr, st, rm, am, ri] = await Promise.all([
-                fetch("/api/bookings").then(r => r.json()),
-                fetch("/api/customers").then(r => r.json()),
-                fetch("/api/meal-plans").then(r => r.json()),
-                fetch("/api/housekeeping").then(r => r.json()),
-                fetch("/api/maintenance").then(r => r.json()),
-                fetch("/api/pricing-rules").then(r => r.json()),
-                fetch("/api/staff").then(r => r.json()),
-                fetch("/api/room-types").then(r => r.json()),
-                fetch("/api/amenities").then(r => r.json()),
-                fetch("/api/rooms").then(r => r.json()),
-            ]);
-            setBookings(b); setCustomers(c); if (mp.length) setMealPlans(mp);
-            setHkTasks(hk); setMaintenance(mn); if (pr.length) setPricingRules(pr);
-            if (st.length) setStaff(st);
-            if (rm.length) setRoomTypes(rm);
-            if (am.length) setAmenityCats(am);
-            if (ri.length) setRooms(ri);
-            setSeeded(true);
-        }
-    };
+export default function AdminPage() {
+    const {
+        page, setPage, hotel, roomTypes, setRoomTypes, pricing, setPricing, availability, setAvailability,
+        amenityCats, setAmenityCats, currency, setCurrency, bookings, setBookings,
+        customers, setCustomers, mealPlans, setMealPlans, hkTasks, setHkTasks,
+        maintenance, setMaintenance, pricingRules, setPricingRules, staff, setStaff,
+        rooms, setRooms, updateHotel
+    } = useAdmin();
 
     // Booking actions
-    const addBooking = async (b: Booking) => {
-        await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
-        setBookings(p => [...p, b]);
-        // Sync rooms status
-        fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
+    const addBooking = async (b: Booking): Promise<boolean> => {
+        try {
+            const res = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
+            if (res.status === 409) {
+                const data = await res.json();
+                alert(`⚠️ Booking Conflict\n\n${data.error || "Room is already booked for overlapping dates."}`);
+                return false;
+            }
+            setBookings(p => [...p, { ...b, currency: "INR" }]);
+            fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
+            return true;
+        } catch {
+            alert("Failed to create booking. Please try again.");
+            return false;
+        }
     };
-    const updateBooking = async (b: Booking) => {
-        await fetch("/api/bookings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
-        setBookings(p => p.map(x => x.id === b.id ? b : x));
-        // Sync rooms status
-        fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
+    const updateBooking = async (b: Booking): Promise<boolean> => {
+        try {
+            const res = await fetch("/api/bookings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
+            if (res.status === 409) {
+                const data = await res.json();
+                alert(`⚠️ Booking Conflict\n\n${data.error || "Room is already booked for overlapping dates."}`);
+                return false;
+            }
+            setBookings(p => p.map(x => x.id === b.id ? { ...b, currency: "INR" } : x));
+            fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { });
+            return true;
+        } catch {
+            alert("Failed to update booking. Please try again.");
+            return false;
+        }
     };
     const deleteBooking = async (id: string) => { await fetch(`/api/bookings?id=${id}`, { method: "DELETE" }); setBookings(p => p.filter(x => x.id !== id)); };
 
@@ -680,14 +522,28 @@ export default function App() {
     const addRoom = async (r: RoomItem) => {
         await fetch("/api/rooms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(r) });
         setRooms(p => [...p, r]);
+        const res = await fetch("/api/housekeeping", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(r) });
+        const hk = await res.json();
+        if (hk.task) setHkTasks(p => [...p, hk.task]);
     };
     const updateRoom = async (r: RoomItem) => {
         await fetch("/api/rooms", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(r) });
         setRooms(p => p.map(x => x.id === r.id ? r : x));
     };
     const deleteRoom = async (id: string) => {
+        const room = rooms.find(x => x.id === id);
         await fetch(`/api/rooms?id=${id}`, { method: "DELETE" });
         setRooms(p => p.filter(x => x.id !== id));
+        if (room) {
+            await fetch(`/api/housekeeping?roomNumber=${room.roomNumber}`, { method: "DELETE" });
+            setHkTasks(p => p.filter(x => x.roomNumber !== room.roomNumber));
+        }
+    };
+    const deleteFloor = async (floor: number) => {
+        await fetch(`/api/rooms?floor=${floor}`, { method: "DELETE" });
+        setRooms(p => p.filter(x => x.floor !== floor));
+        await fetch(`/api/housekeeping?floor=${floor}`, { method: "DELETE" });
+        setHkTasks(p => p.filter(x => x.floor !== floor));
     };
 
     // Housekeeping update
@@ -713,62 +569,25 @@ export default function App() {
         updateBooking({ ...bookings.find(b => b.id === bookingId)!, roomNumber, mealPlanId, mealPlanCode: mp?.code ?? "", status: "checked-in", checkInActual: new Date().toISOString() });
     };
 
-    const pageLabel = NAV_GROUPS.flatMap(g => g.items).find(n => n.id === page)?.label ?? "Dashboard";
     const effectiveRooms = roomTypes;
 
     return (
-        <>
-            <GlobalStyles />
-            {searchOpen && <SearchOverlay bookings={bookings} customers={customers} rooms={effectiveRooms} onClose={() => setSearchOpen(false)} onNav={p => { setPage(p); setSearchOpen(false); }} />}
-            <div className="app-shell">
-                <Sidebar page={page} onNav={setPage} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} hotelName={hotel.name} mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
-                <div className="main-area">
-                    {/* Topbar */}
-                    <div className="topbar">
-                        <div className="topbar-left">
-                            {/* Hamburger — visible on mobile only */}
-                            <button className="mobile-menu-btn" onClick={() => setMobileNavOpen(o => !o)} aria-label="Open navigation">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-                            </button>
-                            <div className="topbar-breadcrumb">
-                                <span className="hide-mobile">{hotel.name}</span>
-                                <span className="topbar-breadcrumb-active">{pageLabel}</span>
-                            </div>
-                        </div>
-                        <div className="topbar-right">
-                            {/* Seed button */}
-                            {!seeded && bookings.length === 0 && <button className="btn btn-sm btn-warn" onClick={runSeed}>🌱 Load Demo Data</button>}
-                            <div className="search-trigger" onClick={() => setSearchOpen(true)}>
-                                <Ic.Search />
-                                <span className="search-label-desktop">Search <kbd>⌘K</kbd></span>
-                            </div>
-                            <div className="topbar-info-badges hide-tablet">
-                                <span className="star-rating">{"★".repeat(hotel.starRating)}</span>
-                                <span className="location-text">{hotel.city}, {hotel.country}</span>
-                            </div>
-                            <span className="live-badge"><span className="live-dot" />Live</span>
-                        </div>
-                    </div>
-                    {/* Content */}
-                    <div className="page-content">
-                        {page === "dashboard" && <Dashboard hotel={hotel} rooms={effectiveRooms} availability={availability} bookings={bookings} customers={customers} hkTasks={hkTasks} maintenance={maintenance} onNav={setPage} />}
-                        {page === "bookings" && <BookingsPage bookings={bookings} customers={customers} roomTypes={effectiveRooms} rooms={rooms} mealPlans={mealPlans} onAdd={addBooking} onUpdate={updateBooking} onDelete={deleteBooking} />}
-                        {page === "checkin" && <CheckInPage bookings={bookings} customers={customers} rooms={effectiveRooms} mealPlans={mealPlans} availability={availability} onCheckIn={handleCheckIn} />}
-                        {page === "customers" && <CustomersPage customers={customers} bookings={bookings} mealPlans={mealPlans} onAdd={addCustomer} onUpdate={updateCustomer} />}
-                        {page === "room-types" && <RoomManagement rooms={effectiveRooms} amenityCats={amenityCats} onAdd={addRoomType} onEdit={editRoomType} onDelete={deleteRoomType} />}
-                        {page === "rooms" && <RoomsPage inventory={rooms} rooms={effectiveRooms} onAdd={addRoom} onUpdate={updateRoom} onDelete={deleteRoom} />}
-                        {page === "meals" && <MealPlansPage mealPlans={mealPlans} bookings={bookings} onAdd={addMealPlan} onUpdate={updateMealPlan} onDelete={deleteMealPlan} />}
-                        {page === "hk" && <HousekeepingPage tasks={hkTasks} onUpdate={updateHkTask} />}
-                        {page === "maint" && <MaintenancePage items={maintenance} staff={staff} onAdd={addMaintenance} onUpdate={updateMaintenance} />}
-                        {page === "staff" && <StaffPage staff={staff} onAdd={addStaff} onUpdate={updateStaff} onDelete={deleteStaff} />}
-                        {page === "reports" && <ReportsPage bookings={bookings} rooms={effectiveRooms} mealPlans={mealPlans} hkTasks={hkTasks} />}
-                        {page === "pricing" && <PricingPage rooms={effectiveRooms} pricing={pricing} setPricing={setPricing} pricingRules={pricingRules} setPricingRules={setPricingRules} currency={currency} setCurrency={setCurrency} />}
-                        {page === "avail" && <AvailPage rooms={effectiveRooms} availability={availability} setAvailability={setAvailability} />}
-                        {page === "amenity" && <AmenityManager cats={amenityCats} setCats={setAmenityCats} />}
-                        {page === "overview" && <HotelOverview hotel={hotel} onSave={setHotel} />}
-                    </div>
-                </div>
-            </div>
-        </>
+        <React.Fragment>
+            {page === "dashboard" && <Dashboard hotel={hotel} rooms={effectiveRooms} availability={availability} bookings={bookings} customers={customers} hkTasks={hkTasks} maintenance={maintenance} onNav={setPage} />}
+            {page === "bookings" && <BookingsPage bookings={bookings} customers={customers} roomTypes={effectiveRooms} rooms={rooms} hotel={hotel} mealPlans={mealPlans} onAdd={addBooking} onUpdate={updateBooking} onDelete={deleteBooking} />}
+            {page === "checkin" && <CheckInPage bookings={bookings} customers={customers} rooms={effectiveRooms} mealPlans={mealPlans} availability={availability} onCheckIn={handleCheckIn} />}
+            {page === "customers" && <CustomersPage customers={customers} bookings={bookings} mealPlans={mealPlans} onAdd={addCustomer} onUpdate={updateCustomer} />}
+            {page === "room-types" && <RoomManagement rooms={effectiveRooms} amenityCats={amenityCats} onAdd={addRoomType} onEdit={editRoomType} onDelete={deleteRoomType} />}
+            {page === "rooms" && <RoomsPage inventory={rooms} rooms={effectiveRooms} onAdd={addRoom} onUpdate={updateRoom} onDelete={deleteRoom} onDeleteFloor={deleteFloor} />}
+            {page === "meals" && <MealPlansPage mealPlans={mealPlans} bookings={bookings} onAdd={addMealPlan} onUpdate={updateMealPlan} onDelete={deleteMealPlan} />}
+            {page === "hk" && <HousekeepingPage tasks={hkTasks} onUpdate={updateHkTask} />}
+            {page === "maint" && <MaintenancePage items={maintenance} staff={staff} physicalRooms={rooms} onAdd={addMaintenance} onUpdate={updateMaintenance} />}
+            {page === "staff" && <StaffPage staff={staff} onAdd={addStaff} onUpdate={updateStaff} onDelete={deleteStaff} />}
+            {page === "reports" && <ReportsPage bookings={bookings} rooms={effectiveRooms} mealPlans={mealPlans} hkTasks={hkTasks} />}
+            {page === "pricing" && <PricingPage rooms={effectiveRooms} pricing={pricing} setPricing={setPricing} pricingRules={pricingRules} setPricingRules={setPricingRules} currency={currency} setCurrency={setCurrency} />}
+            {page === "avail" && <AvailPage rooms={effectiveRooms} availability={availability} setAvailability={setAvailability} />}
+            {page === "amenity" && <AmenityManager cats={amenityCats} setCats={setAmenityCats} />}
+            {page === "overview" && <HotelOverview hotel={hotel} rooms={effectiveRooms} onUpdate={updateHotel} />}
+        </React.Fragment>
     );
 }

@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useMemo } from "react";
-import { MaintenanceItem, MaintenanceComment, StaffMember } from "./types";
+import { MaintenanceItem, MaintenanceComment, StaffMember, RoomItem } from "./types";
 import { Btn, Badge, Ic, uid, PRIORITY_COLOR, MAINT_STATUS_COLOR } from "./ui";
 
 interface Props {
     items: MaintenanceItem[];
     staff: StaffMember[];
+    physicalRooms: RoomItem[];
     onAdd: (item: MaintenanceItem) => void;
     onUpdate: (item: MaintenanceItem) => void;
 }
@@ -128,7 +129,7 @@ function IssueCard({ item, staff, onUpdate, onEdit }: { item: MaintenanceItem; s
     );
 }
 
-function IssueModal({ item, staff, onSave, onClose }: { item: MaintenanceItem; staff: StaffMember[]; onSave: (i: MaintenanceItem) => void; onClose: () => void; }) {
+function IssueModal({ item, staff, physicalRooms, onSave, onClose }: { item: MaintenanceItem; staff: StaffMember[]; physicalRooms: RoomItem[]; onSave: (i: MaintenanceItem) => void; onClose: () => void; }) {
     const [f, setF] = useState<MaintenanceItem>({ ...item });
     const s = (k: keyof MaintenanceItem) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setF(p => ({ ...p, [k]: e.target.value }));
     const engineeringStaff = staff.filter(s => s.role === "Maintenance");
@@ -143,7 +144,17 @@ function IssueModal({ item, staff, onSave, onClose }: { item: MaintenanceItem; s
                 </div>
                 <div className="modal-body">
                     <div className="grid-2 mb-12">
-                        <div><label className="field-label">Room Number</label><input className="inp" value={f.roomNumber} onChange={s("roomNumber")} placeholder="e.g. 201" /></div>
+                        <div><label className="field-label">Room Number</label>
+                            {physicalRooms.length > 0
+                                ? <select className="sel" value={f.roomNumber} onChange={e => setF(p => ({ ...p, roomNumber: e.target.value }))}>
+                                    <option value="">— No specific room —</option>
+                                    {physicalRooms.sort((a, b) => a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true })).map(r => (
+                                        <option key={r.id} value={r.roomNumber}>Room {r.roomNumber} ({r.roomTypeName})</option>
+                                    ))}
+                                  </select>
+                                : <input className="inp" value={f.roomNumber} onChange={e => setF(p => ({ ...p, roomNumber: e.target.value }))} placeholder="e.g. 201" />
+                            }
+                        </div>
                         <div><label className="field-label">Category</label><select className="sel" value={f.category} onChange={s("category")}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
                     </div>
                     <div className="mb-12"><label className="field-label">Issue Description *</label><input className="inp" value={f.issue} onChange={s("issue")} placeholder="Describe the issue clearly..." /></div>
@@ -151,7 +162,7 @@ function IssueModal({ item, staff, onSave, onClose }: { item: MaintenanceItem; s
                     <div className="grid-3 mb-12">
                         <div><label className="field-label">Priority</label><select className="sel" value={f.priority} onChange={s("priority")}>{PRIORITIES.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}</select></div>
                         <div><label className="field-label">Status</label><select className="sel" value={f.status} onChange={s("status")}>{MAINT_STATUSES.map(st => <option key={st} value={st}>{st}</option>)}</select></div>
-                        <div><label className="field-label">Est. Cost ($)</label><input type="number" className="inp" value={f.estimatedCost} onChange={s("estimatedCost")} min={0} /></div>
+                        <div><label className="field-label">Est. Cost (₹)</label><input type="number" className="inp" value={f.estimatedCost} onChange={s("estimatedCost")} min={0} /></div>
                     </div>
                     <div className="grid-2 mb-12">
                         <div><label className="field-label">Reported By</label><select className="sel" value={f.reportedBy} onChange={s("reportedBy")}>{REPORTERS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
@@ -168,10 +179,11 @@ function IssueModal({ item, staff, onSave, onClose }: { item: MaintenanceItem; s
     );
 }
 
-export default function MaintenancePage({ items, staff, onAdd, onUpdate }: Props) {
+export default function MaintenancePage({ items, staff, physicalRooms, onAdd, onUpdate }: Props) {
     const [modal, setModal] = useState<MaintenanceItem | null>(null);
     const [filter, setFilter] = useState("all");
     const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+    const roomsForModal = physicalRooms;
 
     const counts = useMemo(() => ({
         open: items.filter(i => i.status === "open").length,
@@ -189,7 +201,7 @@ export default function MaintenancePage({ items, staff, onAdd, onUpdate }: Props
 
     return (
         <div>
-            {modal && <IssueModal item={modal} staff={staff} onSave={i => { i.id ? onUpdate(i) : onAdd(i); setModal(null); }} onClose={() => setModal(null)} />}
+            {modal && <IssueModal item={modal} staff={staff} physicalRooms={roomsForModal} onSave={i => { i.id ? onUpdate(i) : onAdd(i); setModal(null); }} onClose={() => setModal(null)} />}
             <div className="page-header">
                 <div>
                     <div className="page-title">Maintenance</div>

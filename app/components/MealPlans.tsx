@@ -42,7 +42,7 @@ function MealPlanModal({ initial, onSave, onClose }: { initial: MealPlan; onSave
                         <textarea className="textarea" value={f.description} onChange={e => setF(p => ({ ...p, description: e.target.value }))} placeholder="Brief description of what is included..." />
                     </Field>
                     <div className="grid-2 mb-12">
-                        <Field label="Price per Person per Night ($)">
+                        <Field label="Price per Person per Night (₹)">
                             <input type="number" className="inp" value={f.pricePerPersonPerNight} min={0} onChange={e => setF(p => ({ ...p, pricePerPersonPerNight: Number(e.target.value) }))} />
                         </Field>
                         <Field label="Status">
@@ -128,7 +128,7 @@ export default function MealPlansPage({ mealPlans, bookings, onAdd, onUpdate, on
 
                             <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <div>
-                                    <div style={{ fontSize: 18, fontWeight: 700, color: c.color }}>${mp.pricePerPersonPerNight}<span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>/person/night</span></div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: c.color }}>₹{mp.pricePerPersonPerNight}<span style={{ fontSize: 12, fontWeight: 400, color: "#9ca3af" }}>/person/night</span></div>
                                 </div>
                                 <div style={{ textAlign: "right", fontSize: 12, color: "#6b7280" }}>
                                     <div><b style={{ color: "#111827" }}>{stats.bookings}</b> bookings</div>

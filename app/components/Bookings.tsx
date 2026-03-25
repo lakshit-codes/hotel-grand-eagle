@@ -1,8 +1,32 @@
 "use client";
 import React, { useState, useMemo, useCallback } from "react";
-import { Booking, Customer, Room, RoomItem, MealPlan, CoGuest } from "./types";
+import { Booking, Customer, Room, RoomItem, MealPlan, CoGuest, Hotel } from "./types";
 import { Badge, Btn, Confirm, Field, Inp, Sel, Ic, statusColor, uid, fmtDate, BOOKING_SOURCES, DIETARY_PREFS } from "./ui";
 import { SimplePicker } from "./DateRangePicker";
+import InvoiceModal from "./Invoice";
+
+const TODAY = new Date().toISOString().slice(0, 10);
+
+/** A booking is locked once its check-out date is in the past */
+function isLocked(b: Booking): boolean {
+    return !!b.checkOut && b.checkOut < TODAY;
+}
+
+/** Returns the 6 most recent calendar months (including current) as { label, from, to } */
+function getMonthOptions() {
+    const options: { label: string; from: string; to: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const from = d.toISOString().slice(0, 10);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        const to = last.toISOString().slice(0, 10);
+        const label = d.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+        options.push({ label, from, to });
+    }
+    return options;
+}
+const MONTH_OPTIONS = getMonthOptions();
 
 interface Props {
     bookings: Booking[];
@@ -10,8 +34,9 @@ interface Props {
     roomTypes: Room[];
     rooms: RoomItem[];
     mealPlans: MealPlan[];
-    onAdd: (b: Booking) => void;
-    onUpdate: (b: Booking) => void;
+    hotel: Hotel;
+    onAdd: (b: Booking) => Promise<boolean>;
+    onUpdate: (b: Booking) => Promise<boolean>;
     onDelete: (id: string) => void;
 }
 
@@ -34,7 +59,7 @@ function buildBlankBooking(rooms: Room[], mealPlans: MealPlan[]): Booking {
         coGuests: [],
         mealPlanId: mealPlans.find(m => m.active !== false)?.id ?? mealPlans[0]?.id ?? "",
         mealPlanCode: mealPlans.find(m => m.active !== false)?.code ?? "EP",
-        totalRoomCost: 0, totalMealCost: 0, grandTotal: 0, currency: "USD",
+        totalRoomCost: 0, totalMealCost: 0, grandTotal: 0, currency: "INR",
         status: "confirmed", bookingSource: "Direct", specialRequests: "",
         earlyCheckIn: false, lateCheckOut: false, earlyCheckInTime: "", lateCheckOutTime: "",
         checkInActual: null, checkOutActual: null, primaryAadharNo: "", primaryAadharFileUrl: "",
@@ -50,6 +75,25 @@ function isRoomConflict(roomNumber: string, roomTypeId: string, checkIn: string,
         b.roomTypeId === roomTypeId &&
         b.status !== "cancelled" && b.status !== "checked-out" && b.status !== "no-show" &&
         b.checkIn < checkOut && b.checkOut > checkIn
+    );
+}
+
+/** Month filter pill bar */
+function MonthPills({ selected, onSelect }: { selected: string; onSelect: (v: string) => void }) {
+    return (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12, alignItems: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.5, marginRight: 4 }}>Period:</span>
+            <button onClick={() => onSelect("all")}
+                style={{ padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${selected === "all" ? "#E4C581" : "#e5e7eb"}`, background: selected === "all" ? "#fcf8ed" : "#fff", color: selected === "all" ? "#b45309" : "#6b7280", fontWeight: selected === "all" ? 700 : 400, fontSize: 12, cursor: "pointer" }}>
+                All
+            </button>
+            {MONTH_OPTIONS.map(m => (
+                <button key={m.from} onClick={() => onSelect(m.from)}
+                    style={{ padding: "4px 12px", borderRadius: 20, border: `1.5px solid ${selected === m.from ? "#E4C581" : "#e5e7eb"}`, background: selected === m.from ? "#fcf8ed" : "#fff", color: selected === m.from ? "#b45309" : "#6b7280", fontWeight: selected === m.from ? 700 : 400, fontSize: 12, cursor: "pointer" }}>
+                    {m.label}
+                </button>
+            ))}
+        </div>
     );
 }
 
@@ -183,9 +227,9 @@ function RoomPicker({ roomNumbers, roomTypeId, checkIn, checkOut, selected, book
     );
 }
 
-function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, customers, allBookings, onSave, onClose }: {
+function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, customers, allBookings, onSave, onClose, readOnly }: {
     booking: Booking; roomTypes: Room[]; physicalRooms: RoomItem[]; mealPlans: MealPlan[]; customers: Customer[];
-    allBookings: Booking[]; onSave: (b: Booking) => void; onClose: () => void;
+    allBookings: Booking[]; onSave: (b: Booking) => void; onClose: () => void; readOnly?: boolean;
 }) {
     const [b, setB] = useState<Booking>(() => {
         const defaults: Partial<Booking> = { coGuests: [], earlyCheckIn: false, lateCheckOut: false, earlyCheckInTime: "", lateCheckOutTime: "" };
@@ -293,7 +337,7 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
     return (
         <div className="modal-overlay" onClick={onClose}>
             {/* Calendar picker — fixed overlay above modal */}
-            {showPicker && (
+            {!readOnly && showPicker && (
                 <SimplePicker
                     mode={showPicker}
                     checkIn={b.checkIn}
@@ -304,9 +348,16 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
             )}
             <div className="modal-box modal-box-lg" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
-                    <span className="modal-title">{init.guestName ? "Edit Booking" : "New Booking"} — {b.bookingRef}</span>
+                    <span className="modal-title">{init.guestName ? (readOnly ? "View Booking" : "Edit Booking") : "New Booking"} — {b.bookingRef}</span>
                     <button className="modal-close" onClick={onClose}><Ic.X /></button>
                 </div>
+                {/* Locked banner */}
+                {readOnly && (
+                    <div style={{ margin: "0 24px 0", padding: "10px 14px", background: "#f3f4f6", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#6b7280" }}>
+                        <span style={{ fontSize: 16 }}>🔒</span>
+                        <span><b>Locked — Past Booking.</b> Check-out date has passed. This record is read-only.</span>
+                    </div>
+                )}
                 {/* Tab bar */}
                 <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #f0f0f0", padding: "0 24px" }}>
                     {(["main", "guests", "special"] as const).map(t => (
@@ -473,22 +524,20 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                 </div>
 
                 <div className="modal-footer">
-                    <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
-                    <Btn onClick={() => onSave(b)} disabled={!b.guestName.trim() || !!conflict}>Save Booking</Btn>
+                    <Btn variant="secondary" onClick={onClose}>{readOnly ? "Close" : "Cancel"}</Btn>
+                    {!readOnly && <Btn onClick={() => onSave(b)} disabled={!b.guestName.trim() || !!conflict}>Save Booking</Btn>}
                 </div>
             </div>
         </div>
     );
 }
 
-export default function BookingsPage({ bookings, customers, roomTypes, rooms, mealPlans, onAdd, onUpdate, onDelete }: Props) {
+export default function BookingsPage({ bookings, customers, roomTypes, rooms, mealPlans, hotel, onAdd, onUpdate, onDelete }: Props) {
     const now = new Date();
     const [startDateStr, setStartDateStr] = useState(() => {
-        const d = new Date(now);
-        d.setDate(d.getDate() - 3); // start 3 days ago by default
-        return d.toISOString().slice(0, 10);
+        const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10);
     });
-    const daysToShow = 30; // 30 days window
+    const daysToShow = 14;
     const colW = 50; // 50px per day
 
     const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -503,8 +552,10 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
     const [view, setView] = useState<"calendar" | "list">("calendar");
     const [modal, setModal] = useState<Booking | null>(null);
     const [delId, setDelId] = useState<string | null>(null);
+    const [invoiceBooking, setInvoiceBooking] = useState<Booking | null>(null);
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
+    const [monthFilter, setMonthFilter] = useState("all"); // "all" or a YYYY-MM-DD (first day of month)
     const [sortField, setSortField] = useState<"checkIn" | "guestName" | "bookingRef" | "roomTypeName" | "createdAt">("createdAt");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const todStr = now.toISOString().slice(0, 10);
@@ -542,24 +593,37 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
 
     const unassignedBookings = useMemo(() => bookings.filter(b => !b.roomNumber && b.status !== "cancelled" && b.status !== "no-show"), [bookings]);
 
-    const filteredBookings = useMemo(() => bookings.filter(b => {
-        const q = search.toLowerCase();
-        const matchSearch = !q || b.guestName.toLowerCase().includes(q) || b.bookingRef.toLowerCase().includes(q) || b.roomTypeName.toLowerCase().includes(q) || (b.roomNumber ?? "").includes(q);
-        return matchSearch && (filterStatus === "all" || b.status === filterStatus);
-    }).sort((a, b) => {
-        let cmp = 0;
-        if (sortField === "checkIn") cmp = a.checkIn.localeCompare(b.checkIn);
-        else if (sortField === "guestName") cmp = a.guestName.localeCompare(b.guestName);
-        else if (sortField === "bookingRef") cmp = a.bookingRef.localeCompare(b.bookingRef);
-        else if (sortField === "roomTypeName") cmp = (a.roomTypeName || "").localeCompare(b.roomTypeName || "");
-        else if (sortField === "createdAt") cmp = (a.createdAt || "").localeCompare(b.createdAt || "");
-        return sortOrder === "asc" ? cmp : -cmp;
-    }), [bookings, search, filterStatus, sortField, sortOrder]);
+    const filteredBookings = useMemo(() => {
+        // Resolve month filter bounds
+        const monthRange = monthFilter !== "all" ? MONTH_OPTIONS.find(m => m.from === monthFilter) : null;
+        return bookings.filter(b => {
+            const q = search.toLowerCase();
+            const matchSearch = !q || b.guestName.toLowerCase().includes(q) || b.bookingRef.toLowerCase().includes(q) || b.roomTypeName.toLowerCase().includes(q) || (b.roomNumber ?? "").includes(q);
+            const matchStatus = filterStatus === "all" || b.status === filterStatus;
+            // A booking matches the month if its date range overlaps [from, to]
+            const matchMonth = !monthRange || (b.checkIn <= monthRange.to && b.checkOut > monthRange.from);
+            return matchSearch && matchStatus && matchMonth;
+        }).sort((a, b) => {
+            let cmp = 0;
+            if (sortField === "checkIn") cmp = a.checkIn.localeCompare(b.checkIn);
+            else if (sortField === "guestName") cmp = a.guestName.localeCompare(b.guestName);
+            else if (sortField === "bookingRef") cmp = a.bookingRef.localeCompare(b.bookingRef);
+            else if (sortField === "roomTypeName") cmp = (a.roomTypeName || "").localeCompare(b.roomTypeName || "");
+            else if (sortField === "createdAt") cmp = (a.createdAt || "").localeCompare(b.createdAt || "");
+            return sortOrder === "asc" ? cmp : -cmp;
+        });
+    }, [bookings, search, filterStatus, monthFilter, sortField, sortOrder]);
 
     return (
         <div>
+            {invoiceBooking && <InvoiceModal booking={invoiceBooking} hotel={hotel} mealPlans={mealPlans} onClose={() => setInvoiceBooking(null)} />}
             {modal && <BookingModal booking={modal} roomTypes={roomTypes} physicalRooms={rooms} mealPlans={mealPlans} customers={customers} allBookings={bookings}
-                onSave={b => { modal.guestName ? onUpdate(b) : onAdd(b); setModal(null); }}
+                readOnly={isLocked(modal)}
+                onSave={async b => {
+                    const isNew = !modal.guestName;
+                    const ok = isNew ? await onAdd(b) : await onUpdate(b);
+                    if (ok) setModal(null);
+                }}
                 onClose={() => setModal(null)} />}
             {delId && <Confirm msg="Delete this booking permanently?" onOk={() => { onDelete(delId); setDelId(null); }} onCancel={() => setDelId(null)} />}
 
@@ -752,15 +816,24 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                             <option value="asc">Asc ⬆</option>
                         </select>
                     </div>
+                    {/* Month quick-filter pills */}
+                    <div style={{ padding: "0 16px" }}>
+                        <MonthPills selected={monthFilter} onSelect={setMonthFilter} />
+                    </div>
                     <div style={{ overflowX: "auto" }}>
                         <table className="data-table">
                             <thead>
                                 <tr><th>Ref</th><th>Primary Guest</th><th>Room</th><th>Dates</th><th>Guests</th><th>Meal</th><th>Flags</th><th>Total</th><th>Status</th><th></th></tr>
                             </thead>
                             <tbody>
-                                {filteredBookings.map(b => (
-                                    <tr key={b.id}>
-                                        <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>{b.bookingRef}</td>
+                                {filteredBookings.map(b => {
+                                    const locked = isLocked(b);
+                                    return (
+                                    <tr key={b.id} style={{ background: locked ? "#f9fafb" : undefined, opacity: locked ? 0.85 : 1 }}>
+                                        <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>
+                                            {b.bookingRef}
+                                            {locked && <span style={{ marginLeft: 5, fontSize: 10, background: "#e5e7eb", color: "#6b7280", borderRadius: 4, padding: "1px 5px" }}>🔒 Locked</span>}
+                                        </td>
                                         <td>
                                             <div style={{ fontWeight: 500 }}>{b.guestName}</div>
                                             <div style={{ fontSize: 11, color: "#9ca3af" }}>{b.bookingSource}</div>
@@ -774,16 +847,27 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                                             {b.lateCheckOut && <div style={{ fontSize: 11, color: "#7c3aed" }}>🌙 Late CO</div>}
                                             {b.specialRequests && <div style={{ fontSize: 11, color: "#d97706" }}>⚠ SR</div>}
                                         </td>
-                                        <td style={{ fontWeight: 600 }}>${b.grandTotal.toLocaleString()}</td>
+                                        <td style={{ fontWeight: 600 }}>₹{b.grandTotal.toLocaleString()}</td>
                                         <td><Badge color={statusColor[b.status]}>{b.status}</Badge></td>
                                         <td>
                                             <div style={{ display: "flex", gap: 4 }}>
-                                                <Btn size="sm" variant="ghost" onClick={() => setModal(b)}><Ic.Edit /></Btn>
-                                                <Btn size="sm" variant="ghost" style={{ color: "#dc2626" }} onClick={() => setDelId(b.id)}><Ic.Trash /></Btn>
+                                                <span title="View Invoice">
+                                                    <Btn size="sm" variant="ghost" onClick={() => setInvoiceBooking(b)}><span style={{ fontSize: 13 }}>🧾</span></Btn>
+                                                </span>
+                                                <span title={locked ? "View (locked)" : "Edit"}>
+                                                    <Btn size="sm" variant="ghost"
+                                                        onClick={() => setModal(b)}>
+                                                        {locked ? <span style={{ fontSize: 13 }}>👁</span> : <Ic.Edit />}
+                                                    </Btn>
+                                                </span>
+                                                {!locked && (
+                                                    <Btn size="sm" variant="ghost" style={{ color: "#dc2626" }} onClick={() => setDelId(b.id)}><Ic.Trash /></Btn>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

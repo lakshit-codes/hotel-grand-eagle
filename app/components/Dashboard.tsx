@@ -41,7 +41,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
         { label: "In-House Guests", value: stats.inHouse.length, color: "#111827", sub: `${stats.inHouse.reduce((s, b) => s + b.adults + b.children, 0)} persons` },
         { label: "Arrivals Today", value: stats.arrivals.length, color: "#2563eb", sub: "Pending check-in" },
         { label: "Departures Today", value: stats.departures.length, color: "#d97706", sub: "Expected checkout" },
-        { label: "Monthly Revenue", value: `$${fmt(stats.revenue)}`, color: "#16a34a", sub: "This month" },
+        { label: "Monthly Revenue", value: `₹${fmt(stats.revenue)}`, color: "#16a34a", sub: "This month" },
     ];
 
     const recentBookings = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 8);
@@ -194,7 +194,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                                 <td style={{ fontSize: 12 }}>{b.adults}A{b.children > 0 ? ` ${b.children}C` : ""}</td>
                                 <td><Badge color="indigo">{b.mealPlanCode}</Badge></td>
                                 <td><Badge color={statusColor[b.status]}>{b.status}</Badge></td>
-                                <td style={{ fontWeight: 600 }}>${fmt(b.grandTotal)}</td>
+                                <td style={{ fontWeight: 600 }}>₹{fmt(b.grandTotal)}</td>
                             </tr>
                         ))}
                     </tbody>
