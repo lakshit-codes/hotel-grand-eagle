@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Hotel } from "../../components/types";
+import { Fade } from "../components/hooks";
 
 export default function AboutPage() {
     const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -13,58 +14,64 @@ export default function AboutPage() {
     }, []);
 
     return (
-        <div className="w-full bg-white pb-24">
-            {/* Header */}
-            <div className="bg-[#0f1623] text-white py-20 px-4 text-center">
-                <div className="max-w-4xl mx-auto mt-16">
-                    <span className="text-[#f59e0b] font-bold tracking-widest text-sm uppercase mb-4 block">Our Story</span>
-                    <h1 className="text-4xl md:text-5xl font-serif font-bold mb-6 tracking-wide drop-shadow-md">About {hotel?.name || "Hotel Grand Eagle"}</h1>
-                </div>
-            </div>
+        <div style={{ paddingTop: 120, paddingBottom: 112, minHeight: "100vh" }}>
+            <div className="vh-max">
+                {/* Header */}
+                <Fade className="text-center" style={{ marginBottom: 80 }}>
+                    <div className="vh-section-eyebrow" style={{ justifyContent: "center" }}>
+                        <span className="vh-line" />
+                        <span>Our Heritage</span>
+                        <span className="vh-line" />
+                    </div>
+                    <h1 className="vh-section-title">About <em>{hotel?.name || "Hotel Grand Eagle"}</em></h1>
+                </Fade>
 
-            <div className="max-w-5xl mx-auto px-4 mt-20">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-24">
+                {/* Content */}
+                <div className="vh-about-grid" style={{ marginBottom: 96 }}>
                     <div>
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-12 h-px bg-gray-400"></div>
-                            <span className="text-gray-500 text-sm font-medium tracking-wide">About Us</span>
+                        <Fade><h2 className="vh-section-title" style={{ fontSize: 40, marginBottom: 32 }}>Value-focused stay<br />in <em>Jaipur</em></h2></Fade>
+                        <div className="vh-about-text">
+                            <Fade><p>{hotel?.name || "Hotel Grand Eagle"} is a <strong>value-for-money hotel</strong> offering clean, well-furnished rooms tailored for both business travelers and tourists. Each room is thoughtfully equipped with essentials such as air conditioning, private bathrooms, comfortable chairs, work desks, telephones, televisions, and 24/7 hot and cold water supply — everything you need for a comfortable yet affordable stay.</p></Fade>
+                            <Fade><p>Located near <strong>JECC</strong>, major transport hubs, and local food joints, our hotel is perfect for budget-conscious travelers seeking convenience and accessibility. With a focus on cleanliness, functionality, and friendly service, we are the ideal pick for short or extended stays in Jaipur's Sitapura Industrial Area.</p></Fade>
                         </div>
-                        <h2 className="text-3xl font-serif text-[#0f1623] font-bold mb-6">Budget-Friendly Stay in Jaipur</h2>
-                        <p className="text-gray-600 leading-relaxed mb-6">
-                            {hotel?.name || "Hotel Grand Eagle"} is a <strong>value-for-money hotel</strong> offering clean, well-furnished rooms tailored for both business travelers and tourists. Each room is thoughtfully equipped with essentials such as <strong>air conditioning, private bathrooms, comfortable chairs, work desks, telephones, televisions,</strong> and <strong>24/7 hot and cold water supply</strong>—everything you need for a <strong>comfortable yet affordable stay.</strong>
-                        </p>
-                        <p className="text-gray-600 leading-relaxed">
-                            Located near <strong>JECC</strong>, major <strong>transport hubs</strong>, and <strong>local food joints</strong>, our hotel is perfect for <strong>budget-conscious travelers</strong> seeking convenience and accessibility. With a focus on <strong>cleanliness, functionality,</strong> and <strong>friendly service</strong>, {hotel?.name || "Hotel Grand Eagle"} is the ideal pick for <strong>short or extended stays</strong> in Jaipur's Sitapura Industrial Area.
-                        </p>
                     </div>
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-[#0f1623] translate-x-4 translate-y-4"></div>
-                        <img 
-                            src="https://images.unsplash.com/photo-1542314831-c6a4d14d8376?q=80&w=1000&auto=format&fit=crop" 
-                            alt="Hotel Exterior" 
-                            className="relative z-10 w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                        />
+                    <div className="vh-about-imgs">
+                        <div className="vh-about-gold-bar" />
+                        <Fade>
+                            <div className="vh-about-main-img">
+                                <img src="https://images.unsplash.com/photo-1542314831-c6a4d14d8376?q=80&w=800" alt="Hotel Exterior" loading="lazy" />
+                                <div className="vh-about-img-overlay" />
+                            </div>
+                        </Fade>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center border-t border-gray-100 pt-16">
-                    <div>
-                        <div className="text-4xl mb-4">🥂</div>
-                        <h3 className="font-serif font-bold text-[#0f1623] text-xl mb-2">Unmatched Hospitality</h3>
-                        <p className="text-sm text-gray-500">Service that anticipates your every need.</p>
-                    </div>
-                    <div>
-                        <div className="text-4xl mb-4">🛏️</div>
-                        <h3 className="font-serif font-bold text-[#0f1623] text-xl mb-2">Luxurious Rooms</h3>
-                        <p className="text-sm text-gray-500">Sanctuaries designed for ultimate comfort.</p>
-                    </div>
-                    <div>
-                        <div className="text-4xl mb-4">🌆</div>
-                        <h3 className="font-serif font-bold text-[#0f1623] text-xl mb-2">Prime Location</h3>
-                        <p className="text-sm text-gray-500">Situated in the vibrant heart of the city.</p>
-                    </div>
+                {/* Grid */}
+                <div className="vh-pillars" style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+                    <Fade>
+                        <div className="vh-pillar" style={{ flexDirection: "column", alignItems: "center", textAlign: "center", padding: 32 }}>
+                            <div className="vh-pillar-icon" style={{ width: 48, height: 48, marginBottom: 16 }}>🥂</div>
+                            <div className="vh-pillar-title" style={{ fontSize: 16 }}>Unmatched Hospitality</div>
+                            <div className="vh-pillar-desc">Service that anticipates your every need.</div>
+                        </div>
+                    </Fade>
+                    <Fade>
+                        <div className="vh-pillar" style={{ flexDirection: "column", alignItems: "center", textAlign: "center", padding: 32 }}>
+                            <div className="vh-pillar-icon" style={{ width: 48, height: 48, marginBottom: 16 }}>🛏️</div>
+                            <div className="vh-pillar-title" style={{ fontSize: 16 }}>Comfortable Rooms</div>
+                            <div className="vh-pillar-desc">Sanctuaries designed for ultimate relaxation.</div>
+                        </div>
+                    </Fade>
+                    <Fade>
+                        <div className="vh-pillar" style={{ flexDirection: "column", alignItems: "center", textAlign: "center", padding: 32 }}>
+                            <div className="vh-pillar-icon" style={{ width: 48, height: 48, marginBottom: 16 }}>📍</div>
+                            <div className="vh-pillar-title" style={{ fontSize: 16 }}>Prime Location</div>
+                            <div className="vh-pillar-desc">Situated conveniently in Sitapura Industrial Area.</div>
+                        </div>
+                    </Fade>
                 </div>
             </div>
         </div>
     );
 }
+

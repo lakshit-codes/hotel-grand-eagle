@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Hotel } from "../../components/types";
+import { Fade } from "../components/hooks";
 
 export default function ServicesPage() {
     const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -22,64 +23,55 @@ export default function ServicesPage() {
     ];
 
     return (
-        <div className="pt-24 min-h-screen bg-white pb-20">
-            {/* Header */}
-            <div className="bg-[#0f1623] py-20 px-4 text-center">
-                <h1 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-widest uppercase mb-4">
-                    Services &amp; Amenities
-                </h1>
-                <div className="w-24 h-1 bg-[#dfb163] mx-auto mb-6"></div>
-                <p className="text-[#dfb163] font-medium tracking-wide max-w-2xl mx-auto">
-                    Designed for comfort, convenience, and a seamless stay at {hotel?.name || "Hotel Grand Eagle"}.
-                </p>
-            </div>
+        <div style={{ paddingTop: 120, paddingBottom: 112, minHeight: "100vh" }}>
+            <div className="vh-max">
+                {/* Header */}
+                <Fade className="text-center" style={{ marginBottom: 80 }}>
+                    <div className="vh-section-eyebrow" style={{ justifyContent: "center" }}>
+                        <span className="vh-line" />
+                        <span>Experience</span>
+                        <span className="vh-line" />
+                    </div>
+                    <h1 className="vh-section-title">Services &amp; <em>Amenities</em></h1>
+                    <p style={{ color: "var(--ivory-dim)", marginTop: 24, fontSize: 14 }}>Designed for comfort, convenience, and a seamless stay at {hotel?.name || "Hotel Grand Eagle"}.</p>
+                </Fade>
 
-            {/* Services Grid */}
-            <section className="py-20 px-4 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {/* Services Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24, marginBottom: 96 }}>
                     {services.map((svc, i) => (
-                        <div key={i} className="flex flex-col items-center text-center p-8 border border-gray-100 bg-white hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md rounded-sm">
-                            <div className="w-20 h-20 bg-[#dfb163] rounded-full flex items-center justify-center text-4xl mb-6 shadow-[0_10px_20px_rgba(223,177,99,0.3)]">
-                                {svc.i}
+                        <Fade key={i}>
+                            <div style={{ background: "var(--charcoal)", border: "1px solid var(--muted)", padding: 40, height: "100%", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+                                <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(201,169,110,0.1)", color: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 24 }}>
+                                    {svc.i}
+                                </div>
+                                <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--ivory)", marginBottom: 16 }}>{svc.t}</h3>
+                                <p style={{ fontSize: 13, color: "var(--ivory-dim)", lineHeight: 1.6 }}>{svc.d}</p>
                             </div>
-                            <h3 className="text-[#0f1623] font-bold text-xl mb-4 tracking-wide uppercase font-serif">
-                                {svc.t}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed text-sm">
-                                {svc.d}
-                            </p>
-                        </div>
+                        </Fade>
                     ))}
                 </div>
-            </section>
 
-            {/* Feature Highlight */}
-            <section className="bg-[#0f1623] py-24 px-4 mt-12 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#dfb163]/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-                    <div className="flex-1 text-center md:text-left">
-                        <span className="text-[#dfb163] font-bold tracking-widest text-sm uppercase mb-4 block">Ultimate Comfort</span>
-                        <h2 className="text-4xl font-serif font-bold text-white mb-6 leading-tight uppercase">Why Choose {hotel?.name || "Hotel Grand Eagle"}?</h2>
-                        <ul className="space-y-4 text-gray-300">
-                            <li className="flex items-center gap-3 justify-center md:justify-start">
-                                <span className="text-[#dfb163]">✓</span> Best hospitality in Sitapura Industrial Area
-                            </li>
-                            <li className="flex items-center gap-3 justify-center md:justify-start">
-                                <span className="text-[#dfb163]">✓</span> Budget-friendly with premium amenities
-                            </li>
-                            <li className="flex items-center gap-3 justify-center md:justify-start">
-                                <span className="text-[#dfb163]">✓</span> Exceptionally clean and well-maintained rooms
-                            </li>
-                            <li className="flex items-center gap-3 justify-center md:justify-start">
-                                <span className="text-[#dfb163]">✓</span> Highly rated customer service
-                            </li>
-                        </ul>
+                {/* Feature Highlight */}
+                <div className="vh-about-grid" style={{ background: "#0E0E0E", padding: "64px 40px", border: "1px solid rgba(201,169,110,0.15)" }}>
+                    <div>
+                        <Fade><div className="vh-section-eyebrow"><span className="vh-line" /><span>Ultimate Comfort</span></div></Fade>
+                        <Fade><h2 className="vh-section-title" style={{ fontSize: 40, marginBottom: 32 }}>Why Choose<br /><em>Grand Eagle?</em></h2></Fade>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            <Fade><div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--ivory-dim)", fontSize: 14 }}><span style={{ color: "var(--gold)" }}>✓</span> Best hospitality in Sitapura Industrial Area</div></Fade>
+                            <Fade><div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--ivory-dim)", fontSize: 14 }}><span style={{ color: "var(--gold)" }}>✓</span> Budget-friendly with premium amenities</div></Fade>
+                            <Fade><div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--ivory-dim)", fontSize: 14 }}><span style={{ color: "var(--gold)" }}>✓</span> Exceptionally clean and well-maintained rooms</div></Fade>
+                            <Fade><div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--ivory-dim)", fontSize: 14 }}><span style={{ color: "var(--gold)" }}>✓</span> Highly rated customer service</div></Fade>
+                        </div>
                     </div>
-                    <div className="flex-1 relative aspect-video w-full rounded-sm overflow-hidden shadow-2xl border-4 border-[#dfb163]/20">
-                         <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200" alt="Hospitality" className="w-full h-full object-cover" />
-                    </div>
+                    <Fade>
+                        <div className="vh-about-main-img" style={{ height: 400 }}>
+                            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800" alt="Hospitality" loading="lazy" />
+                            <div className="vh-about-img-overlay" />
+                        </div>
+                    </Fade>
                 </div>
-            </section>
+            </div>
         </div>
     );
 }
+

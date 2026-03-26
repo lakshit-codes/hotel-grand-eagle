@@ -3,8 +3,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import { Room, MealPlan } from "../../components/types";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Fade } from "../components/hooks";
 
-// Fallback dates: tomorrow and day after tomorrow
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 const dtIn = tomorrow.toISOString().split("T")[0];
@@ -18,41 +18,30 @@ function BookingForm() {
 
     const [step, setStep] = useState<1 | 2 | 3>(1);
     
-    // Search Criteria
     const [checkIn, setCheckIn] = useState(searchParams?.get("checkIn") || dtIn);
     const [checkOut, setCheckOut] = useState(searchParams?.get("checkOut") || dtOut);
     const [guests, setGuests] = useState(Number(searchParams?.get("guests")) || 2);
 
-    // Auto-update check-out when check-in changes
     const handleCheckInChange = (val: string) => {
         const newIn = new Date(val);
         const currentOut = new Date(checkOut);
-        
         let newOut = checkOut;
         if (newIn >= currentOut) {
             const nextDay = new Date(newIn);
             nextDay.setDate(nextDay.getDate() + 1);
             newOut = nextDay.toISOString().split("T")[0];
         }
-        
         setCheckIn(val);
         setCheckOut(newOut);
     };
     
-    // Availability
     const [loading, setLoading] = useState(false);
     const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-    
-    // Selection
     const [selectedRoomId, setSelectedRoomId] = useState("");
     const [selectedMealPlanId, setSelectedMealPlanId] = useState("");
     const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
     
-    // Guest Details
-    const [guestInfo, setGuestInfo] = useState({
-        firstName: "", lastName: "", email: "", phone: "", specialRequests: ""
-    });
-
+    const [guestInfo, setGuestInfo] = useState({ firstName: "", lastName: "", email: "", phone: "", specialRequests: "" });
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [refId, setRefId] = useState("");
@@ -61,47 +50,27 @@ function BookingForm() {
         fetch("/api/meal-plans").then(r => r.json()).then(d => { if(d.length) setMealPlans(d.filter((m: MealPlan) => m.pricePerPersonPerNight >= 0)); }).catch(() => {});
     }, []);
 
-    // If pre-selected room from URL, auto-fill but user still must press Search to verify it's available.
-    useEffect(() => {
-        // Just keeping it as informational for step 1
-    }, [initialSlug]);
-
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            // We pass optional room slug if present, but here we just get all available for those dates.
-            // In the admin panel, the backend takes /api/rooms?checkIn=...&checkOut=... and returns only available physical rooms.
-            // Since public website sells "Room Types", we shouldn't show individual physical rooms, but Rather Room Types that have at least 1 room available.
-            // The backend /api/rooms returns physical rooms. We group them by roomTypeId.
             const res = await fetch(`/api/rooms?checkIn=${checkIn}&checkOut=${checkOut}`);
             const physicalRooms: any[] = await res.json();
-            
-            // Fetch the room types definitions
             const rtRes = await fetch("/api/room-types");
             const rtData: Room[] = await rtRes.json();
             
-            // Group available physical rooms by Type ID
             const availTypeCounts: Record<string, number> = {};
             physicalRooms.forEach(pr => {
-                if (pr.status === "available" || pr.status === "occupied" /* occupied but checkOut handled by backend */) {
+                if (pr.status === "available" || pr.status === "occupied") {
                     availTypeCounts[pr.roomTypeId] = (availTypeCounts[pr.roomTypeId] || 0) + 1;
                 }
             });
 
-            // If backend already filtered overlaps, physicalRooms are definitely free.
-            const availableTypes = rtData.filter(rt => {
-                // Return true if at least one physical room of this type is returned from the query
-                return physicalRooms.some(pr => pr.roomTypeId === rt.id);
-            });
-
+            const availableTypes = rtData.filter(rt => physicalRooms.some(pr => pr.roomTypeId === rt.id));
             setAvailableRooms(availableTypes);
             setStep(2);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+        } catch (err) { console.error(err); } 
+        finally { setLoading(false); }
     };
 
     const handleSelectRoom = (roomId: string) => {
@@ -114,7 +83,6 @@ function BookingForm() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            // 1. We must select a physical room to book. We'll query /api/rooms again and pick the first one of the selected type.
             const rRes = await fetch(`/api/rooms?checkIn=${checkIn}&checkOut=${checkOut}&roomTypeId=${selectedRoomId}`);
             const pRooms = await rRes.json();
             
@@ -128,14 +96,12 @@ function BookingForm() {
             const roomType = availableRooms.find(r => r.id === selectedRoomId);
             const mealPlan = mealPlans.find(m => m.id === selectedMealPlanId);
             
-            // Calculate nights
             const d1 = new Date(checkIn); const d2 = new Date(checkOut);
             const nights = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 3600 * 24)));
             const rt = roomType!.basePrice;
             const mp = mealPlan ? mealPlan.pricePerPersonPerNight * guests : 0;
             const ttl = (rt + mp) * nights;
 
-            // Generate Booking Ref
             const br = `BK${Math.floor(Date.now() / 1000).toString().slice(-6)}`;
             
             const bookingPayload = {
@@ -185,7 +151,6 @@ function BookingForm() {
                 setStep(1);
                 return;
             }
-
             setRefId(br);
             setSuccess(true);
         } catch (err) {
@@ -198,281 +163,268 @@ function BookingForm() {
 
     if (success) {
         return (
-            <div className="w-full max-w-4xl mx-auto px-4 py-24 text-center">
-                <div className="bg-white p-12 shadow-2xl border-t-4 border-[#16a34a]">
-                    <div className="text-6xl mb-6">✅</div>
-                    <h2 className="text-4xl font-serif font-bold text-[#0f1623] mb-4">Reservation Confirmed</h2>
-                    <p className="text-gray-600 mb-8 max-w-lg mx-auto leading-relaxed">
-                        Thank you for choosing Hotel Grand Eagle. We have successfully received your reservation. A confirmation email has been sent to <strong>{guestInfo.email}</strong>.
-                    </p>
-                    <div className="bg-gray-50 border border-gray-100 p-6 inline-block mb-8">
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Booking Reference</div>
-                        <div className="text-3xl font-bold tracking-widest text-[#0f1623]">{refId}</div>
-                    </div>
-                    <div>
-                        <Link href="/" className="bg-[#0f1623] text-white px-8 py-4 font-bold tracking-wider uppercase text-sm hover:bg-black transition-colors">
+            <div style={{ paddingTop: 120, paddingBottom: 112, minHeight: "100vh" }}>
+                <Fade className="vh-max" style={{ textAlign: "center", maxWidth: 600 }}>
+                    <div style={{ background: "var(--charcoal)", border: "1px solid var(--gold)", padding: 48 }}>
+                        <div style={{ fontSize: 48, marginBottom: 24 }}>✓</div>
+                        <h2 className="vh-section-title" style={{ fontSize: 32, marginBottom: 16 }}>Reservation <em>Confirmed</em></h2>
+                        <p style={{ color: "var(--ivory-dim)", fontSize: 13, lineHeight: 1.7, marginBottom: 32 }}>
+                            Thank you for choosing Hotel Grand Eagle. A confirmation email has been sent to <strong style={{ color: "var(--ivory)" }}>{guestInfo.email}</strong>.
+                        </p>
+                        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(201,169,110,0.2)", padding: 24, marginBottom: 32 }}>
+                            <div style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 8 }}>Booking Reference</div>
+                            <div style={{ fontSize: 28, fontFamily: "'Cormorant Garamond', serif", color: "var(--ivory)" }}>{refId}</div>
+                        </div>
+                        <Link href="/" className="vh-btn-primary" style={{ display: "inline-flex" }}>
                             Return to Home
                         </Link>
                     </div>
-                </div>
+                </Fade>
             </div>
         );
     }
 
     return (
-        <div className="w-full max-w-6xl mx-auto px-4 py-16">
-            
-            {/* Steps indicator */}
-            <div className="flex items-center justify-center gap-4 mb-12">
-                <div className={`flex flex-col items-center ${step === 1 ? "text-[#f59e0b]" : "text-gray-400"}`}>
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold mb-2 ${step === 1 ? "border-[#f59e0b] bg-[#f59e0b]/10" : "border-gray-300"}`}>1</div>
-                    <span className="text-xs uppercase tracking-widest font-bold">Search</span>
-                </div>
-                <div className="w-16 h-px bg-gray-300 mt-[-24px]"></div>
-                <div className={`flex flex-col items-center ${step === 2 ? "text-[#f59e0b]" : "text-gray-400"}`}>
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold mb-2 ${step === 2 ? "border-[#f59e0b] bg-[#f59e0b]/10" : "border-gray-300"}`}>2</div>
-                    <span className="text-xs uppercase tracking-widest font-bold">Select</span>
-                </div>
-                <div className="w-16 h-px bg-gray-300 mt-[-24px]"></div>
-                <div className={`flex flex-col items-center ${step === 3 ? "text-[#f59e0b]" : "text-gray-400"}`}>
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold mb-2 ${step === 3 ? "border-[#f59e0b] bg-[#f59e0b]/10" : "border-gray-300"}`}>3</div>
-                    <span className="text-xs uppercase tracking-widest font-bold">Details</span>
-                </div>
-            </div>
+        <div style={{ paddingTop: 120, paddingBottom: 112, minHeight: "100vh" }}>
+            <div className="vh-max">
+                
+                {/* Steps indicator */}
+                <Fade style={{ display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center", gap: 16, marginBottom: 64 }}>
+                    {[1, 2, 3].map((s, i) => (
+                        <React.Fragment key={s}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: step >= s ? 1 : 0.4 }}>
+                                <div style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${step >= s ? "var(--gold)" : "var(--muted)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontFamily: "'Cormorant Garamond', serif", color: step >= s ? "var(--gold)" : "var(--ivory)", marginBottom: 8 }}>{s}</div>
+                                <span style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: step >= s ? "var(--gold)" : "var(--ivory-dim)" }}>
+                                    {s === 1 ? "Search" : s === 2 ? "Select" : "Details"}
+                                </span>
+                            </div>
+                            {i < 2 && <div style={{ width: 48, height: 1, background: step > s ? "var(--gold)" : "var(--muted)", transform: "translateY(-12px)" }} />}
+                        </React.Fragment>
+                    ))}
+                </Fade>
 
-            {/* STEP 1: SEARCH */}
-            {step === 1 && (
-                <div className="bg-white shadow-xl p-8 max-w-4xl mx-auto border border-gray-100">
-                    <h2 className="text-3xl font-serif font-bold text-[#0f1623] mb-8 text-center">Check Availability</h2>
-                    {initialSlug && <div className="bg-blue-50 text-blue-800 p-4 mb-8 text-sm text-center border border-blue-100">You are searching dates for: <strong>{initialSlug.replace(/-/g, ' ')}</strong></div>}
-                    
-                    <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label className="block text-[10px] font-black text-[#0f1623]/40 uppercase tracking-[0.2em] mb-2">Check-In</label>
-                            <input type="date" required value={checkIn} onChange={e => handleCheckInChange(e.target.value)} min={dtIn} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors font-bold text-[#0f1623]" style={{ colorScheme: 'light' }} />
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black text-[#0f1623]/40 uppercase tracking-[0.2em] mb-2">Check-Out</label>
-                            <input type="date" required value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || dtIn} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors font-bold text-[#0f1623]" style={{ colorScheme: 'light' }} />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Guests</label>
-                            <select value={guests} onChange={e => setGuests(Number(e.target.value))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#0f1623]">
-                                <option value={1}>1 Adult</option>
-                                <option value={2}>2 Adults</option>
-                                <option value={3}>3 Adults</option>
-                                <option value={4}>4 Adults</option>
-                            </select>
-                        </div>
-                        <div className="md:col-span-3 mt-4 text-center">
-                            <button type="submit" disabled={loading} className="bg-[#0f1623] hover:bg-black text-white px-12 py-4 font-bold tracking-wider uppercase w-full md:w-auto transition-colors disabled:opacity-50">
-                                {loading ? "Searching..." : "Search Rooms"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* STEP 2: SELECT */}
-            {step === 2 && (
-                <div className="max-w-5xl mx-auto">
-                    <div className="flex justify-between items-center mb-8 bg-gray-50 px-6 py-4 border border-gray-100">
-                        <div className="text-gray-600 font-medium">
-                            <span className="text-[#0f1623] font-bold">{new Date(checkIn).toLocaleDateString()}</span> to <span className="text-[#0f1623] font-bold">{new Date(checkOut).toLocaleDateString()}</span> · {guests} Guest{guests > 1 && 's'}
-                        </div>
-                        <button onClick={() => setStep(1)} className="text-xs font-bold uppercase tracking-widest text-[#f59e0b] hover:text-[#d97706]">Modify Search →</button>
-                    </div>
-
-                    {availableRooms.length === 0 ? (
-                        <div className="bg-white p-16 text-center shadow-md">
-                            <div className="text-4xl mb-4">😔</div>
-                            <h3 className="text-2xl font-serif text-[#0f1623] font-bold mb-4">No Rooms Available</h3>
-                            <p className="text-gray-500 mb-8">We're fully booked for your selected dates. Please try adjusting your search parameters.</p>
-                            <button onClick={() => setStep(1)} className="bg-[#f59e0b] text-white px-8 py-3 font-bold uppercase tracking-wider text-sm">Change Dates</button>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {availableRooms.filter(r => r.maxOccupancy >= guests).map(room => (
-                                <div key={room.id} className="bg-white shadow-lg flex flex-col md:flex-row border border-gray-100">
-                                    <div className="md:w-1/3 h-64 md:h-auto bg-gray-200">
-                                        <img src={room.images?.[0] || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1000&auto=format&fit=crop'} alt={room.roomName} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="p-8 md:w-2/3 flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="text-2xl font-serif font-bold text-[#0f1623]">{room.roomName}</h3>
-                                                <div className="text-right">
-                                                    <div className="text-[#f59e0b] font-bold text-2xl">₹{room.basePrice.toLocaleString()}</div>
-                                                    <div className="text-xs text-gray-400">/ night</div>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">
-                                                <span>👥 {room.maxOccupancy} max</span>
-                                                <span>🛏️ {room.bedType}</span>
-                                                <span>📐 {room.roomSize} m²</span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 line-clamp-2 mb-6">Enjoy luxury and comfort in our exquisitely designed {room.roomName}, featuring premium amenities and stunning {room.view.toLowerCase()}.</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <button onClick={() => handleSelectRoom(room.id)} className="bg-[#0f1623] hover:bg-black text-white px-8 py-3 text-sm font-bold tracking-wider uppercase transition-colors">
-                                                Select Room
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {availableRooms.filter(r => r.maxOccupancy >= guests).length === 0 && (
-                                <div className="text-center p-8 bg-white border border-gray-100 shadow-sm text-gray-500">
-                                    Rooms are available, but none can accommodate {guests} guests.
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* STEP 3: DETAILS & CONFIRM */}
-            {step === 3 && (
-                <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-10">
-                    <div className="lg:w-2/3">
-                        <div className="bg-white shadow-xl p-8 border border-gray-100 mb-8 rounded-sm">
-                            <h2 className="text-2xl font-serif font-bold text-[#0f1623] mb-8 flex items-center gap-3">
-                                <span className="w-8 h-8 bg-[#dfb163] text-black rounded-full flex items-center justify-center text-sm">3</span>
-                                Guest Details
-                            </h2>
-                            <form id="booking-form" onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">First Name *</label>
-                                        <input required type="text" value={guestInfo.firstName} onChange={e => setGuestInfo(p => ({...p, firstName: e.target.value}))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Last Name *</label>
-                                        <input required type="text" value={guestInfo.lastName} onChange={e => setGuestInfo(p => ({...p, lastName: e.target.value}))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors" />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address *</label>
-                                        <input required type="email" value={guestInfo.email} onChange={e => setGuestInfo(p => ({...p, email: e.target.value}))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Phone Number *</label>
-                                        <input required type="tel" value={guestInfo.phone} onChange={e => setGuestInfo(p => ({...p, phone: e.target.value}))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors" />
-                                    </div>
+                {/* STEP 1: SEARCH */}
+                {step === 1 && (
+                    <Fade>
+                        <div className="vh-form-card" style={{ maxWidth: 800, margin: "0 auto", padding: 48 }}>
+                            <h2 className="vh-section-title" style={{ fontSize: 32, textAlign: "center", marginBottom: 32 }}>Check <em>Availability</em></h2>
+                            {initialSlug && <div style={{ background: "rgba(201,169,110,0.1)", border: "1px solid var(--gold)", padding: 16, textAlign: "center", fontSize: 13, color: "var(--gold)", marginBottom: 32 }}>Searching dates for: <strong>{initialSlug.replace(/-/g, ' ')}</strong></div>}
+                            
+                            <form onSubmit={handleSearch} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, alignItems: "end" }}>
+                                <div>
+                                    <label className="vh-input-label">Check-In</label>
+                                    <input className="vh-form-input" type="date" required value={checkIn} onChange={e => handleCheckInChange(e.target.value)} min={dtIn} style={{ colorScheme: 'dark' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Special Requests (Optional)</label>
-                                    <textarea rows={3} value={guestInfo.specialRequests} onChange={e => setGuestInfo(p => ({...p, specialRequests: e.target.value}))} className="w-full bg-gray-50 border border-gray-200 p-4 outline-none focus:border-[#dfb163] transition-colors resize-none" placeholder="E.g. Early check-in, late check-out..."></textarea>
+                                    <label className="vh-input-label">Check-Out</label>
+                                    <input className="vh-form-input" type="date" required value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || dtIn} style={{ colorScheme: 'dark' }} />
+                                </div>
+                                <div>
+                                    <label className="vh-input-label">Guests</label>
+                                    <select className="vh-form-select" value={guests} onChange={e => setGuests(Number(e.target.value))}>
+                                        {[1, 2, 3, 4, 5].map(g => <option key={g} value={g}>{g} Guest{g > 1 ? 's' : ''}</option>)}
+                                    </select>
+                                </div>
+                                <div style={{ gridColumn: "1 / -1", textAlign: "center", marginTop: 16 }}>
+                                    <button type="submit" disabled={loading} className="vh-btn-primary" style={{ padding: "16px 48px" }}>
+                                        {loading ? "Searching..." : "Search Rooms"}
+                                    </button>
                                 </div>
                             </form>
                         </div>
+                    </Fade>
+                )}
 
-                        {mealPlans.length > 0 && (
-                            <div className="bg-white shadow-xl p-8 border border-gray-100 rounded-sm">
-                                <h2 className="text-2xl font-serif font-bold text-[#0f1623] mb-6 flex items-center gap-3">
-                                    <span className="w-8 h-8 bg-[#dfb163] text-black rounded-full flex items-center justify-center text-sm">4</span>
-                                    Enhance Your Stay
-                                </h2>
-                                <div className="space-y-4">
-                                    {mealPlans.map(mp => (
-                                        <label key={mp.id} className={`flex items-start p-4 border cursor-pointer transition-all ${selectedMealPlanId === mp.id ? 'border-[#dfb163] bg-[#dfb163]/5 shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'}`}>
-                                            <input type="radio" name="mealPlan" value={mp.id} checked={selectedMealPlanId === mp.id} onChange={() => setSelectedMealPlanId(mp.id)} className="mt-1 accent-[#dfb163]" />
-                                            <div className="ml-4 flex-1">
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <span className="font-bold text-[#0f1623] tracking-wide">{mp.name}</span>
-                                                        <span className="text-gray-400 text-[10px] font-bold ml-2 uppercase tracking-widest">({mp.code})</span>
+                {/* STEP 2: SELECT */}
+                {step === 2 && (
+                    <Fade>
+                        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.02)", border: "1px solid var(--muted)", padding: 24, marginBottom: 32 }}>
+                                <div style={{ fontSize: 14, color: "var(--ivory-dim)", letterSpacing: "0.05em" }}>
+                                    <span style={{ color: "var(--ivory)" }}>{new Date(checkIn).toLocaleDateString()}</span> to <span style={{ color: "var(--ivory)" }}>{new Date(checkOut).toLocaleDateString()}</span> · {guests} Guest{guests > 1 && 's'}
+                                </div>
+                                <button onClick={() => setStep(1)} style={{ background: "none", border: "none", color: "var(--gold)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>Modify Search</button>
+                            </div>
+
+                            {availableRooms.length === 0 ? (
+                                <div style={{ background: "var(--charcoal)", border: "1px solid var(--muted)", padding: 64, textAlign: "center" }}>
+                                    <div style={{ fontSize: 32, marginBottom: 16 }}>😔</div>
+                                    <h3 className="vh-section-title" style={{ fontSize: 24, marginBottom: 16 }}>No Rooms <em>Available</em></h3>
+                                    <p style={{ color: "var(--ivory-dim)", fontSize: 14, marginBottom: 32 }}>We're fully booked for your selected dates. Please adjust your search.</p>
+                                    <button onClick={() => setStep(1)} className="vh-btn-outline">Change Dates</button>
+                                </div>
+                            ) : (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                    {availableRooms.filter(r => r.maxOccupancy >= guests).map(room => (
+                                        <div key={room.id} style={{ background: "var(--charcoal)", border: "1px solid var(--muted)", display: "flex", overflow: "hidden" }}>
+                                            <div style={{ width: "35%" }}>
+                                                <img src={room.images?.[0] || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1000'} alt={room.roomName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            </div>
+                                            <div style={{ width: "65%", padding: 32, display: "flex", flexDirection: "column" }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                                                    <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, color: "var(--ivory)" }}>{room.roomName}</h3>
+                                                    <div style={{ textAlign: "right" }}>
+                                                        <div style={{ color: "var(--gold)", fontSize: 24, fontFamily: "'Cormorant Garamond', serif" }}>₹{room.basePrice.toLocaleString()}</div>
+                                                        <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase" }}>/ night</div>
                                                     </div>
-                                                    <span className="font-bold text-[#111]">
-                                                        +₹{mp.pricePerPersonPerNight.toLocaleString()} <span className="text-[10px] text-gray-400 font-normal uppercase tracking-widest">/ person / night</span>
-                                                    </span>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 16, fontSize: 10, color: "var(--gold)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 24 }}>
+                                                    <span>👥 {room.maxOccupancy} max</span>
+                                                    <span>🛏️ {room.bedType}</span>
+                                                    <span>📐 {room.roomSize} m²</span>
+                                                </div>
+                                                <p style={{ fontSize: 13, color: "var(--ivory-dim)", lineHeight: 1.6, flex: 1 }}>Enjoy luxury and comfort in our exquisitely designed {room.roomName}, featuring premium amenities and stunning {room.view.toLowerCase()}.</p>
+                                                <div style={{ textAlign: "right", marginTop: 24 }}>
+                                                    <button onClick={() => handleSelectRoom(room.id)} className="vh-btn-outline">Select Room</button>
                                                 </div>
                                             </div>
-                                        </label>
-                                    ))}
-                                    <label className={`flex items-start p-4 border cursor-pointer transition-all ${selectedMealPlanId === "" ? 'border-[#dfb163] bg-[#dfb163]/5 shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-gray-300'}`}>
-                                        <input type="radio" name="mealPlan" value={""} checked={selectedMealPlanId === ""} onChange={() => setSelectedMealPlanId("")} className="mt-1 accent-[#dfb163]" />
-                                        <div className="ml-4 flex-1">
-                                            <div className="font-bold text-[#0f1623] tracking-wide uppercase text-sm">Room Only (RO)</div>
-                                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">No meals included</div>
                                         </div>
-                                    </label>
+                                    ))}
+                                    {availableRooms.filter(r => r.maxOccupancy >= guests).length === 0 && (
+                                        <div style={{ textAlign: "center", padding: 32, border: "1px dashed var(--muted)", color: "var(--ivory-dim)", fontSize: 13 }}>
+                                            Rooms are available, but none can accommodate {guests} guests.
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    </Fade>
+                )}
 
-                    {/* Summary Sidebar */}
-                    <div className="lg:w-1/3">
-                        <div className="bg-[#0f1623] text-white p-8 shadow-2xl sticky top-24 rounded-sm border border-white/5">
-                            <h3 className="text-xl font-serif font-bold mb-6 border-b border-white/10 pb-4 tracking-wider uppercase">Your Selection</h3>
-                            
-                            <div className="space-y-5 mb-8">
-                                <div>
-                                    <div className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Room Category</div>
-                                    <div className="font-bold text-lg text-[#dfb163] tracking-wide uppercase font-serif">
-                                        {availableRooms.find(r => r.id === selectedRoomId)?.roomName}
-                                    </div>
+                {/* STEP 3: DETAILS */}
+                {step === 3 && (
+                    <Fade>
+                        <div style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
+                            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 32 }}>
+                                {/* Guest Details Form */}
+                                <div className="vh-form-card" style={{ maxWidth: "100%" }}>
+                                    <h2 className="vh-section-title" style={{ fontSize: 24, marginBottom: 32 }}>Guest <em>Details</em></h2>
+                                    <form id="booking-form" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                        <div style={{ display: "flex", gap: 24 }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label className="vh-input-label">First Name *</label>
+                                                <input required className="vh-form-input" type="text" value={guestInfo.firstName} onChange={e => setGuestInfo(p => ({...p, firstName: e.target.value}))} />
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label className="vh-input-label">Last Name *</label>
+                                                <input required className="vh-form-input" type="text" value={guestInfo.lastName} onChange={e => setGuestInfo(p => ({...p, lastName: e.target.value}))} />
+                                            </div>
+                                        </div>
+                                        <div style={{ display: "flex", gap: 24 }}>
+                                            <div style={{ flex: 1 }}>
+                                                <label className="vh-input-label">Email Address *</label>
+                                                <input required className="vh-form-input" type="email" value={guestInfo.email} onChange={e => setGuestInfo(p => ({...p, email: e.target.value}))} />
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <label className="vh-input-label">Phone Number *</label>
+                                                <input required className="vh-form-input" type="tel" value={guestInfo.phone} onChange={e => setGuestInfo(p => ({...p, phone: e.target.value}))} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="vh-input-label">Special Requests</label>
+                                            <textarea className="vh-form-textarea" rows={3} value={guestInfo.specialRequests} onChange={e => setGuestInfo(p => ({...p, specialRequests: e.target.value}))} />
+                                        </div>
+                                    </form>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                                    <div>
-                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Check-in</div>
-                                        <div className="font-bold">{new Date(checkIn).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Check-out</div>
-                                        <div className="font-bold">{new Date(checkOut).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center py-4 border-y border-white/10">
-                                    <div>
-                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Length of stay</div>
-                                        <div className="font-bold">{Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))} Night(s)</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Total Guests</div>
-                                        <div className="font-bold">{guests} Adult{guests > 1 && 's'}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-3 mb-10 text-sm">
-                                <div className="flex justify-between text-gray-400">
-                                    <span className="tracking-wide">Room Rate</span>
-                                    <span className="text-white font-medium italic">₹{(availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0).toLocaleString()} night</span>
-                                </div>
-                                {selectedMealPlanId && (
-                                    <div className="flex justify-between text-gray-400">
-                                        <span className="tracking-wide">Meal Plan Add-on</span>
-                                        <span className="text-white font-medium italic">+₹{((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests).toLocaleString()} night</span>
+
+                                {/* Meal Plans */}
+                                {mealPlans.length > 0 && (
+                                    <div className="vh-form-card" style={{ maxWidth: "100%" }}>
+                                        <h2 className="vh-section-title" style={{ fontSize: 24, marginBottom: 24 }}>Enhance Your <em>Stay</em></h2>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                            {mealPlans.map(mp => (
+                                                <label key={mp.id} style={{ display: "flex", alignItems: "center", border: `1px solid ${selectedMealPlanId === mp.id ? "var(--gold)" : "var(--muted)"}`, background: selectedMealPlanId === mp.id ? "rgba(201,169,110,0.05)" : "transparent", padding: 20, cursor: "pointer", transition: "all 0.2s" }}>
+                                                    <input type="radio" name="mealPlan" checked={selectedMealPlanId === mp.id} onChange={() => setSelectedMealPlanId(mp.id)} style={{ accentColor: "var(--gold)" }} />
+                                                    <div style={{ marginLeft: 16, flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                        <div>
+                                                            <div style={{ fontSize: 14, color: "var(--ivory)", fontWeight: "bold" }}>{mp.name} <span style={{ color: "var(--ivory-dim)", fontSize: 10, letterSpacing: "0.1em" }}>({mp.code})</span></div>
+                                                        </div>
+                                                        <div style={{ color: "var(--gold)", fontSize: 14, fontWeight: "bold" }}>
+                                                            +₹{mp.pricePerPersonPerNight.toLocaleString()} <span style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em" }}>/ person</span>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                            <label style={{ display: "flex", alignItems: "center", border: `1px solid ${selectedMealPlanId === "" ? "var(--gold)" : "var(--muted)"}`, background: selectedMealPlanId === "" ? "rgba(201,169,110,0.05)" : "transparent", padding: 20, cursor: "pointer", transition: "all 0.2s" }}>
+                                                <input type="radio" name="mealPlan" checked={selectedMealPlanId === ""} onChange={() => setSelectedMealPlanId("")} style={{ accentColor: "var(--gold)" }} />
+                                                <div style={{ marginLeft: 16, flex: 1 }}>
+                                                    <div style={{ fontSize: 14, color: "var(--ivory)", fontWeight: "bold" }}>Room Only <span style={{ color: "var(--ivory-dim)", fontSize: 10, letterSpacing: "0.1em" }}>({mealPlans[0]?.code})</span></div>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex justify-between font-bold text-xl text-white pt-6 mt-4 border-t-2 border-[#dfb163]/30">
-                                    <span className="uppercase tracking-widest text-xs self-center">Grand Total</span>
-                                    <span className="text-[#dfb163]">
-                                        ₹{((availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0) + ((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests)) * Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))}
-                                    </span>
-                                </div>
                             </div>
 
-                            <button form="booking-form" type="submit" disabled={submitting} className="w-full bg-[#dfb163] hover:bg-[#c99a4e] text-black py-4 font-bold tracking-widest uppercase text-xs disabled:opacity-50 transition-all shadow-lg active:scale-95">
-                                {submitting ? "Processing..." : "Complete Reservation"}
-                            </button>
-                            <button onClick={() => setStep(2)} className="w-full mt-6 text-[10px] font-bold text-gray-500 hover:text-[#dfb163] uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2">
-                                <span>←</span> Back to selection
-                            </button>
+                            {/* Sidebar */}
+                            <div style={{ width: 340, flexShrink: 0 }}>
+                                <div style={{ background: "#0E0E0E", border: "1px solid rgba(201,169,110,0.2)", padding: 32, position: "sticky", top: 120 }}>
+                                    <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: "var(--ivory)", borderBottom: "1px solid rgba(201,169,110,0.2)", paddingBottom: 16, marginBottom: 24 }}>Your <em>Selection</em></h3>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 32 }}>
+                                        <div>
+                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Room Category</div>
+                                            <div style={{ color: "var(--gold)", fontFamily: "'Cormorant Garamond', serif", fontSize: 20 }}>{availableRooms.find(r => r.id === selectedRoomId)?.roomName}</div>
+                                        </div>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                            <div>
+                                                <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Check-in</div>
+                                                <div style={{ fontSize: 13, color: "var(--ivory)" }}>{new Date(checkIn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Check-out</div>
+                                                <div style={{ fontSize: 13, color: "var(--ivory)" }}>{new Date(checkOut).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20 }}>
+                                            <div>
+                                                <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Length of stay</div>
+                                                <div style={{ fontSize: 13, color: "var(--ivory)" }}>{Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))} Night(s)</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Guests</div>
+                                                <div style={{ fontSize: 13, color: "var(--ivory)" }}>{guests} Adult{guests > 1 && 's'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ borderTop: "1px dashed rgba(201,169,110,0.2)", paddingTop: 24, marginBottom: 32, display: "flex", flexDirection: "column", gap: 12, fontSize: 13 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)" }}>
+                                            <span>Room Rate</span>
+                                            <span style={{ color: "var(--ivory)" }}>₹{(availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0).toLocaleString()} <span style={{ fontSize: 10 }}>/ night</span></span>
+                                        </div>
+                                        {selectedMealPlanId && (
+                                            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)" }}>
+                                                <span>Meal Plan ({guests} pax)</span>
+                                                <span style={{ color: "var(--ivory)" }}>+₹{((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests).toLocaleString()} <span style={{ fontSize: 10 }}>/ night</span></span>
+                                            </div>
+                                        )}
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(201,169,110,0.5)", paddingTop: 16, marginTop: 8 }}>
+                                            <span style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.1em", textTransform: "uppercase", alignSelf: "center" }}>Grand Total</span>
+                                            <span style={{ color: "var(--gold)", fontSize: 24, fontFamily: "'Cormorant Garamond', serif" }}>
+                                                ₹{((availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0) + ((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests)) * Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: "center" }}>
+                                        <button form="booking-form" type="submit" disabled={submitting} className="vh-btn-primary" style={{ width: "100%", padding: 16 }}>
+                                            {submitting ? "Processing..." : "Confirm Booking"}
+                                        </button>
+                                        <button type="button" onClick={() => setStep(2)} style={{ background: "none", border: "none", color: "var(--ivory-dim)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", display: "inline-block", marginTop: 20 }}>
+                                            ← Back to Selection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </Fade>
+                )}
+            </div>
         </div>
     );
 }
 
 export default function BookPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading booking engine...</div>}>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ background: "var(--dark)", color: "var(--gold)", letterSpacing: "0.1em" }}>LOADING...</div>}>
             <BookingForm />
         </Suspense>
     );
