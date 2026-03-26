@@ -28,6 +28,7 @@ export const NAV_GROUPS = [
             { id: "avail", label: "Availability", Icon: Ic.Avail },
             { id: "amenity", label: "Amenity Manager", Icon: Ic.Amenity },
             { id: "overview", label: "Hotel Overview", Icon: Ic.Hotel },
+            { id: "nearby", label: "Nearby Places", Icon: Ic.Maint },
         ]
     },
 ];

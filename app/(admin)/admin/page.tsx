@@ -13,7 +13,9 @@ import StaffPage from "../../components/Staff";
 import ReportsPage from "../../components/Reports";
 import RoomsPage from "../../components/Rooms";
 import HotelOverview from "../../components/HotelOverview";
+import NearbyAdmin from "../../components/NearbyAdmin";
 import { useAdmin } from "../../components/AdminContext";
+import type { NearbyPlace } from "../../components/types";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const CURRENCIES = ["INR"];
@@ -261,7 +263,7 @@ function AmenityManager({ cats, setCats }: { cats: AmenityCat[]; setCats: React.
             <div className="page-header">
                 <div>
                     <div className="page-title">Amenity Manager</div>
-                    <div className="page-sub">{cats.length} categories · {total} facilities total · <span style={{ color: "#16a34a", fontWeight: 600 }}>● Synced to Database</span></div>
+                    <div className="page-sub">{cats.length} categories · {total} amenities total · <span style={{ color: "#16a34a", fontWeight: 600 }}>● Synced to Database</span></div>
                 </div>
                 <Btn variant="outline" onClick={() => setShowAdd(true)}><Ic.Plus /> Add Category</Btn>
             </div>
@@ -462,7 +464,7 @@ export default function AdminPage() {
         amenityCats, setAmenityCats, currency, setCurrency, bookings, setBookings,
         customers, setCustomers, mealPlans, setMealPlans, hkTasks, setHkTasks,
         maintenance, setMaintenance, pricingRules, setPricingRules, staff, setStaff,
-        rooms, setRooms, updateHotel
+        rooms, setRooms, nearbyPlaces, setNearbyPlaces, updateHotel
     } = useAdmin();
 
     // Booking actions
@@ -563,6 +565,21 @@ export default function AdminPage() {
     const updateMealPlan = async (mp: MealPlan) => { await fetch("/api/meal-plans", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(mp) }); setMealPlans(p => p.map(x => x.id === mp.id ? mp : x)); };
     const deleteMealPlan = async (id: string) => { await fetch(`/api/meal-plans?id=${id}`, { method: "DELETE" }); setMealPlans(p => p.filter(x => x.id !== id)); };
 
+    // Nearby places actions
+    const addNearbyPlace = async (place: NearbyPlace) => {
+        const res = await fetch("/api/nearby", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(place) });
+        const data = await res.json();
+        if (data.place) setNearbyPlaces(p => [...p, data.place]);
+    };
+    const updateNearbyPlace = async (place: NearbyPlace) => {
+        await fetch("/api/nearby", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(place) });
+        setNearbyPlaces(p => p.map(x => x.id === place.id ? place : x));
+    };
+    const deleteNearbyPlace = async (id: string) => {
+        await fetch(`/api/nearby?id=${id}`, { method: "DELETE" });
+        setNearbyPlaces(p => p.filter(x => x.id !== id));
+    };
+
     // Quick check-in
     const handleCheckIn = (bookingId: string, roomNumber: string, mealPlanId: string) => {
         const mp = mealPlans.find(m => m.id === mealPlanId);
@@ -588,6 +605,7 @@ export default function AdminPage() {
             {page === "avail" && <AvailPage rooms={effectiveRooms} availability={availability} setAvailability={setAvailability} />}
             {page === "amenity" && <AmenityManager cats={amenityCats} setCats={setAmenityCats} />}
             {page === "overview" && <HotelOverview hotel={hotel} rooms={effectiveRooms} onUpdate={updateHotel} />}
+            {page === "nearby" && <NearbyAdmin places={nearbyPlaces} onAdd={addNearbyPlace} onUpdate={updateNearbyPlace} onDelete={deleteNearbyPlace} />}
         </React.Fragment>
     );
 }

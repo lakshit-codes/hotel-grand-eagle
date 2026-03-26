@@ -148,7 +148,7 @@ function IssueModal({ item, staff, physicalRooms, onSave, onClose }: { item: Mai
                             {physicalRooms.length > 0
                                 ? <select className="sel" value={f.roomNumber} onChange={e => setF(p => ({ ...p, roomNumber: e.target.value }))}>
                                     <option value="">— No specific room —</option>
-                                    {physicalRooms.sort((a, b) => a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true })).map(r => (
+                                    {(Array.isArray(physicalRooms) ? [...physicalRooms] : []).sort((a, b) => (a?.roomNumber || "").localeCompare(b?.roomNumber || "", undefined, { numeric: true })).map(r => (
                                         <option key={r.id} value={r.roomNumber}>Room {r.roomNumber} ({r.roomTypeName})</option>
                                     ))}
                                   </select>

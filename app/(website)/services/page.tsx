@@ -26,7 +26,7 @@ export default function ServicesPage() {
             {/* Header */}
             <div className="bg-[#0f1623] py-20 px-4 text-center">
                 <h1 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-widest uppercase mb-4">
-                    Services & Facilities
+                    Services &amp; Amenities
                 </h1>
                 <div className="w-24 h-1 bg-[#dfb163] mx-auto mb-6"></div>
                 <p className="text-[#dfb163] font-medium tracking-wide max-w-2xl mx-auto">

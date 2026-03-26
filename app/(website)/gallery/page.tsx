@@ -33,7 +33,7 @@ export default function GalleryPage() {
                 </h1>
                 <div className="w-24 h-1 bg-[#dfb163] mx-auto mb-6"></div>
                 <p className="text-[#dfb163] font-medium tracking-wide max-w-2xl mx-auto">
-                    Explore the elegant spaces and premium facilities at {hotel?.name || "Hotel Grand Eagle"}.
+                    Explore the elegant spaces and premium amenities at {hotel?.name || "Hotel Grand Eagle"}.
                 </p>
             </div>
 

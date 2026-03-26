@@ -70,7 +70,7 @@ export default function ReportsPage({ bookings, rooms, mealPlans, hkTasks }: Pro
     }, [bookings, next7Days]);
 
     // ── In-house ──────────────────────────────────────────────────────────────
-    const inHouse = useMemo(() => bookings.filter(b => b.status === "checked-in").sort((a, b) => a.checkOut.localeCompare(b.checkOut)), [bookings]);
+    const inHouse = useMemo(() => Array.isArray(bookings) ? bookings.filter(b => b.status === "checked-in").sort((a, b) => (a?.checkOut || "").localeCompare(b?.checkOut || "")) : [], [bookings]);
 
     // ── Revenue ───────────────────────────────────────────────────────────────
     const revData = useMemo(() => {

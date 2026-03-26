@@ -44,7 +44,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
         { label: "Monthly Revenue", value: `₹${fmt(stats.revenue)}`, color: "#16a34a", sub: "This month" },
     ];
 
-    const recentBookings = [...bookings].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 8);
+    const recentBookings = Array.isArray(bookings) ? [...bookings].sort((a, b) => (b?.createdAt || "").localeCompare(a?.createdAt || "")).slice(0, 8) : [];
     const customerMap = useMemo(() => {
         const m: Record<string, Customer> = {};
         customers.forEach(c => { m[c.id] = c; });

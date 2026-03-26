@@ -95,7 +95,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
 
     const guestBookings = useMemo(() => {
         if (!selected) return [];
-        return bookings.filter(b => b.customerId === selected.id).sort((a, b) => b.checkIn.localeCompare(a.checkIn));
+        return Array.isArray(bookings) ? bookings.filter(b => b.customerId === selected.id).sort((a, b) => (b?.checkIn || "").localeCompare(a?.checkIn || "")) : [];
     }, [selected, bookings]);
 
     const guestStats = useMemo(() => {

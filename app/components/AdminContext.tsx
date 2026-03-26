@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember } from "./types";
+import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember, NearbyPlace } from "./types";
 import { uid } from "./ui";
 
 interface AdminContextType {
@@ -40,6 +40,8 @@ interface AdminContextType {
     setAvailability: (a: Record<string, Availability> | ((p: Record<string, Availability>) => Record<string, Availability>)) => void;
     currency: string;
     setCurrency: (s: string) => void;
+    nearbyPlaces: NearbyPlace[];
+    setNearbyPlaces: (n: NearbyPlace[] | ((p: NearbyPlace[]) => NearbyPlace[])) => void;
     runSeed: () => Promise<void>;
     updateHotel: (h: Hotel) => Promise<void>;
 }
@@ -65,6 +67,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     const [pricing, setPricing] = useState<Record<string, Pricing>>({});
     const [availability, setAvailability] = useState<Record<string, Availability>>({});
     const [currency, setCurrency] = useState("INR");
+    const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
 
     useEffect(() => { fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/room-types").then(r => r.json()).then(d => { if (d.length) setRoomTypes(d); }).catch(() => { }); }, []);
@@ -77,6 +80,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => { fetch("/api/pricing-rules").then(r => r.json()).then(d => { if (d.length) setPricingRules(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/staff").then(r => r.json()).then(d => { if (d.length) setStaff(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { }); }, []);
+    useEffect(() => { fetch("/api/nearby").then(r => r.json()).then(d => { if (Array.isArray(d)) setNearbyPlaces(d); }).catch(() => { }); }, []);
 
     const runSeed = async () => {
         const res = await fetch("/api/seed");
@@ -112,7 +116,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         hotel, setHotel, roomTypes, setRoomTypes, bookings, setBookings, customers, setCustomers,
         rooms, setRooms, mealPlans, setMealPlans, hkTasks, setHkTasks, maintenance, setMaintenance,
         pricingRules, setPricingRules, staff, setStaff, amenityCats, setAmenityCats,
-        pricing, setPricing, availability, setAvailability, currency, setCurrency, runSeed, updateHotel
+        pricing, setPricing, availability, setAvailability, currency, setCurrency,
+        nearbyPlaces, setNearbyPlaces, runSeed, updateHotel
     };
 
     return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;

@@ -254,3 +254,13 @@ export interface LostFoundItem {
     status: "held" | "claimed" | "discarded";
     notes: string;
 }
+
+export interface NearbyPlace {
+    id: string;
+    name: string;
+    description: string;
+    distance: string;
+    image: string;
+    createdAt: string;
+}
+

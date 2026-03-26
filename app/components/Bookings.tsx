@@ -263,7 +263,7 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
             return updated;
         });
 
-    const roomNums = useMemo(() => physicalRooms.filter(r => r.roomTypeId === b.roomTypeId).sort((x, y) => x.roomNumber.localeCompare(y.roomNumber, undefined, { numeric: true })), [physicalRooms, b.roomTypeId]);
+    const roomNums = useMemo(() => Array.isArray(physicalRooms) ? physicalRooms.filter(r => r.roomTypeId === b.roomTypeId).sort((x, y) => (x?.roomNumber || "").localeCompare(y?.roomNumber || "", undefined, { numeric: true })) : [], [physicalRooms, b.roomTypeId]);
 
     const conflict = b.roomNumber
         ? isRoomConflict(b.roomNumber, b.roomTypeId, b.checkIn, b.checkOut, allBookings, b.id)
@@ -586,7 +586,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
             map.get(r.roomTypeId)!.push(r);
         });
         for (const arr of map.values()) {
-            arr.sort((a, b) => a.floor - b.floor || a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true }));
+            arr.sort((a, b) => (a?.floor || 0) - (b?.floor || 0) || (a?.roomNumber || "").localeCompare(b?.roomNumber || "", undefined, { numeric: true }));
         }
         return map;
     }, [roomTypes, rooms]);
@@ -605,11 +605,11 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
             return matchSearch && matchStatus && matchMonth;
         }).sort((a, b) => {
             let cmp = 0;
-            if (sortField === "checkIn") cmp = a.checkIn.localeCompare(b.checkIn);
-            else if (sortField === "guestName") cmp = a.guestName.localeCompare(b.guestName);
-            else if (sortField === "bookingRef") cmp = a.bookingRef.localeCompare(b.bookingRef);
-            else if (sortField === "roomTypeName") cmp = (a.roomTypeName || "").localeCompare(b.roomTypeName || "");
-            else if (sortField === "createdAt") cmp = (a.createdAt || "").localeCompare(b.createdAt || "");
+            if (sortField === "checkIn") cmp = (a?.checkIn || "").localeCompare(b?.checkIn || "");
+            else if (sortField === "guestName") cmp = (a?.guestName || "").localeCompare(b?.guestName || "");
+            else if (sortField === "bookingRef") cmp = (a?.bookingRef || "").localeCompare(b?.bookingRef || "");
+            else if (sortField === "roomTypeName") cmp = (a?.roomTypeName || "").localeCompare(b?.roomTypeName || "");
+            else if (sortField === "createdAt") cmp = (a?.createdAt || "").localeCompare(b?.createdAt || "");
             return sortOrder === "asc" ? cmp : -cmp;
         });
     }, [bookings, search, filterStatus, monthFilter, sortField, sortOrder]);

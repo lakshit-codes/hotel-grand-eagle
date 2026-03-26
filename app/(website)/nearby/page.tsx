@@ -1,52 +1,28 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Hotel } from "../../components/types";
+import { Hotel, NearbyPlace } from "../../components/types";
+
+const DEFAULT_IMG = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=60";
 
 export default function NearbyPage() {
     const [hotel, setHotel] = useState<Hotel | null>(null);
+    const [places, setPlaces] = useState<NearbyPlace[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+        fetch("/api/hotel-settings")
+            .then(r => r.json())
+            .then(d => { if (d.name) setHotel(d); })
+            .catch(() => {});
     }, []);
 
-    const landmarks = [
-        { 
-            n: "Chokhi Dhani", 
-            d: "A world-renowned ethnic village resort that captures the vibrant spirit of Rajasthan. Enjoy camel rides, folk dances, traditional pottery, and an authentic Rajasthani Thali dinner.",
-            m: "5 mins", 
-            img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=800" 
-        },
-        { 
-            n: "Jaipur Exhibition & Convention Centre (JECC)", 
-            d: "The city's premier venue for large-scale exhibitions, conventions, and trade fairs. Our hotel is the ideal choice for business professionals and exhibitors.",
-            m: "2 mins", 
-            img: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=800" 
-        },
-        { 
-            n: "Jaipur International Airport (Sanganer)", 
-            d: "Stay close to the airport for a stress-free travel experience. Our location ensures you can reach your terminal quickly, even during peak hours.",
-            m: "15 mins", 
-            img: "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?q=80&w=800" 
-        },
-        { 
-            n: "Sitapura Industrial Area", 
-            d: "Jaipur's major industrial hub. Perfect for corporate guests visiting companies and manufacturing units in the Sitapura and Pratap Nagar zones.",
-            m: "1 min", 
-            img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800" 
-        },
-        { 
-            n: "Pink City (City Palace & Hawa Mahal)", 
-            d: "The historic heart of Jaipur. Explore the architectural marvels of Hawa Mahal, Jantar Mantar, and the City Palace museum.",
-            m: "35 mins", 
-            img: "https://images.unsplash.com/photo-1590050752117-23a9d7fc217c?q=80&w=800" 
-        },
-        { 
-            n: "World Trade Park (WTP)", 
-            d: "A modern shopping marvel with high-end brands, food courts, and entertainment. Perfect for a day of retail therapy and leisure.",
-            m: "20 mins", 
-            img: "https://images.unsplash.com/photo-1567449300518-034888bb247a?q=80&w=800" 
-        }
-    ];
+    useEffect(() => {
+        fetch("/api/nearby")
+            .then(r => r.json())
+            .then(d => { if (Array.isArray(d)) setPlaces(d); })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
 
     return (
         <div className="pt-24 min-h-screen bg-white">
@@ -63,24 +39,46 @@ export default function NearbyPage() {
 
             {/* Landmarks Grid */}
             <section className="py-20 px-4 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {landmarks.map((place, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-sm overflow-hidden shadow-md group hover:shadow-xl transition-all duration-300">
-                            <div className="relative h-48 overflow-hidden">
-                                <img src={place.img} alt={place.n} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                <div className="absolute top-4 right-4 bg-white/95 px-3 py-1 text-[10px] font-black tracking-widest text-[#0f1623] shadow-sm">
-                                    {place.m} {place.m.includes("mins") ? "MINS" : "MIN"} DRIVE
+                {loading ? (
+                    <div className="text-center py-24 text-gray-400">
+                        <div className="text-5xl mb-4 animate-pulse">🗺️</div>
+                        <p className="text-lg font-medium">Loading nearby places...</p>
+                    </div>
+                ) : places.length === 0 ? (
+                    <div className="text-center py-24 text-gray-400">
+                        <div className="text-5xl mb-4">🗺️</div>
+                        <p className="text-lg font-medium">No nearby places listed yet.</p>
+                        <p className="text-sm mt-2 text-gray-300">Check back soon — we are updating this page.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {places.map((place) => (
+                            <div key={place.id} className="bg-white border border-gray-100 rounded-sm overflow-hidden shadow-md group hover:shadow-xl transition-all duration-300">
+                                <div className="relative h-48 overflow-hidden">
+                                    <img
+                                        src={place.image || DEFAULT_IMG}
+                                        alt={place.name}
+                                        onError={e => { e.currentTarget.src = DEFAULT_IMG; }}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                    {place.distance && (
+                                        <div className="absolute top-4 right-4 bg-white/95 px-3 py-1 text-[10px] font-black tracking-widest text-[#0f1623] shadow-sm">
+                                            {place.distance.toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-8">
+                                    <h3 className="text-xl font-bold text-[#0f1623] mb-3 uppercase tracking-tight">{place.name}</h3>
+                                    {place.description && (
+                                        <p className="text-gray-500 text-sm leading-relaxed mb-4">
+                                            {place.description}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
-                            <div className="p-8">
-                                <h3 className="text-xl font-bold text-[#0f1623] mb-3 uppercase tracking-tight">{place.n}</h3>
-                                <p className="text-gray-500 text-sm leading-relaxed mb-4">
-                                    {place.d}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </section>
 
             {/* Getting Around Section */}

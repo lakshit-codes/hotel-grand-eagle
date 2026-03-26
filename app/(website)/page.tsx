@@ -149,7 +149,7 @@ export default function HomePage() {
             {/* Hotel Facilities Grid */}
             <section id="services" className="py-24 bg-[#0a0a0a] px-4">
                 <div className="max-w-7xl mx-auto">
-                    <h2 className="text-4xl text-white font-bold text-center mb-16 tracking-wide">HOTEL FACILITIES</h2>
+                    <h2 className="text-4xl text-white font-bold text-center mb-16 tracking-wide">HOTEL AMENITIES</h2>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[
