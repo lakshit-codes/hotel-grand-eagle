@@ -24,23 +24,110 @@ async function hasRoomConflict(
 
 export async function GET() {
     const db = await getDatabase();
-    const bookings = await db.collection("bookings").find().toArray();
+    const raw = await db.collection("bookings").find().toArray();
+    // Normalise every document on the way out so legacy/website bookings
+    // don't crash the admin panel even if stored before this fix.
+    const bookings = raw.map(({ _id, ...doc }) => normalizeBooking(doc as Record<string, unknown>));
     return NextResponse.json(bookings);
+}
+
+
+/** Normalise any booking document so it fully matches the admin Booking interface.
+ *  Handles field-name mismatches from the website form (email/phone vs guestEmail/guestPhone)
+ *  and provides safe defaults for every field. */
+function normalizeBooking(body: Record<string, unknown>): Record<string, unknown> {
+    // Resolve guest name
+    const guestName = (body.guestName as string | undefined)?.trim()
+        || `${body.firstName ?? ""} ${body.lastName ?? ""}`.trim()
+        || "Guest";
+
+    // Resolve email / phone (website sends plain 'email' and 'phone')
+    const guestEmail = (body.guestEmail ?? body.email ?? "") as string;
+    const guestPhone = (body.guestPhone ?? body.phone ?? "") as string;
+
+    // Resolve totals  (website sends totalAmount; admin uses grandTotal)
+    const totalRoomCost = Number(body.totalRoomCost ?? body.roomCost ?? 0);
+    const totalMealCost = Number(body.totalMealCost ?? body.mealCost ?? 0);
+    const grandTotal    = Number(body.grandTotal ?? body.totalAmount ?? body.total ?? totalRoomCost + totalMealCost);
+
+    // Nights
+    const nights = Number(body.nights ?? (() => {
+        if (body.checkIn && body.checkOut) {
+            const d1 = new Date(body.checkIn as string);
+            const d2 = new Date(body.checkOut as string);
+            return Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 3600 * 24)));
+        }
+        return 1;
+    })());
+
+    return {
+        // IDs
+        id:           body.id ?? `bk_${Date.now()}`,
+        bookingRef:   body.bookingRef ?? `BK${Math.floor(Date.now() / 1000).toString().slice(-6)}`,
+        customerId:   body.customerId ?? "",
+
+        // Guest
+        guestName,
+        guestEmail,
+        guestPhone,
+
+        // Room
+        roomTypeId:    body.roomTypeId   ?? "",
+        roomTypeName:  body.roomTypeName ?? "",
+        roomNumber:    body.roomNumber   ?? null,
+
+        // Dates
+        checkIn:  body.checkIn  ?? "",
+        checkOut: body.checkOut ?? "",
+        nights,
+
+        // People
+        adults:   Number(body.adults ?? body.guests ?? 1),
+        children: Number(body.children ?? 0),
+        coGuests: Array.isArray(body.coGuests) ? body.coGuests : [],
+
+        // Meal plan
+        mealPlanId:   body.mealPlanId   ?? "",
+        mealPlanCode: body.mealPlanCode ?? "RO",
+
+        // Financials
+        totalRoomCost,
+        totalMealCost,
+        grandTotal,
+        currency: "INR",
+
+        // Status & source
+        status:        (body.status as string) ?? "confirmed",
+        bookingSource: (body.bookingSource ?? body.source ?? "Direct") as string,
+
+        // Misc
+        specialRequests: (body.specialRequests ?? "") as string,
+        earlyCheckIn:     Boolean(body.earlyCheckIn ?? false),
+        lateCheckOut:     Boolean(body.lateCheckOut ?? false),
+        earlyCheckInTime: (body.earlyCheckInTime ?? "") as string,
+        lateCheckOutTime: (body.lateCheckOutTime ?? "") as string,
+        checkInActual:    body.checkInActual   ?? null,
+        checkOutActual:   body.checkOutActual  ?? null,
+        primaryAadharNo:      (body.primaryAadharNo      ?? "") as string,
+        primaryAadharFileUrl: (body.primaryAadharFileUrl ?? "") as string,
+        createdAt: (body.createdAt as string | undefined) ?? new Date().toISOString(),
+    };
 }
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
-        const db = await getDatabase();
+        const raw  = await req.json();
+        const body = normalizeBooking(raw);
+        const db   = await getDatabase();
 
         // Backend double-booking validation
         if (body.roomNumber && body.checkIn && body.checkOut && body.roomTypeId) {
             const conflict = await hasRoomConflict(
                 db,
-                body.roomNumber,
-                body.roomTypeId,
-                body.checkIn,
-                body.checkOut
+                body.roomNumber as string,
+                body.roomTypeId as string,
+                body.checkIn as string,
+                body.checkOut as string
             );
             if (conflict) {
                 return NextResponse.json(
@@ -50,23 +137,23 @@ export async function POST(req: Request) {
             }
         }
 
-        // Ensure currency is always INR
-        const doc = { ...body, currency: "INR" };
-        const result = await db.collection("bookings").insertOne(doc);
+        const result = await db.collection("bookings").insertOne(body);
 
         // Sync room status if checking in immediately
-        if (doc.roomNumber && doc.status === "checked-in") {
+        if (body.roomNumber && body.status === "checked-in") {
             await db.collection("rooms").updateOne(
-                { roomNumber: doc.roomNumber },
+                { roomNumber: body.roomNumber },
                 { $set: { status: "occupied" } }
             );
         }
 
         return NextResponse.json(result);
-    } catch {
+    } catch (err) {
+        console.error("[POST /api/bookings]", err);
         return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
     }
 }
+
 
 export async function PUT(req: Request) {
     try {
