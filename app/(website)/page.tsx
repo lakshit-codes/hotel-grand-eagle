@@ -53,10 +53,10 @@ const TESTIMONIALS = [
 
 // ─── ROOM CARDS DATA ──────────────────────────────────────────────
 const STATIC_ROOMS = [
-    { img: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800", cat: "Standard Collection", name: "Deluxe Room", size: "28 m²", bed: "King or Twin", price: "₹2,499", tags: ["City View", "Free Wi-Fi", "A/C", "24hr Service"], featured: false },
-    { img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800", cat: "Signature Collection", name: "Executive Room", size: "35 m²", bed: "Super King", price: "₹3,999", tags: ["Premium View", "Work Desk", "Jacuzzi", "Butler"], featured: true },
-    { img: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=800", cat: "Prestige Collection", name: "Suite Room", size: "50 m²", bed: "Super King", price: "₹5,999", tags: ["Panoramic", "Private Lounge", "Bathtub", "Concierge"], featured: false },
-    { img: "https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=800", cat: "Pinnacle Collection", name: "Grand Suite", size: "70 m²", bed: "Emperor King", price: "₹9,999", tags: ["360° View", "Private Dining", "Butler 24/7", "VIP"], featured: false },
+    { img: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800", cat: "Standard", name: "Classic Room", size: "22 m²", bed: "Queen", price: "₹2,499", tags: ["City View", "Free Wi-Fi", "A/C", "24hr Desk"], featured: false },
+    { img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800", cat: "Premium", name: "Premium Room", size: "28 m²", bed: "King", price: "₹3,499", tags: ["Larger Space", "Work Desk", "Free Breakfast", "Mini Fridge"], featured: true },
+    { img: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=800", cat: "Family", name: "Family Room", size: "35 m²", bed: "2 Double Beds", price: "₹4,999", tags: ["Family Size", "Extra Bed", "Sitting Area", "City View"], featured: false },
+    { img: "https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=800", cat: "Executive", name: "Executive Suite", size: "45 m²", bed: "King", price: "₹6,499", tags: ["Living Area", "Premium Bath", "Quiet Zone", "Workspace"], featured: false },
 ];
 
 // ─── GALLERY DATA ─────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export default function HomePage() {
                         <span className="vh-eyebrow-text">Welcome to Hotel Grand Eagle</span>
                     </div>
                     <h1 className="vh-hero-headline">
-                        Comfort <em>Redefined</em>
+                        Smart, Simple Comfort
                     </h1>
                     <p className="vh-hero-sub">
                         An intimate retreat in the heart of Sitapura, Jaipur — where affordability meets the warmth of genuine hospitality.
@@ -209,11 +209,11 @@ export default function HomePage() {
                             <div className="vh-section-eyebrow"><span className="vh-line" /><span>Accommodations</span></div>
                         </Fade>
                         <Fade>
-                            <h2 className="vh-section-title">Rooms &amp; <br /><em>Suites</em></h2>
+                            <h2 className="vh-section-title">Rooms</h2>
                         </Fade>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-                        <p style={{ fontSize: 13, color: "var(--ivory-dim)", lineHeight: 1.7, maxWidth: 260 }}>Each space crafted for an unparalleled retreat. Choose your sanctuary.</p>
+                        <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 260 }}>Clean, comfortable, and equipped with everything you need for a restful stay.</p>
                         <Link href="/rooms" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--gold)", letterSpacing: "0.1em", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0, textDecoration: "none" }}>
                             View All
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -238,7 +238,7 @@ export default function HomePage() {
                     ).map((room, i) => (
                         <div key={i} className={`vh-room-card${room.featured ? " featured" : ""}`}>
                             <div className="vh-room-img-wrap">
-                                {room.featured && <div className="vh-featured-badge">Most Popular</div>}
+                                {room.featured && <div className="vh-featured-badge">Top Choice</div>}
                                 <img src={room.img} alt={room.name} loading="lazy" />
                                 <div className="vh-room-img-overlay" />
                                 <div className="vh-room-price">{room.price} <span>/night</span></div>
@@ -269,7 +269,7 @@ export default function HomePage() {
                     ))}
                     <div style={{ flexShrink: 0, width: 16 }} />
                 </div>
-                <div style={{ marginTop: 20, padding: "0 40px", fontSize: 11, color: "rgba(200,192,176,0.35)" }}>← Scroll to explore all rooms</div>
+                <div style={{ marginTop: 20, padding: "0 40px", fontSize: 12, color: "var(--text-muted)", opacity: 0.7 }}>← Scroll to explore all rooms</div>
             </section>
 
             {/* ── ABOUT ─────────────────────────────────────────── */}
@@ -301,7 +301,7 @@ export default function HomePage() {
                                 <div className="vh-section-eyebrow"><span className="vh-line" /><span>Our Philosophy</span></div>
                             </Fade>
                             <Fade>
-                                <h2 className="vh-section-title" style={{ marginBottom: 28 }}>A story written<br />in <em>gold threads</em></h2>
+                                <h2 className="vh-section-title" style={{ marginBottom: 28 }}>Modern Comfort at Exceptional Value</h2>
                             </Fade>
                             <div className="vh-about-text">
                                 <Fade><p>Hotel Grand Eagle was conceived not merely as a place to sleep, but as a home away from home. Born from a commitment to genuine Rajasthani hospitality and a passion for thoughtful, affordable comfort.</p></Fade>
@@ -338,9 +338,9 @@ export default function HomePage() {
                     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 32, marginBottom: 56 }}>
                         <div>
                             <Fade><div className="vh-section-eyebrow"><span className="vh-line" /><span>Visual Journey</span></div></Fade>
-                            <Fade><h2 className="vh-section-title">Life at <em>Grand Eagle</em></h2></Fade>
+                            <Fade><h2 className="vh-section-title">Take a Look Inside</h2></Fade>
                         </div>
-                        <Fade><p style={{ fontSize: 13, color: "var(--ivory-dim)", maxWidth: 240, lineHeight: 1.7 }}>Glimpses of the spaces and moments that define the Grand Eagle experience.</p></Fade>
+                        <Fade><p style={{ fontSize: 13, color: "var(--text-muted)", maxWidth: 240, lineHeight: 1.7 }}>See our modern spaces, clean accommodations, and welcoming facilities.</p></Fade>
                     </div>
 
                     <div className="vh-gallery-grid">
@@ -376,7 +376,7 @@ export default function HomePage() {
                             <span className="vh-eyebrow-text">Guest Stories</span>
                             <span className="vh-eyebrow-line" />
                         </div>
-                        <Fade><h2 className="vh-section-title">Voices of <em>Grand Eagle</em></h2></Fade>
+                        <Fade><h2 className="vh-section-title">What Our Guests Say</h2></Fade>
                     </div>
 
                     <div className="vh-testi-card" style={{ opacity: testiVisible ? 1 : 0, transform: testiVisible ? "translateY(0)" : "translateY(10px)" }}>
@@ -426,9 +426,9 @@ export default function HomePage() {
                 <div className="vh-max vh-contact-grid" style={{ position: "relative", zIndex: 1 }}>
                     <div>
                         <Fade><div className="vh-section-eyebrow"><span className="vh-line" /><span>Reservations</span></div></Fade>
-                        <Fade><h2 className="vh-section-title" style={{ marginBottom: 28 }}>Begin your<br /><em>journey here</em></h2></Fade>
-                        <Fade><p style={{ fontSize: 14, color: "var(--ivory-dim)", lineHeight: 1.8, maxWidth: 320, marginBottom: 40 }}>
-                            Our team is available around the clock. Reach out and let us craft the comfortable stay you deserve.
+                        <Fade><h2 className="vh-section-title" style={{ marginBottom: 28 }}>Get in Touch</h2></Fade>
+                        <Fade><p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.8, maxWidth: 320, marginBottom: 40 }}>
+                            Have a question or need to make a booking? We're available 24/7 to assist you.
                         </p></Fade>
                         <div className="vh-contact-details">
                             {[
@@ -458,11 +458,11 @@ export default function HomePage() {
                             <div className="vh-form-title">Tell us about your visit</div>
                             {formSent ? (
                                 <div style={{ padding: "40px 0", textAlign: "center" }}>
-                                    <div style={{ width: 56, height: 56, border: "1px solid rgba(201,169,110,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                                        <div style={{ width: 10, height: 10, background: "var(--gold)", transform: "rotate(45deg)" }} />
+                                    <div style={{ width: 56, height: 56, border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", borderRadius: "50%" }}>
+                                        <div style={{ width: 10, height: 10, background: "var(--accent)", borderRadius: "50%" }} />
                                     </div>
-                                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 32, color: "var(--gold)", fontWeight: 300, marginBottom: 10 }}>Thank You</div>
-                                    <p style={{ fontSize: 13, color: "var(--ivory-dim)", lineHeight: 1.7, maxWidth: 260, margin: "0 auto" }}>Your enquiry has reached our team. Expect a personal response within 2 hours.</p>
+                                    <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 24, color: "var(--text)", fontWeight: 600, marginBottom: 10 }}>Thank You</div>
+                                    <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 260, margin: "0 auto" }}>Your enquiry has reached our team. Expect a response soon.</p>
                                 </div>
                             ) : (
                                 <form onSubmit={handleFormSubmit}>

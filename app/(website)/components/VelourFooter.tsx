@@ -3,41 +3,32 @@ import React, { useState } from "react";
 import Link from "next/link";
 
 export default function VelourFooter() {
-    const [email, setEmail] = useState("");
-    const [subscribed, setSubscribed] = useState(false);
-
-    const handleSubscribe = () => {
-        if (email) { setSubscribed(true); setEmail(""); }
-    };
-
     return (
         <footer className="vh-footer">
             <div className="vh-footer-main">
-                <div className="vh-footer-grid">
-                    {/* Brand */}
-                    <div>
-                        <Link href="/" className="vh-logo" style={{ marginBottom: 20, display: "inline-flex" }}>
-                            <img src="/logo.png" alt="Hotel Grand Eagle" className="vh-logo-img" style={{ height: 36 }} />
-                            <div className="vh-logo-text">
-                                <div className="vh-logo-name">GRAND EAGLE</div>
-                                <div className="vh-logo-sub">Luxury Hotel</div>
-                            </div>
+                <div className="vh-footer-grid" style={{ gridTemplateColumns: "2fr 1fr 1fr" }}>
+                    {/* Brand Info & Big Logo */}
+                    <div style={{ paddingRight: 32, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <Link href="/" style={{ marginBottom: 24, display: "inline-block" }}>
+                            <img src="/logo.png" alt="Hotel Grand Eagle" style={{ height: 80, objectFit: "contain" }} />
                         </Link>
-                        <p className="vh-footer-brand-desc">A sanctuary of quiet luxury in Jaipur's Sitapura, where heritage meets modern comfort and every guest is embraced with exceptional hospitality.</p>
-                        <div className="vh-footer-contacts">
-                            <div className="vh-footer-contact">
-                                <svg className="vh-footer-contact-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <p className="vh-footer-brand-desc" style={{ maxWidth: 320, marginBottom: 24 }}>A comfortable and welcoming stay in Jaipur's Sitapura, where modern convenience meets exceptional value and warm hospitality.</p>
+                        
+                        <div className="vh-footer-contacts" style={{ marginBottom: 28, width: "100%" }}>
+                            <div className="vh-footer-contact" style={{ marginBottom: 12 }}>
+                                <svg className="vh-footer-contact-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
                                 <span>Sitapura Industrial Area, Jaipur, Rajasthan 302022</span>
                             </div>
-                            <div className="vh-footer-contact">
-                                <svg className="vh-footer-contact-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63a19.79 19.79 0 01-3.07-8.63A2 2 0 012.18 0h3a2 2 0 012 1.72c.12.96.36 1.9.72 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.55-.55a2 2 0 012.11-.45c.91.36 1.85.6 2.81.72A2 2 0 0122 16.92z" /></svg>
-                                +91 63678 50548
+                            <div className="vh-footer-contact" style={{ marginBottom: 12 }}>
+                                <svg className="vh-footer-contact-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63a19.79 19.79 0 01-3.07-8.63A2 2 0 012.18 0h3a2 2 0 012 1.72c.12.96.36 1.9.72 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.55-.55a2 2 0 012.11-.45c.91.36 1.85.6 2.81.72A2 2 0 0122 16.92z" /></svg>
+                                <span>+91 63678 50548</span>
                             </div>
                             <div className="vh-footer-contact">
-                                <svg className="vh-footer-contact-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-                                reservations@hotelgrandeagle.com
+                                <svg className="vh-footer-contact-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                                <span>reservations@hotelgrandeagle.com</span>
                             </div>
                         </div>
+
                         <div className="vh-footer-social">
                             <button className="vh-social-btn" aria-label="Instagram">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
@@ -55,9 +46,8 @@ export default function VelourFooter() {
                     <div>
                         <div className="vh-footer-nav-title">Explore</div>
                         <ul className="vh-footer-nav-list">
-                            <li><Link href="/rooms">Rooms &amp; Suites</Link></li>
+                            <li><Link href="/rooms">Rooms</Link></li>
                             <li><Link href="/services">Services &amp; Amenities</Link></li>
-                            <li><Link href="/gallery">Gallery</Link></li>
                             <li><Link href="/nearby">Nearby Places</Link></li>
                             <li><Link href="/testimonials">Testimonials</Link></li>
                         </ul>
@@ -72,24 +62,6 @@ export default function VelourFooter() {
                             <li><Link href="/book">Book Now</Link></li>
                             <li><a href="tel:+916367850548">Call Us</a></li>
                         </ul>
-                    </div>
-
-                    {/* Newsletter */}
-                    <div className="vh-newsletter-card">
-                        <div className="vh-newsletter-tag">Inner Circle</div>
-                        <div className="vh-newsletter-title" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Exclusive offers, curated just for you</div>
-                        <p className="vh-newsletter-desc">Join our newsletter and receive early access to seasonal promotions and special member benefits.</p>
-                        {subscribed ? (
-                            <div style={{ color: "var(--gold)", fontSize: 13, letterSpacing: "0.1em" }}>✓ Subscribed successfully!</div>
-                        ) : (
-                            <>
-                                <input className="vh-newsletter-input" type="email" placeholder="Your email address" value={email} onChange={e => setEmail(e.target.value)} />
-                                <button className="vh-btn-subscribe" onClick={handleSubscribe}>
-                                    Subscribe
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22,2 15,22 11,13 2,9" /></svg>
-                                </button>
-                            </>
-                        )}
                     </div>
                 </div>
             </div>

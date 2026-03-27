@@ -15,9 +15,8 @@ export default function VelourHeader() {
     }, []);
 
     const navLinks = [
-        { label: "Rooms & Suites", href: "/rooms" },
+        { label: "Rooms", href: "/rooms" },
         { label: "About", href: "/about" },
-        { label: "Gallery", href: "/gallery" },
         { label: "Nearby", href: "/nearby" },
         { label: "Contact", href: "/contact" },
     ];
@@ -28,10 +27,6 @@ export default function VelourHeader() {
                 {/* Logo */}
                 <Link href="/" className="vh-logo">
                     <img src="/logo.png" alt="Hotel Grand Eagle" className="vh-logo-img" />
-                    <div className="vh-logo-text">
-                        <div className="vh-logo-name">GRAND EAGLE</div>
-                        <div className="vh-logo-sub">Luxury Hotel · Jaipur</div>
-                    </div>
                 </Link>
 
                 {/* Desktop Nav */}
