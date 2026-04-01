@@ -97,3 +97,4 @@ hotel-grand-eagle/
 - **`app/components/Bookings.tsx`:** The most complex UI component. It features a custom-built, horizontally scrolling calendar grid with a sticky "Rooms" column, accurately plotting bookings across a visual timeline based on check-in/out dates.
 - **API `route.ts` handlers:** Located inside `app/api/...`, these files contain standard exported functions (`GET`, `POST`, `PUT`, `DELETE`) that interact using `mongodb` collections to parse requests and return JSON responses to the frontend.
 # hotel-grand-eagle
+# hotel-grand-eagle
