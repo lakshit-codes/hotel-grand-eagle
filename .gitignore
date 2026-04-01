@@ -1,0 +1,38 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Next.js build output
+.next/
+out/
+
+# pnpm-specific
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env*
+
+# Build logs and temporary files
+build_error.txt
+build_error_log.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+
+# Artifacts and logs from previous sessions
+*.resolved
+implementation_plan.md
+walkthrough.md
+*.png
