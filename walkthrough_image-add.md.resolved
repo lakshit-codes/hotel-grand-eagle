@@ -1,0 +1,105 @@
+# Production Hotel Enhancement — Walkthrough
+
+## ✅ TypeScript Build: PASSING (exit code 0, all sessions)
+
+---
+
+## What Was Built
+
+### 1. 🏨 Room Assignment with Conflict Detection
+**File:** [app/components/Bookings.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Bookings.tsx)
+
+- **Visual Room Picker** replaces the old dropdown — rooms shown as a grid of buttons
+- Rooms are color-coded: 🟦 Selected · 🔴 Occupied (date conflict) · ⬜ Available
+- Conflict detection is automatic: selecting overlapping dates marks affected rooms red
+- Double-booking is **not possible** — the Save button is disabled if a conflict exists
+
+### 2. 👥 Multi-Occupant / Co-Guest Management
+**File:** [app/components/Bookings.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Bookings.tsx)
+
+- Booking modal now has **3 tabs**: Booking / Guests / Special
+- **Guests tab**: Primary guest at top, dynamic Add Guest list below
+- Each co-guest captures: Name, Passport/ID, Nationality, DOB, Phone, Dietary Pref
+- Co-guest count shown on booking cards and list view ("+2 co")
+
+### 3. ⚙️ Early Check-in / Late Check-out
+**File:** [app/components/Bookings.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Bookings.tsx)
+
+- **Special tab** in booking modal has checkboxes for Early CI / Late CO
+- Time pickers appear when either is enabled
+- Flags shown on calendar chips, list view, and in Reports
+
+### 4. 👔 Staff Management (New Page)
+**File:** [app/components/Staff.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Staff.tsx) + [app/api/staff/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/staff/route.ts)
+
+- **On Shift Now** roster card based on current time
+- **Department Overview** — click to filter by role
+- Full staff directory with role/shift filters and search
+- Inline **attendance marking** per staff (Present/Absent/Late)
+- Add/Edit/Delete modal with all fields
+
+### 5. 🍽️ Meal Plan CRUD
+**File:** [app/components/MealPlans.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/MealPlans.tsx) + [app/api/meal-plans/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/meal-plans/route.ts)
+
+- Plan cards now have Edit + Delete buttons
+- **Add Plan modal**: code, name, description, price, active toggle, included meals picker
+- Included meals shown as colored pills per plan
+- Adoption statistics (# bookings, # guests) shown per plan
+
+### 6. 🔧 Maintenance Full Redesign
+**File:** [app/components/Maintenance.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Maintenance.tsx)
+
+- **Card layout** with left colored priority border
+- Horizontal status + priority badges (no more cramped stacking)
+- **Quick-action buttons**: → Working · ✓ Resolve (no modal required)
+- **Comment timeline** per issue with expandable panel
+- **Kanban view** toggle (4 columns: Open → In Progress → Resolved → Deferred)
+- SLA timer shows hours/days since reported
+- Added: Category, Estimated Cost, comment system
+
+### 7. 📊 Reports & Night Audit (New Page)
+**File:** [app/components/Reports.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Reports.tsx)
+
+5 tabs:
+- **Occupancy** — per room type, bar chart, date range picker
+- **Arrivals & Departures** — 7-day forward view with flags
+- **In-House List** — live table of checked-in guests with nights remaining
+- **Revenue** — by source · by meal plan · by room type, bar breakdowns
+- **Night Audit** — daily summary, no-show detector, housekeeping snapshot, close audit button
+
+### 8. 🌱 Updated Seed Data
+**File:** [app/api/seed/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/seed/route.ts)
+
+- **12 realistic staff members** across all departments
+- Seed now loads: customers, bookings, meal plans, housekeeping, maintenance, pricing rules, **staff**
+- "Load Demo Data" button in topbar refreshes all collections
+
+---
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| [components/types.ts](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts) | Added [CoGuest](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#77-86), [StaffMember](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#206-222), [LostFoundItem](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#223-234), [MaintenanceComment](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#166-173); updated [Booking](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#105-138), [MealPlan](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#139-148), [MaintenanceItem](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#174-190) |
+| [components/Bookings.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Bookings.tsx) | Full rewrite: conflict checker, co-guest tab, 3-tab modal, early/late flags |
+| [components/Maintenance.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Maintenance.tsx) | Full rewrite: card layout, kanban, comments, SLA timer |
+| [components/MealPlans.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/MealPlans.tsx) | Full rewrite: add/edit/delete, included meals picker |
+| [components/Staff.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Staff.tsx) | **[NEW]** Full staff management page |
+| [components/Reports.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/Reports.tsx) | **[NEW]** 5-tab reports + night audit |
+| [components/ui.tsx](file:///c:/Users/Laksh/hotel-admin/app/components/ui.tsx) | Added Staff, Reports, LostFound icons |
+| [app/page.tsx](file:///c:/Users/Laksh/hotel-admin/app/page.tsx) | Added Staff + Reports nav items + routes + staff/meal-plan CRUD actions |
+| [api/staff/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/staff/route.ts) | **[NEW]** CRUD |
+| [api/meal-plans/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/meal-plans/route.ts) | Added POST, PUT, DELETE |
+| [api/lost-found/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/lost-found/route.ts) | **[NEW]** CRUD |
+| [api/seed/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/seed/route.ts) | Added 12 staff members to seed |
+
+---
+
+## How to Use
+
+1. **Load demo data:** Click **"🌱 Load Demo Data"** in the topbar
+2. **Book a room with conflict detection:** Bookings → New Booking → select a room type → pick dates → see the room grid with live conflict highlighting
+3. **Add co-guests:** Bookings → New/Edit Booking → Guests tab → Add Guest
+4. **Staff roster:** Staff (sidebar) → see who's currently on shift at the top
+5. **Night audit:** Reports & Audit → Night Audit tab → review day-end summary → Close Audit
+6. **Maintenance kanban:** Maintenance → click ⬛ Kanban button → drag-free board view

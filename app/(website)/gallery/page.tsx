@@ -1,13 +1,26 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Hotel } from "../../components/types";
-import { Fade } from "../components/hooks";
 
 export default function GalleryPage() {
     const [hotel, setHotel] = useState<Hotel | null>(null);
+    const [lightboxSrc, setLightboxSrc] = useState("");
 
     useEffect(() => {
         fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+        
+        // Handle animations
+        const fadeEls = document.querySelectorAll('.fade-in-up');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    (entry.target as HTMLElement).style.transitionDelay = (i * 0.05) + 's';
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        fadeEls.forEach(el => observer.observe(el));
+        return () => observer.disconnect();
     }, []);
 
     const images = [
@@ -25,61 +38,111 @@ export default function GalleryPage() {
         "https://images.unsplash.com/photo-1551882547-ff43c63efe81?q=80&w=1200"
     ];
 
-    const [lightboxSrc, setLightboxSrc] = useState("");
-    const openLightbox = (src: string) => { setLightboxSrc(src); document.body.style.overflow = "hidden"; };
-    const closeLightbox = () => { setLightboxSrc(""); document.body.style.overflow = ""; };
+    const openLightbox = (src: string) => { 
+        setLightboxSrc(src); 
+        document.body.style.overflow = "hidden"; 
+    };
+    
+    const closeLightbox = () => { 
+        setLightboxSrc(""); 
+        document.body.style.overflow = ""; 
+    };
 
     return (
-        <div style={{ paddingTop: 120, paddingBottom: 112, minHeight: "100vh" }}>
-            <div className="vh-max">
-                {/* Header */}
-                <Fade className="text-center" style={{ marginBottom: 80 }}>
-                    <div className="vh-section-eyebrow" style={{ justifyContent: "center" }}>
-                        <span className="vh-line" />
+        <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: 160, paddingBottom: 112 }}>
+            <div className="max-w">
+                {/* Header Section */}
+                <div style={{ textAlign: "center", marginBottom: 80 }}>
+                    <div className="section-eyebrow fade-in-up" style={{ justifyContent: "center" }}>
+                        <span className="line"></span>
                         <span>Visual Journey</span>
-                        <span className="vh-line" />
+                        <span className="line"></span>
                     </div>
-                    <h1 className="vh-section-title">Hospitality <em>Gallery</em></h1>
-                    <p style={{ color: "var(--ivory-dim)", marginTop: 24, fontSize: 14 }}>Explore the elegant spaces and premium amenities at {hotel?.name || "Hotel Grand Eagle"}.</p>
-                </Fade>
+                    <h1 className="section-title fade-in-up" style={{ fontSize: "clamp(40px, 8vw, 84px)" }}>
+                        Art of <em>Living</em>
+                    </h1>
+                    <p className="fade-in-up" style={{ color: "var(--ivory-dim)", marginTop: 24, fontSize: 15, maxWidth: 600, margin: "24px auto 0", lineHeight: 1.8 }}>
+                        From our meticulously curated suites to the serene ambiance of our public spaces, explore the visual aesthetic of Hotel Grand Eagle.
+                    </p>
+                </div>
 
                 {/* Gallery Grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 80 }}>
+                <div className="gallery-grid" style={{ marginBottom: 96 }}>
                     {images.map((img, i) => (
-                        <Fade key={i}>
-                            <div className="vh-gallery-item" onClick={() => openLightbox(img)} style={{ aspectRatio: "4/3" }}>
-                                <img src={img} alt={`Gallery image ${i + 1}`} loading="lazy" />
-                                <div className="vh-gallery-overlay">
-                                    <svg className="vh-gallery-zoom" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /><line x1="11" y1="8" x2="11" y2="14" /><line x1="8" y1="11" x2="14" y2="11" /></svg>
-                                    <span className="vh-gallery-overlay-text">View Full</span>
+                        <div key={i} className="gallery-item fade-in-up" onClick={() => openLightbox(img)} style={{ aspectRatio: "4/5", cursor: "pointer" }}>
+                            <img src={img} alt={`Gallery item ${i + 1}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <div className="gallery-overlay">
+                                <div className="gallery-overlay-content">
+                                    <div className="gallery-zoom-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--midnight)" strokeWidth="1.5">
+                                            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                                        </svg>
+                                    </div>
+                                    <span className="gallery-view-text">Enlarge View</span>
                                 </div>
                             </div>
-                        </Fade>
+                        </div>
                     ))}
                 </div>
 
-                {/* CTA Section */}
-                <Fade>
-                    <div style={{ textAlign: "center", padding: "64px 0", borderTop: "1px solid rgba(201,169,110,0.15)" }}>
-                        <h2 className="vh-section-title" style={{ fontSize: 32, marginBottom: 32 }}>Ready to experience it <em>yourself?</em></h2>
-                        <a href="/book" className="vh-btn-primary" style={{ display: "inline-flex" }}>
-                            Book Your Stay Now
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9,18 15,12 9,6" /></svg>
+                {/* Invitation Section */}
+                <div style={{ textAlign: "center", borderTop: "1px solid rgba(212,168,87,0.1)", paddingTop: 112 }}>
+                    <h2 className="section-title fade-in-up" style={{ fontSize: 36, marginBottom: 40 }}>
+                        Experience the <em>extraordinary</em>
+                    </h2>
+                    <div className="fade-in-up">
+                        <a href="/book" className="btn-primary" style={{ display: "inline-flex", textDecoration: "none" }}>
+                            Secure Your Reservation
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 12 }}>
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
                         </a>
                     </div>
-                </Fade>
+                </div>
             </div>
 
-            {/* Lightbox */}
+            {/* Lightbox Implementation */}
             {lightboxSrc && (
-                <div className="vh-lightbox open" onClick={closeLightbox}>
-                    <button className="vh-lightbox-close" onClick={closeLightbox}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                <div className="lightbox-overlay" onClick={closeLightbox}>
+                    <button className="lightbox-close" onClick={closeLightbox}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
                     </button>
-                    <img src={lightboxSrc} alt="Gallery" onClick={e => e.stopPropagation()} />
+                    <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+                        <img src={lightboxSrc} alt="Gallery Spotlight" style={{ maxWidth: "90vw", maxHeight: "85vh", border: "1px solid var(--gold)" }} />
+                    </div>
                 </div>
             )}
+
+            <style jsx>{`
+                .lightbox-overlay {
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.95);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    backdrop-filter: blur(8px);
+                    animation: fadeIn 0.4s ease;
+                }
+                .lightbox-close {
+                    position: absolute;
+                    top: 40px; right: 40px;
+                    background: none; border: none;
+                    cursor: pointer; padding: 10px;
+                    z-index: 10001;
+                }
+                .lightbox-content {
+                    position: relative;
+                    animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+            `}</style>
         </div>
     );
 }
+
 

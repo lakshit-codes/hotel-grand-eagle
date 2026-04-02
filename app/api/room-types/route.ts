@@ -10,7 +10,8 @@ export async function GET() {
     const clean = rooms.map(({ _id, ...rest }) => rest);
     return NextResponse.json(clean);
   } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch rooms" }, { status: 500 });
+    console.error("API error fetching room types:", err);
+    return NextResponse.json({ error: "Failed to fetch room types", details: String(err) }, { status: 500 });
   }
 }
 

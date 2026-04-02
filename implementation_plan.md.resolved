@@ -1,0 +1,45 @@
+# [Goal Description]
+
+The goal is to cleanly swap the terminology in the app to match standard PMS (Property Management System) language:
+- What we currently call "rooms" (e.g. Deluxe King) will be renamed to **"room types"** (collection: `room_types`).
+- What we currently call "room inventory" (e.g. 101, 102) will be renamed to **"rooms"** (collection: `rooms`).
+- We will fully link these two collections.
+- We will completely redesign the Bookings Calendar into a **Timeline / Gantt Chart view**, which is the industry standard for managing hotel bookings.
+
+## Proposed Changes
+
+### 1. Database & API Refactoring
+- **Rename `/api/rooms` to `/api/room-types`**:
+  - Update all DB queries inside to use the `room_types` collection.
+- **Rename `/api/room-inventory` to `/api/rooms`**:
+  - Update all DB queries inside to use the `rooms` collection.
+  - Establish a solid connection: when fetching individual rooms, we can optionally `aggregate` or `join` to the `room_types` collection, though `roomTypeId` is already present.
+- **Database Seeding ([/api/seed/route.ts](file:///c:/Users/Laksh/hotel-admin/app/api/seed/route.ts))**:
+  - Change all references of `rooms` -> `room_types`.
+  - Change all references of `room_inventory` -> `rooms`.
+
+### 2. Frontend State & Navigation Refactoring ([app/page.tsx](file:///c:/Users/Laksh/hotel-admin/app/page.tsx) & Types)
+- **Types**: rename [Room](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#2-27) interface to [RoomType](file:///c:/Users/Laksh/hotel-admin/app/components/RoomInventory.tsx#102-106). Rename [RoomInventoryItem](file:///c:/Users/Laksh/hotel-admin/app/components/RoomInventory.tsx#7-20) to [Room](file:///c:/Users/Laksh/hotel-admin/app/components/types.ts#2-27).
+- **State variables**: rename `rooms` to `roomTypes`. Rename `roomInventory` to `rooms`.
+- **Navigation**:
+  - Change "Room Types" ID from `rooms` to `room-types`.
+  - Change "Room Inventory" ID from `room-inventory` to `rooms`.
+- Update all prop passing across the app (Dashboard, Bookings, CheckIn, etc.) to use the renamed state variables.
+- Rename the actual component files if necessary, or just their internal functions.
+
+### 3. Bookings Calendar Redesign (Timeline/Gantt View)
+The current month-view calendar in your screenshot is extremely hard to read for a hotel because it groups bookings by day rather than by physical room. 
+
+**My Suggestion:** Now that we have individual physical rooms (101, 102, 201), we should build a **Timeline / Tape Chart view**.
+- **Y-Axis (Left column)**: List of physical rooms, grouped by Room Type or Floor (e.g. Deluxe King - 101, 102).
+- **X-Axis (Header)**: Timeline of continuous dates (e.g. Mar 1 to Mar 15).
+- **Grid**: Each row represents a physical room. Bookings are horizontal colored bars that span from the Check-In date column to the Check-Out date column.
+- **Benefits**:
+  - You can instantly see which specific room a guest is assigned to.
+  - You can clearly see 1-day gaps between bookings (which you can't see on a month view easily).
+  - It aligns perfectly with your request to "connect the rooms and room_types".
+
+### Execution Steps
+1. Refactor all API routes and Database seeding.
+2. Refactor TypeScript types, App state, and UI Prop passing.
+3. Build the new `BookingsTimeline` component and replace the old Calendar view in the Bookings page.

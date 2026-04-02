@@ -7,101 +7,128 @@ export default function TestimonialsPage() {
 
     useEffect(() => {
         fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+        
+        // Handle animations
+        const fadeEls = document.querySelectorAll('.fade-in-up');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    (entry.target as HTMLElement).style.transitionDelay = (i * 0.05) + 's';
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        fadeEls.forEach(el => observer.observe(el));
+        return () => observer.disconnect();
     }, []);
 
     const testimonials = [
         { 
-            n: "Sandeep Kumar", 
-            d: "Clean, budget-friendly and great service! Best hotel near Sitapura Area. The rooms are well-maintained and the staff is very polite. Highly recommended for short business trips.",
-            r: 5,
-            p: "S"
+            name: "Aditi Sharma", 
+            text: "Hotel Grand Eagle transcends the concept of a stay. It is an immersive cultural experience delivered through the lens of flawless modern hospitality.",
+            role: "Travel Editor",
+            location: "Delhi, India",
+            img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80",
+            rating: 5
         },
         { 
-            n: "Anita Sharma", 
-            d: "Stayed here for a week while attending a conference at JECC. The location is perfect, and the WiFi was strong enough for my zoom calls. Very professional staff.",
-            r: 5,
-            p: "A"
+            name: "James Whitmore", 
+            text: "The Presidential Suite felt like a private palace. From the moment our butler greeted us to the final handwritten farewell note, every interaction was orchestrated with exceptional care.",
+            role: "CEO, Meridian Capital",
+            location: "London, UK",
+            img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80",
+            rating: 5
         },
         { 
-            n: "Rahul Verma", 
-            d: "Excellent value for money. You won't find better rooms at this price point in Jaipur. The 24/7 room service was very prompt and the food was surprisingly good.",
-            r: 4,
-            p: "R"
+            name: "Priya Nair", 
+            text: "As an architect who obsesses over space and proportion, walking into Hotel Grand Eagle was like seeing all my ideals made tangible. The design is masterful.",
+            role: "Principal Architect",
+            location: "Mumbai, India",
+            img: "https://images.unsplash.com/photo-1494790108755-2616b12c4c66?w=80",
+            rating: 5
         },
         { 
-            n: "Deepika Singh", 
-            d: "A very safe and comfortable stay for solo female travelers. The security measures and CCTV surveillance made me feel at ease throughout my stay. Thank you!",
-            r: 5,
-            p: "D"
+            name: "Vikram Mehta", 
+            text: "A sanctuary of quiet luxury. The staff doesn't just serve — they connect and anticipate. Each detail, from the thread count to the turndown ritual, was perfect.",
+            role: "Entrepreneur",
+            location: "Dubai, UAE",
+            img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80",
+            rating: 5
         },
         { 
-            n: "Vikram Mehta", 
-            d: "Great accessibility to Chokhi Dhani and other major attractions. The staff helped us arrange a city tour at a very reasonable price. Wonderful experience overall.",
-            r: 5,
-            p: "V"
+            name: "Anita Sharma", 
+            text: "The perfect fusion of Rajasthani heritage and global luxury. The evening courtyard ritual is something I'll remember for a long time.",
+            role: "Fashion Designer",
+            location: "Milan, Italy",
+            img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80",
+            rating: 5
         },
         { 
-            n: "Priyanka Joshi", 
-            d: "The room was spacious and the hot water was available throughout. Highly recommend for those who want a peaceful stay away from the city's main hustle.",
-            r: 4,
-            p: "P"
+            name: "Sandeep Kumar", 
+            text: "Unparalleled service in Jaipur. We've stayed in many properties, but Grand Eagle has a level of personalized care that is rare to find.",
+            role: "Managing Director",
+            location: "Singapore",
+            img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80",
+            rating: 5
         }
     ];
 
     return (
-        <div className="pt-24 min-h-screen bg-white">
-            {/* Header */}
-            <div className="bg-[#0f1623] py-20 px-4 text-center">
-                <h1 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-widest uppercase mb-4">
-                    Guest Stories
-                </h1>
-                <div className="w-24 h-1 bg-[#dfb163] mx-auto mb-6"></div>
-                <p className="text-[#dfb163] font-medium tracking-wide max-w-2xl mx-auto">
-                    Hear what our guests have to say about their stay at {hotel?.name || "Hotel Grand Eagle"}.
-                </p>
-            </div>
+        <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: 160, paddingBottom: 112 }}>
+            <div className="max-w">
+                {/* Header Section */}
+                <div style={{ textAlign: "center", marginBottom: 80 }}>
+                    <div className="section-eyebrow fade-in-up" style={{ justifyContent: "center" }}>
+                        <span className="line"></span>
+                        <span>Guest Stories</span>
+                        <span className="line"></span>
+                    </div>
+                    <h1 className="section-title fade-in-up" style={{ fontSize: "clamp(40px, 8vw, 84px)" }}>
+                        Voices of <em>Grand Eagle</em>
+                    </h1>
+                    <p className="fade-in-up" style={{ color: "var(--ivory-dim)", marginTop: 24, fontSize: 15, maxWidth: 600, margin: "24px auto 0", lineHeight: 1.8 }}>
+                        From intimate escapes to grand celebrations, discover the unforgettable moments shared by our distinguished guests.
+                    </p>
+                </div>
 
-            {/* Testimonials Grid */}
-            <section className="py-24 px-4 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 32 }}>
                     {testimonials.map((t, i) => (
-                        <div key={i} className="bg-white p-10 border border-gray-100 rounded-sm shadow-lg hover:shadow-2xl transition-all duration-300 relative">
-                            <div className="text-6xl text-[#dfb163]/10 absolute top-4 left-6 font-serif font-black">&quot;</div>
-                            <div className="relative z-10">
-                                <div className="flex text-[#dfb163] mb-6 text-sm">
-                                    {"\u2605".repeat(t.r)}{"\u2606".repeat(5 - t.r)}
+                        <div key={i} className="testi-card fade-in-up" style={{ textAlign: "left", margin: 0, maxWidth: "100%", padding: 40, border: "1px solid rgba(212,168,87,0.1)", background: "var(--charcoal)" }}>
+                            <div className="stars" style={{ justifyContent: "flex-start", marginBottom: 20 }}>
+                                {[...Array(t.rating)].map((_, i) => <span key={i} className="star">★</span>)}
+                            </div>
+                            <blockquote className="testi-quote font-display" style={{ fontSize: 20, textAlign: "left", marginBottom: 32 }}>
+                                &ldquo;{t.text}&rdquo;
+                            </blockquote>
+                            <div className="testi-author" style={{ justifyContent: "flex-start" }}>
+                                <div className="testi-avatar">
+                                    <img src={t.img} alt={t.name} />
                                 </div>
-                                <p className="text-gray-600 font-serif italic mb-8 leading-relaxed text-lg">
-                                    &quot;{t.d}&quot;
-                                </p>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-[#dfb163] rounded-full flex items-center justify-center font-bold text-black border-2 border-white/10 shadow-md">
-                                        {t.p}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-[#0f1623] font-bold tracking-wider uppercase text-xs">{t.n}</h4>
-                                        <span className="text-[10px] text-gray-400 uppercase tracking-widest">Verified Guest</span>
-                                    </div>
+                                <div>
+                                    <div className="testi-name">{t.name}</div>
+                                    <div className="testi-role">{t.role}</div>
+                                    <div className="testi-location">{t.location}</div>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-            </section>
 
-            {/* Review CTA */}
-            <section className="bg-[#0f1623] py-24 px-4 text-center">
-                <div className="max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-serif font-bold text-white mb-6 uppercase">Did you stay with us recently?</h2>
-                    <p className="text-gray-300 mb-10 leading-relaxed font-light">
-                        We value your feedback and would love to hear about your experience. Your reviews help us maintain the high standard of service we strive for.
-                    </p>
-                    <a href="/contact" className="inline-block border border-[#dfb163] text-[#dfb163] hover:bg-[#dfb163] hover:text-black px-10 py-3.5 font-black tracking-[0.2em] uppercase text-xs transition-all shadow-xl">
-                        Send Your Feedback
-                    </a>
+                {/* Media Strip */}
+                <div className="press-strip" style={{ marginTop: 112 }}>
+                    <div className="press-label">As Featured In</div>
+                    <div className="press-logos">
+                        <span className="press-logo">CONDÉ NAST</span>
+                        <span className="press-logo">VOGUE INDIA</span>
+                        <span className="press-logo">ARCHITECTURAL DIGEST</span>
+                        <span className="press-logo">TRAVEL + LEISURE</span>
+                        <span className="press-logo">FORBES TRAVEL</span>
+                    </div>
                 </div>
-            </section>
+            </div>
         </div>
     );
 }
+
 
