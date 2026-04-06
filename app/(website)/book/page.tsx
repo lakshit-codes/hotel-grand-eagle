@@ -4,6 +4,120 @@ import { Room, MealPlan } from "../../components/types";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+// Responsive styles injected once
+const BOOK_STYLES = `
+  .book-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 64px;
+    flex-wrap: nowrap;
+  }
+  .book-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.35;
+    transition: opacity 0.4s;
+    min-width: 72px;
+  }
+  .book-step.active { opacity: 1; }
+  .book-step-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--ivory-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-family: 'Cormorant Garamond', serif;
+    color: var(--ivory-dim); margin-bottom: 10px;
+    background: transparent;
+    transition: border-color 0.4s, color 0.4s, background 0.4s;
+    flex-shrink: 0;
+  }
+  .book-step.active .book-step-circle {
+    border-color: var(--gold); color: var(--gold);
+    background: rgba(212,168,87,0.07);
+  }
+  .book-step-label {
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ivory-dim);
+    font-weight: 400; white-space: nowrap;
+    transition: color 0.4s;
+  }
+  .book-step.active .book-step-label { color: var(--gold); font-weight: 700; }
+  .book-step-line {
+    flex: 1; max-width: 80px; min-width: 24px;
+    height: 1px; background: rgba(212,168,87,0.12);
+    margin-bottom: 28px; /* aligns with circle center */
+    transition: background 0.4s;
+  }
+  .book-step-line.done { background: var(--gold); }
+
+  .book-search-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    align-items: end;
+  }
+  .book-search-submit { grid-column: 1 / -1; text-align: center; margin-top: 28px; }
+
+  .book-room-card {
+    background: var(--charcoal);
+    border: 1px solid rgba(212,168,87,0.1);
+    display: flex;
+    overflow: hidden;
+  }
+  .book-room-img { width: 38%; min-height: 260px; overflow: hidden; flex-shrink: 0; }
+  .book-room-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .book-room-body { flex: 1; padding: 36px 40px; display: flex; flex-direction: column; }
+
+  .book-step3 {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+  .book-step3-main { flex: 1; display: flex; flex-direction: column; gap: 40px; }
+  .book-step3-sidebar { width: 360px; flex-shrink: 0; }
+
+  .book-name-row { display: flex; gap: 24px; }
+  .book-name-row > div { flex: 1; }
+
+  .book-contact-row { display: flex; gap: 24px; }
+  .book-contact-row > div { flex: 1; }
+
+  @media (max-width: 900px) {
+    .book-steps { gap: 0; margin-bottom: 48px; }
+    .book-step-circle { width: 34px; height: 34px; font-size: 14px; margin-bottom: 8px; }
+    .book-step-label { font-size: 9px; letter-spacing: 0.12em; }
+    .book-step-line { max-width: 48px; min-width: 16px; }
+
+    .book-search-form { grid-template-columns: 1fr 1fr; }
+    .book-search-submit { grid-column: 1 / -1; }
+
+    .book-room-card { flex-direction: column; }
+    .book-room-img { width: 100%; height: 220px; }
+    .book-room-body { padding: 24px 28px; }
+
+    .book-step3 { flex-direction: column; gap: 32px; }
+    .book-step3-sidebar { width: 100%; }
+  }
+
+  @media (max-width: 600px) {
+    .book-steps { margin-bottom: 36px; }
+    .book-step { min-width: 56px; }
+    .book-step-circle { width: 30px; height: 30px; font-size: 13px; margin-bottom: 6px; }
+    .book-step-label { font-size: 8px; letter-spacing: 0.1em; }
+    .book-step-line { max-width: 28px; min-width: 8px; }
+
+    .book-search-form { grid-template-columns: 1fr; }
+    .book-search-submit { margin-top: 16px; }
+
+    .book-room-img { height: 180px; }
+    .book-room-body { padding: 20px; }
+
+    .book-name-row, .book-contact-row { flex-direction: column; gap: 16px; }
+  }
+`;
+
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 const dtIn = tomorrow.toISOString().split("T")[0];
@@ -183,21 +297,23 @@ function BookingForm() {
         );
     }
 
+    const stepLabels = ["Inquiry", "Select", "Finalize"];
+
     return (
-        <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: 160, paddingBottom: 112 }}>
+        <>
+        <style dangerouslySetInnerHTML={{ __html: BOOK_STYLES }} />
+        <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: "max(120px, 10vh)", paddingBottom: 112 }}>
             <div className="max-w">
                 
-                {/* Steps Header */}
-                <div className="fade-in-up" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, marginBottom: 80 }}>
+                {/* ── Step Indicator ── */}
+                <div className="book-steps fade-in-up">
                     {[1, 2, 3].map((s, i) => (
                         <React.Fragment key={s}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", opacity: step >= s ? 1 : 0.3, transition: "opacity 0.4s" }}>
-                                <div style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${step >= s ? "var(--gold)" : "var(--ivory-dim)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontFamily: "'Cormorant Garamond', serif", color: step >= s ? "var(--gold)" : "var(--ivory-dim)", marginBottom: 10, background: step === s ? "rgba(212,168,87,0.05)" : "transparent" }}>{s}</div>
-                                <span style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: step >= s ? "var(--gold)" : "var(--ivory-dim)", fontWeight: step === s ? "bold" : "normal" }}>
-                                    {s === 1 ? "Inquiry" : s === 2 ? "Select" : "Finalize"}
-                                </span>
+                            <div className={`book-step${step >= s ? " active" : ""}`}>
+                                <div className="book-step-circle">{s}</div>
+                                <span className="book-step-label">{stepLabels[i]}</span>
                             </div>
-                            {i < 2 && <div style={{ width: 60, height: 1, background: step > s ? "var(--gold)" : "rgba(212,168,87,0.1)", marginTop: -20 }} />}
+                            {i < 2 && <div className={`book-step-line${step > s ? " done" : ""}`} />}
                         </React.Fragment>
                     ))}
                 </div>
@@ -205,10 +321,10 @@ function BookingForm() {
                 {/* STEP 1: SEARCH */}
                 {step === 1 && (
                     <div className="fade-in-up" style={{ maxWidth: 800, margin: "0 auto" }}>
-                        <div className="form-card" style={{ padding: 60 }}>
-                            <h2 className="section-title font-display" style={{ fontSize: 42, textAlign: "center", marginBottom: 40 }}>Check <em>Sanctuary Availability</em></h2>
+                        <div className="form-card" style={{ padding: "clamp(28px, 5vw, 60px)" }}>
+                            <h2 className="section-title font-display" style={{ fontSize: "clamp(28px, 5vw, 42px)", textAlign: "center", marginBottom: 40 }}>Check <em>Room Availability</em></h2>
                             
-                            <form onSubmit={handleSearch} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, alignItems: "end" }}>
+                            <form onSubmit={handleSearch} className="book-search-form">
                                 <div>
                                     <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Arrival</label>
                                     <input className="form-input" type="date" required value={checkIn} onChange={e => handleCheckInChange(e.target.value)} min={dtIn} style={{ colorScheme: 'dark' }} />
@@ -228,9 +344,9 @@ function BookingForm() {
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ gridColumn: "1 / -1", textAlign: "center", marginTop: 32 }}>
-                                    <button type="submit" disabled={loading} className="btn-primary" style={{ padding: "20px 64px" }}>
-                                        {loading ? "Searching Cosmos..." : "Search Suites"}
+                                <div className="book-search-submit">
+                                    <button type="submit" disabled={loading} className="btn-primary" style={{ padding: "18px 56px" }}>
+                                        {loading ? "Searching..." : "Search Rooms"}
                                     </button>
                                 </div>
                             </form>
@@ -255,30 +371,30 @@ function BookingForm() {
                                 <button onClick={() => setStep(1)} className="btn-primary">Adjust Dates</button>
                             </div>
                         ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
                                 {availableRooms.filter(r => r.maxOccupancy >= guests).map(room => (
-                                    <div key={room.id} className="room-card-horizontal" style={{ background: "var(--charcoal)", border: "1px solid rgba(212,168,87,0.1)", display: "flex", height: 340 }}>
-                                        <div style={{ width: "40%", overflow: "hidden" }}>
-                                            <img src={room.images?.[0] || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1000'} alt={room.roomName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    <div key={room.id} className="book-room-card">
+                                        <div className="book-room-img">
+                                            <img src={room.images?.[0] || 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1000'} alt={room.roomName} />
                                         </div>
-                                        <div style={{ width: "60%", padding: 40, display: "flex", flexDirection: "column" }}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                                                <h3 className="font-display" style={{ fontSize: 32, color: "var(--ivory)" }}>{room.roomName}</h3>
-                                                <div style={{ textAlign: "right" }}>
-                                                    <div style={{ color: "var(--gold)", fontSize: 28, fontFamily: "'Cormorant Garamond', serif" }}>₹{room.basePrice.toLocaleString()}</div>
+                                        <div className="book-room-body">
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
+                                                <h3 className="font-display" style={{ fontSize: "clamp(22px, 4vw, 32px)", color: "var(--ivory)" }}>{room.roomName}</h3>
+                                                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                                    <div style={{ color: "var(--gold)", fontSize: "clamp(20px, 4vw, 28px)", fontFamily: "'Cormorant Garamond', serif" }}>₹{room.basePrice.toLocaleString()}</div>
                                                     <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase" }}>Per Night</div>
                                                 </div>
                                             </div>
-                                            <div style={{ display: "flex", gap: 20, fontSize: 11, color: "var(--gold)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 24, opacity: 0.8 }}>
-                                                <span>{room.maxOccupancy} Occupancy</span>
-                                                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--gold)", alignSelf: "center" }}></span>
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 11, color: "var(--gold)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20, opacity: 0.8 }}>
+                                                <span>{room.maxOccupancy} Guests</span>
+                                                <span>·</span>
                                                 <span>{room.bedType}</span>
-                                                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--gold)", alignSelf: "center" }}></span>
+                                                <span>·</span>
                                                 <span>{room.roomSize} m²</span>
                                             </div>
-                                            <p style={{ fontSize: 14, color: "var(--ivory-dim)", lineHeight: 1.8, flex: 1 }}>Surrender to absolute comfort in a space designed for the discerning traveler. Features include curated artwork, premium linens, and {room.view.toLowerCase()}.</p>
-                                            <div style={{ textAlign: "right", marginTop: 24 }}>
-                                                <button onClick={() => handleSelectRoom(room.id)} className="btn-primary" style={{ padding: "12px 32px", fontSize: 12 }}>Select Sanctuary</button>
+                                            <p style={{ fontSize: 14, color: "var(--ivory-dim)", lineHeight: 1.8, flex: 1, marginBottom: 20 }}>A space designed for comfort, featuring premium linens and {room.view.toLowerCase()}.</p>
+                                            <div style={{ marginTop: "auto" }}>
+                                                <button onClick={() => handleSelectRoom(room.id)} className="btn-primary" style={{ padding: "12px 28px", fontSize: 12 }}>Select Room</button>
                                             </div>
                                         </div>
                                     </div>
@@ -290,28 +406,28 @@ function BookingForm() {
 
                 {/* STEP 3: DETAILS */}
                 {step === 3 && (
-                    <div className="fade-in-up" style={{ display: "flex", gap: 48, alignItems: "flex-start" }}>
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 40 }}>
+                    <div className="fade-in-up book-step3">
+                        <div className="book-step3-main">
                             {/* Guest Details Form */}
-                            <div className="form-card" style={{ padding: 48 }}>
-                                <h2 className="section-title font-display" style={{ fontSize: 32, marginBottom: 32 }}>Guest <em>Sanctuary Details</em></h2>
+                            <div className="form-card" style={{ padding: "clamp(24px, 5vw, 48px)" }}>
+                                <h2 className="section-title font-display" style={{ fontSize: "clamp(22px, 4vw, 32px)", marginBottom: 32 }}>Guest <em>Details</em></h2>
                                 <form id="booking-form" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                    <div style={{ display: "flex", gap: 24 }}>
-                                        <div style={{ flex: 1 }}>
+                                    <div className="book-name-row">
+                                        <div>
                                             <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>First Name</label>
                                             <input required className="form-input" type="text" value={guestInfo.firstName} onChange={e => setGuestInfo(p => ({...p, firstName: e.target.value}))} />
                                         </div>
-                                        <div style={{ flex: 1 }}>
+                                        <div>
                                             <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Last Name</label>
                                             <input required className="form-input" type="text" value={guestInfo.lastName} onChange={e => setGuestInfo(p => ({...p, lastName: e.target.value}))} />
                                         </div>
                                     </div>
-                                    <div style={{ display: "flex", gap: 24 }}>
-                                        <div style={{ flex: 1 }}>
+                                    <div className="book-contact-row">
+                                        <div>
                                             <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Email Address</label>
                                             <input required className="form-input" type="email" value={guestInfo.email} onChange={e => setGuestInfo(p => ({...p, email: e.target.value}))} />
                                         </div>
-                                        <div style={{ flex: 1 }}>
+                                        <div>
                                             <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Phone Number</label>
                                             <input required className="form-input" type="tel" value={guestInfo.phone} onChange={e => setGuestInfo(p => ({...p, phone: e.target.value}))} />
                                         </div>
@@ -325,29 +441,29 @@ function BookingForm() {
 
                             {/* Meal Plans */}
                             {mealPlans.length > 0 && (
-                                <div className="form-card" style={{ padding: 48 }}>
-                                    <h2 className="section-title font-display" style={{ fontSize: 24, marginBottom: 24 }}>Enhance Your <em>Experience</em></h2>
+                                <div className="form-card" style={{ padding: "clamp(24px, 5vw, 48px)" }}>
+                                    <h2 className="section-title font-display" style={{ fontSize: "clamp(18px, 3vw, 24px)", marginBottom: 24 }}>Enhance Your <em>Experience</em></h2>
                                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                                         {mealPlans.map(mp => (
-                                            <label key={mp.id} style={{ display: "flex", alignItems: "center", border: `1px solid ${selectedMealPlanId === mp.id ? "var(--gold)" : "rgba(212,168,87,0.1)"}`, background: selectedMealPlanId === mp.id ? "rgba(212,168,87,0.05)" : "transparent", padding: "24px 32px", cursor: "pointer", transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-                                                <input type="radio" name="mealPlan" checked={selectedMealPlanId === mp.id} onChange={() => setSelectedMealPlanId(mp.id)} style={{ accentColor: "var(--gold)", width: 18, height: 18 }} />
-                                                <div style={{ marginLeft: 24, flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <label key={mp.id} style={{ display: "flex", alignItems: "center", gap: 20, border: `1px solid ${selectedMealPlanId === mp.id ? "var(--gold)" : "rgba(212,168,87,0.1)"}`, background: selectedMealPlanId === mp.id ? "rgba(212,168,87,0.05)" : "transparent", padding: "20px 24px", cursor: "pointer", transition: "all 0.3s", flexWrap: "wrap" }}>
+                                                <input type="radio" name="mealPlan" checked={selectedMealPlanId === mp.id} onChange={() => setSelectedMealPlanId(mp.id)} style={{ accentColor: "var(--gold)", width: 18, height: 18, flexShrink: 0 }} />
+                                                <div style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                                                     <div>
-                                                        <div style={{ fontSize: 16, color: "var(--ivory)", fontWeight: "500", marginBottom: 4 }}>{mp.name}</div>
-                                                        <div style={{ fontSize: 11, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase" }}>{mp.description || "Gourmet dining experience"}</div>
+                                                        <div style={{ fontSize: 15, color: "var(--ivory)", fontWeight: 500, marginBottom: 4 }}>{mp.name}</div>
+                                                        <div style={{ fontSize: 11, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase" }}>{mp.description || "Gourmet dining"}</div>
                                                     </div>
-                                                    <div style={{ textAlign: "right" }}>
-                                                        <div style={{ color: "var(--gold)", fontSize: 18, fontWeight: "600" }}>+₹{mp.pricePerPersonPerNight.toLocaleString()}</div>
-                                                        <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Per Person</div>
+                                                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                                        <div style={{ color: "var(--gold)", fontSize: 17, fontWeight: 600 }}>+₹{mp.pricePerPersonPerNight.toLocaleString()}</div>
+                                                        <div style={{ fontSize: 10, color: "var(--ivory-dim)", textTransform: "uppercase" }}>Per Person/Night</div>
                                                     </div>
                                                 </div>
                                             </label>
                                         ))}
-                                        <label style={{ display: "flex", alignItems: "center", border: `1px solid ${selectedMealPlanId === "" ? "var(--gold)" : "rgba(212,168,87,0.1)"}`, background: selectedMealPlanId === "" ? "rgba(212,168,87,0.05)" : "transparent", padding: "24px 32px", cursor: "pointer", transition: "all 0.3s" }}>
-                                            <input type="radio" name="mealPlan" checked={selectedMealPlanId === ""} onChange={() => setSelectedMealPlanId("")} style={{ accentColor: "var(--gold)", width: 18, height: 18 }} />
-                                            <div style={{ marginLeft: 24, flex: 1 }}>
-                                                <div style={{ fontSize: 16, color: "var(--ivory)", fontWeight: "500" }}>Room Only</div>
-                                                <div style={{ fontSize: 11, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase" }}>Breakfast and meals not included</div>
+                                        <label style={{ display: "flex", alignItems: "center", gap: 20, border: `1px solid ${selectedMealPlanId === "" ? "var(--gold)" : "rgba(212,168,87,0.1)"}`, background: selectedMealPlanId === "" ? "rgba(212,168,87,0.05)" : "transparent", padding: "20px 24px", cursor: "pointer", transition: "all 0.3s" }}>
+                                            <input type="radio" name="mealPlan" checked={selectedMealPlanId === ""} onChange={() => setSelectedMealPlanId("")} style={{ accentColor: "var(--gold)", width: 18, height: 18, flexShrink: 0 }} />
+                                            <div>
+                                                <div style={{ fontSize: 15, color: "var(--ivory)", fontWeight: 500 }}>Room Only</div>
+                                                <div style={{ fontSize: 11, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase" }}>No meals included</div>
                                             </div>
                                         </label>
                                     </div>
@@ -356,64 +472,57 @@ function BookingForm() {
                         </div>
 
                         {/* Summary Sidebar */}
-                        <div style={{ width: 380, flexShrink: 0 }}>
-                            <div style={{ background: "rgba(212,168,87,0.02)", border: "1px solid rgba(212,168,87,0.15)", padding: 40, position: "sticky", top: 120 }}>
-                                <h3 className="font-display" style={{ fontSize: 28, color: "var(--ivory)", borderBottom: "1px solid rgba(212,168,87,0.1)", paddingBottom: 20, marginBottom: 32 }}>Sanctuary <em>Summary</em></h3>
-                                
-                                <div style={{ display: "flex", flexDirection: "column", gap: 24, marginBottom: 40 }}>
+                        <div className="book-step3-sidebar">
+                            <div style={{ background: "rgba(212,168,87,0.02)", border: "1px solid rgba(212,168,87,0.15)", padding: "clamp(24px, 4vw, 40px)", position: "sticky", top: 90 }}>
+                                <h3 className="font-display" style={{ fontSize: 26, color: "var(--ivory)", borderBottom: "1px solid rgba(212,168,87,0.1)", paddingBottom: 18, marginBottom: 28 }}>Booking <em>Summary</em></h3>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 32 }}>
                                     <div>
-                                        <div style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 8 }}>Selected Suite</div>
-                                        <div className="font-display" style={{ color: "var(--ivory)", fontSize: 24, letterSpacing: "0.03em" }}>{availableRooms.find(r => r.id === selectedRoomId)?.roomName}</div>
+                                        <div style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 6 }}>Selected Room</div>
+                                        <div className="font-display" style={{ color: "var(--ivory)", fontSize: 20 }}>{availableRooms.find(r => r.id === selectedRoomId)?.roomName}</div>
                                     </div>
-                                    
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                         <div>
-                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Arrival</div>
-                                            <div style={{ fontSize: 15, color: "var(--ivory)" }}>{new Date(checkIn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
+                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Arrival</div>
+                                            <div style={{ fontSize: 13, color: "var(--ivory)" }}>{new Date(checkIn).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Departure</div>
-                                            <div style={{ fontSize: 15, color: "var(--ivory)" }}>{new Date(checkOut).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, padding: "20px 0", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                                        <div>
-                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Stay</div>
-                                            <div style={{ fontSize: 15, color: "var(--ivory)" }}>{Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))} Night(s)</div>
+                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Departure</div>
+                                            <div style={{ fontSize: 13, color: "var(--ivory)" }}>{new Date(checkOut).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>Party</div>
-                                            <div style={{ fontSize: 15, color: "var(--ivory)" }}>{guests} Adult{guests > 1 && 's'}</div>
+                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Nights</div>
+                                            <div style={{ fontSize: 13, color: "var(--ivory)" }}>{Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 3600 * 24)))}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 10, color: "var(--ivory-dim)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Guests</div>
+                                            <div style={{ fontSize: 13, color: "var(--ivory)" }}>{guests}</div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div style={{ marginBottom: 40, display: "flex", flexDirection: "column", gap: 16 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)", fontSize: 14 }}>
-                                        <span style={{ letterSpacing: "0.05em" }}>Suite Rate</span>
-                                        <span style={{ color: "var(--ivory)" }}>₹{(availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0).toLocaleString()} <span style={{ fontSize: 10 }}>/ Night</span></span>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.05)", marginBottom: 28 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)", fontSize: 13 }}>
+                                        <span>Room Rate</span>
+                                        <span style={{ color: "var(--ivory)" }}>₹{(availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0).toLocaleString()}/night</span>
                                     </div>
                                     {selectedMealPlanId && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)", fontSize: 14 }}>
-                                            <span style={{ letterSpacing: "0.05em" }}>Meal Provisions</span>
-                                            <span style={{ color: "var(--ivory)" }}>+₹{((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests).toLocaleString()} <span style={{ fontSize: 10 }}>/ Night</span></span>
+                                        <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ivory-dim)", fontSize: 13 }}>
+                                            <span>Meals</span>
+                                            <span style={{ color: "var(--ivory)" }}>+₹{((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests).toLocaleString()}/night</span>
                                         </div>
                                     )}
-                                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 20, borderTop: "1px dashed rgba(212,168,87,0.3)", marginTop: 8 }}>
-                                        <span style={{ fontSize: 11, color: "var(--gold)", letterSpacing: "0.2em", textTransform: "uppercase", alignSelf: "center", fontWeight: "bold" }}>Total Investment</span>
-                                        <span style={{ color: "var(--gold)", fontSize: 32, fontFamily: "'Cormorant Garamond', serif", letterSpacing: "0.02em" }}>
-                                            ₹{((availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0) + ((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests)) * Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000*3600*24)))}
+                                    <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 16, borderTop: "1px dashed rgba(212,168,87,0.3)" }}>
+                                        <span style={{ fontSize: 11, color: "var(--gold)", letterSpacing: "0.18em", textTransform: "uppercase", alignSelf: "center", fontWeight: "bold" }}>Total</span>
+                                        <span style={{ color: "var(--gold)", fontSize: 26, fontFamily: "'Cormorant Garamond', serif" }}>
+                                            ₹{(((availableRooms.find(r => r.id === selectedRoomId)?.basePrice || 0) + ((mealPlans.find(m => m.id === selectedMealPlanId)?.pricePerPersonPerNight || 0) * guests)) * Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 3600 * 24)))).toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
-
-                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                                    <button form="booking-form" type="submit" disabled={submitting} className="btn-primary" style={{ width: "100%", padding: 22, fontSize: 14 }}>
-                                        {submitting ? "Processing Ritual..." : "Confirm Sanctuary"}
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <button form="booking-form" type="submit" disabled={submitting} className="btn-primary" style={{ width: "100%", padding: "18px 24px", fontSize: 13 }}>
+                                        {submitting ? "Processing..." : "Confirm Booking"}
                                     </button>
-                                    <button type="button" onClick={() => setStep(2)} style={{ background: "none", border: "none", color: "var(--ivory-dim)", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer", display: "inline-block", opacity: 0.7, transition: "opacity 0.3s" }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}>
-                                        ← Change Suite
+                                    <button type="button" onClick={() => setStep(2)} style={{ background: "none", border: "none", color: "var(--ivory-dim)", fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer", opacity: 0.7, transition: "opacity 0.3s", padding: "8px 0" }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.7'}>
+                                        ← Change Room
                                     </button>
                                 </div>
                             </div>
@@ -422,6 +531,7 @@ function BookingForm() {
                 )}
             </div>
         </div>
+        </>
     );
 }
 

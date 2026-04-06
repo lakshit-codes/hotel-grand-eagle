@@ -1,0 +1,47 @@
+[
+  {
+    "_id": "69d36c123413b65b10947bc1",
+    "name": "Test User",
+    "email": "test1775463441881@test.com",
+    "phone": null,
+    "password": "$2b$10$htfB7CHHST6b1EP.BmG0due6Xr1z7D8zPmcBdEGQArxRhEWHPioqa",
+    "role": "user",
+    "createdAt": "2026-04-06T08:17:22.066Z"
+  },
+  {
+    "_id": "69d36bd93413b65b10947bc0",
+    "name": "Test User",
+    "email": "test1775463385277@test.com",
+    "phone": null,
+    "password": "$2b$10$iPZiazq2t5xp/rrLTeczcOl5rOuyQuseHXUEoPUdOt5NFzaDY8V7a",
+    "role": "user",
+    "createdAt": "2026-04-06T08:16:25.432Z"
+  },
+  {
+    "_id": "69d36b843413b65b10947bbf",
+    "name": "Test User",
+    "email": "test1775463300221@test.com",
+    "phone": null,
+    "password": "$2b$10$Zk.fNjFDTbJPrhwduzikkuTGqR5cUHcuRx/DufjnutUSQNoYIU0JO",
+    "role": "user",
+    "createdAt": "2026-04-06T08:15:00.374Z"
+  },
+  {
+    "_id": "69d36b163413b65b10947bbe",
+    "name": "Test User",
+    "email": "test1775463190665@test.com",
+    "phone": null,
+    "password": "$2b$10$4AYw1uuGeWMR9I8Ic5ztw.1TPwgyJp/7l2GnlUU8RJ3ypfjTaab3G",
+    "role": "user",
+    "createdAt": "2026-04-06T08:13:10.828Z"
+  },
+  {
+    "_id": "69d3681e3413b65b10947bbd",
+    "name": "Lakshit",
+    "email": "lakshitajmera@gmail.com",
+    "phone": null,
+    "password": "$2b$10$JJKFQB.pRFEPUfGnJGHf9.WJi.Kcv209vuC5OJsFLqoDFCqWxBlMa",
+    "role": "user",
+    "createdAt": "2026-04-06T08:00:30.823Z"
+  }
+]
