@@ -1,18 +1,29 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function VelourHeader() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [hotel, setHotel] = useState<any>(null);
+    const [user, setUser] = useState<any>(null);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener("scroll", handleScroll);
         fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+        fetch("/api/auth/me").then(r => r.json()).then(d => { if (d.authenticated) setUser(d.user); }).catch(() => {});
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    const handleLogout = async () => {
+        await fetch("/api/auth/logout", { method: "POST" });
+        setUser(null);
+        setDropdownOpen(false);
+    };
 
     // Close drawer on route change / Escape
     useEffect(() => {
@@ -56,6 +67,24 @@ export default function VelourHeader() {
 
                     {/* Desktop Actions */}
                     <div className="vh-actions">
+                        {user ? (
+                            <div className="vh-user-menu">
+                                <button className="vh-user-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                                    <div className="vh-user-avatar">{user.name ? user.name.charAt(0).toUpperCase() : "U"}</div>
+                                    <span>{user.name || "User"}</span>
+                                </button>
+                                {dropdownOpen && (
+                                    <div className="vh-dropdown">
+                                        <Link href="/my-bookings" className="vh-dropdown-item" onClick={() => setDropdownOpen(false)} style={{ textDecoration: "none" }}>My Bookings</Link>
+                                        <button className="vh-dropdown-item" onClick={handleLogout}>Logout</button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <Link href="/sign-in" className="vh-nav-link" style={{ background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "none", display: "inline-block" }}>
+                                SIGN IN
+                            </Link>
+                        )}
                         <a href={`tel:${phoneTel}`} className="vh-phone-link">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63a19.79 19.79 0 01-3.07-8.63A2 2 0 012.18 0h3a2 2 0 012 1.72c.12.96.36 1.9.72 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.55-.55a2 2 0 012.11-.45c.91.36 1.85.6 2.81.72A2 2 0 0122 16.92z" />
@@ -105,6 +134,20 @@ export default function VelourHeader() {
                                     {l.label}
                                 </Link>
                             ))}
+                            {user ? (
+                                <>
+                                    <Link href="/my-bookings" className="vh-drawer-link" style={{ background: "none", border: "none", textAlign: "left", cursor: "pointer", width: "100%", textDecoration: "none", display: "block" }} onClick={() => setMobileOpen(false)}>
+                                        MY BOOKINGS
+                                    </Link>
+                                    <button className="vh-drawer-link" style={{ background: "none", border: "none", textAlign: "left", cursor: "pointer", width: "100%" }} onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                                        LOGOUT
+                                    </button>
+                                </>
+                            ) : (
+                                <Link href="/sign-in" className="vh-drawer-link" style={{ background: "none", border: "none", textAlign: "left", cursor: "pointer", width: "100%", textDecoration: "none", display: "block" }} onClick={() => setMobileOpen(false)}>
+                                    SIGN IN
+                                </Link>
+                            )}
                         </nav>
 
                         {/* Book Now CTA */}
@@ -125,6 +168,7 @@ export default function VelourHeader() {
                     </div>
                 </div>
             )}
+
         </>
     );
 }
