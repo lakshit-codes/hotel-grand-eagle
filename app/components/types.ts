@@ -264,3 +264,32 @@ export interface NearbyPlace {
     createdAt: string;
 }
 
+export interface PageBlock {
+    id: string;
+    type: string;
+    layout: string;
+    adminTitle?: string;
+    content: any[];
+    columns?: any[][];
+}
+
+export interface CMSPage {
+    id: string;
+    title: string;
+    slug: string;
+    content: PageBlock[];
+    metaTitle?: string;
+    metaDescription?: string;
+    image?: string;
+    isPublished: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface GalleryImage {
+    id: string;
+    url: string;
+    label: string;
+    order: number;
+    createdAt: string;
+}

@@ -553,9 +553,9 @@ export const NumInp = ({ value, onChange, min = 0, max = 999999 }: NumInpProps) 
     );
 };
 
-type SelProps = { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; opts: (string | { v: string; l: string })[]; className?: string; };
-export const Sel = ({ value, onChange, opts, className = "" }: SelProps) => (
-    <select value={value} onChange={onChange} className={`sel ${className}`}>
+type SelProps = { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; opts: (string | { v: string; l: string })[]; className?: string; style?: React.CSSProperties; };
+export const Sel = ({ value, onChange, opts, className = "", style }: SelProps) => (
+    <select value={value} onChange={onChange} className={`sel ${className}`} style={style}>
         {opts.map(o => typeof o === "string" ? <option key={o} value={o}>{o}</option> : <option key={o.v} value={o.v}>{o.l}</option>)}
     </select>
 );
@@ -569,8 +569,8 @@ export const Toggle = ({ checked, onChange, label }: { checked: boolean; onChang
     </div>
 );
 
-export const Btn = ({ children, onClick, variant = "primary", size = "md", disabled = false, style = {} }: { children: React.ReactNode; onClick?: () => void; variant?: string; size?: string; disabled?: boolean; style?: React.CSSProperties; }) => (
-    <button onClick={onClick} disabled={disabled} style={style} className={`btn btn-${size} btn-${variant}`}>{children}</button>
+export const Btn = ({ children, onClick, variant = "primary", size = "md", disabled = false, style = {}, type = "button" }: { children: React.ReactNode; onClick?: (e?: any) => void; variant?: string; size?: string; disabled?: boolean; style?: React.CSSProperties; type?: "button" | "submit" | "reset"; }) => (
+    <button onClick={onClick} disabled={disabled} style={style} className={`btn btn-${size} btn-${variant}`} type={type}>{children}</button>
 );
 
 export const Badge = ({ children, color = "gray" }: { children: React.ReactNode; color?: string; }) => (

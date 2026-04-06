@@ -1,0 +1,147 @@
+﻿
+> hotel-grand-eagle@0.1.0 build
+> next build
+
+node.exe : ΓÜá Warning: 
+Next.js inferred your 
+workspace root, but it 
+may not be correct.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (Γ  
+  Üá Warning: Ne...not    
+ be correct.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+ We detected multiple 
+lockfiles and selected 
+the directory of C:\Users\
+Laksh\package-lock.json 
+as the root directory.
+ To silence this warning, 
+set `turbopack.root` in 
+your Next.js config, or 
+consider removing one of 
+the lockfiles if it's not 
+needed.
+   See https://nextjs.org/
+docs/app/api-reference/con
+fig/next-config-js/turbopa
+ck#root-directory for 
+more information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\Laksh\OneDri
+ve\Documents\GitHub\hotel-
+grand-eagle\package-lock.j
+son
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build 
+failed with 1 errors:
+./OneDrive/Documents/GitHu
+b/hotel-grand-eagle/app/co
+mponents/PagesCMS.tsx:663:
+59
+Parsing ecmascript source 
+code failed
+[0m [90m 661 |[39m     
+            [33m>[39m
+ [90m 662 |[39m         
+            {[
+[31m[1m>[22m[39m[90m 
+663 |[39m                
+         [[32m"≡ƒô¥"[39m
+[33m,[39m [32m"Create 
+a page"[39m[33m,[39m 
+[32m"Click 
+"[39m[33mAdd[39m 
+[33mNew[39m 
+[33mPage[39m[32m", add 
+a title and your 
+content."[39m][33m,[39m
+ [90m     |[39m         
+                          
+                        [
+31m[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^[22
+m[39m
+ [90m 664 |[39m         
+                [[32m"≡ƒö
+ù"[39m[33m,[39m 
+[32m"Set a 
+slug"[39m[33m,[39m 
+[32m"The slug is the URL 
+path, e.g. /about-us or /p
+rivacy."[39m][33m,[39m
+ [90m 665 |[39m         
+                [[32m"≡ƒî
+É"[39m[33m,[39m 
+[32m"Publish 
+it"[39m[33m,[39m 
+[32m"Toggle Published to 
+make the page live on 
+your 
+website."[39m][33m,[39m
+ [90m 666 |[39m         
+                [[32m"≡ƒö
+ì"[39m[33m,[39m 
+[32m"Set SEO 
+meta"[39m[33m,[39m 
+[32m"Use the SEO tab to 
+add meta title and 
+description for Google."[
+39m][33m,[39m[0m
+
+Expected '</', got 'ident'
+
+Import traces:
+  Client Component 
+Browser:
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/components/PagesCMS.tsx 
+[Client Component Browser]
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/(admin)/admin/page.tsx 
+[Client Component Browser]
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/(admin)/admin/page.tsx 
+[Server Component]
+
+  Client Component SSR:
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/components/PagesCMS.tsx 
+[Client Component SSR]
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/(admin)/admin/page.tsx 
+[Client Component SSR]
+    ./OneDrive/Documents/G
+itHub/hotel-grand-eagle/ap
+p/(admin)/admin/page.tsx 
+[Server Component]
+
+
+    at <unknown> (./OneDri
+ve/Documents/GitHub/hotel-
+grand-eagle/app/components
+/PagesCMS.tsx:663:59)

@@ -1,13 +1,34 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Hotel } from "../../components/types";
+
+const FALLBACK_IMAGES = [
+    "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1200",
+    "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200",
+    "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=1200",
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200",
+    "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200",
+    "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200",
+    "https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=1200",
+    "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1200",
+    "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1200",
+    "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1200",
+    "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1200",
+    "https://images.unsplash.com/photo-1551882547-ff43c63efe81?q=80&w=1200"
+];
 
 export default function GalleryPage() {
-    const [hotel, setHotel] = useState<Hotel | null>(null);
     const [lightboxSrc, setLightboxSrc] = useState("");
+    const [images, setImages] = useState<string[]>(FALLBACK_IMAGES);
 
     useEffect(() => {
-        fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+        fetch("/api/gallery")
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setImages(data.map((img: any) => img.url));
+                }
+            })
+            .catch(() => { /* use fallback */ });
         
         // Handle animations
         const fadeEls = document.querySelectorAll('.fade-in-up');
@@ -22,21 +43,6 @@ export default function GalleryPage() {
         fadeEls.forEach(el => observer.observe(el));
         return () => observer.disconnect();
     }, []);
-
-    const images = [
-        "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1200",
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200",
-        "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=1200",
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200",
-        "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200",
-        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1200",
-        "https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=1200",
-        "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1200",
-        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=1200",
-        "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=1200",
-        "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?q=80&w=1200",
-        "https://images.unsplash.com/photo-1551882547-ff43c63efe81?q=80&w=1200"
-    ];
 
     const openLightbox = (src: string) => { 
         setLightboxSrc(src); 
@@ -144,5 +150,3 @@ export default function GalleryPage() {
         </div>
     );
 }
-
-

@@ -14,8 +14,10 @@ import ReportsPage from "../../components/Reports";
 import RoomsPage from "../../components/Rooms";
 import HotelOverview from "../../components/HotelOverview";
 import NearbyAdmin from "../../components/NearbyAdmin";
+import PagesCMS from "../../components/PagesCMS";
+import GalleryAdmin from "../../components/GalleryAdmin";
 import { useAdmin } from "../../components/AdminContext";
-import type { NearbyPlace } from "../../components/types";
+import type { NearbyPlace, CMSPage, GalleryImage } from "../../components/types";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const CURRENCIES = ["INR"];
@@ -464,8 +466,58 @@ export default function AdminPage() {
         amenityCats, setAmenityCats, currency, setCurrency, bookings, setBookings,
         customers, setCustomers, mealPlans, setMealPlans, hkTasks, setHkTasks,
         maintenance, setMaintenance, pricingRules, setPricingRules, staff, setStaff,
-        rooms, setRooms, nearbyPlaces, setNearbyPlaces, updateHotel
+        rooms, setRooms, nearbyPlaces, setNearbyPlaces, cmsPages, setCmsPages, galleryImages, setGalleryImages, updateHotel
     } = useAdmin();
+
+    // CMS Pages actions
+    const addPage = async (p: CMSPage) => {
+        const res = await fetch("/api/pages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) });
+        if (res.ok) {
+            const data = await res.json();
+            setCmsPages(curr => [...curr, data]);
+        } else {
+            const err = await res.json();
+            alert(`Error: ${err.error}`);
+        }
+    };
+    const updatePage = async (p: CMSPage) => {
+        const res = await fetch(`/api/pages/${p.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(p) });
+        if (res.ok) {
+            setCmsPages(curr => curr.map(x => x.id === p.id ? p : x));
+        } else {
+            const err = await res.json();
+            alert(`Error: ${err.error}`);
+        }
+    };
+    const deletePage = async (id: string) => {
+        const res = await fetch(`/api/pages/${id}`, { method: "DELETE" });
+        if (res.ok) {
+            setCmsPages(curr => curr.filter(x => x.id !== id));
+        } else {
+            const err = await res.json();
+            alert(`Error: ${err.error}`);
+        }
+    };
+
+    // Gallery actions
+    const addGalleryImage = async (img: GalleryImage) => {
+        const res = await fetch("/api/gallery", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(img) });
+        if (res.ok) { const data = await res.json(); setGalleryImages(curr => [...curr, data]); }
+    };
+    const updateGalleryImage = async (img: GalleryImage) => {
+        await fetch("/api/gallery", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(img) });
+        setGalleryImages(curr => curr.map(x => x.id === img.id ? img : x));
+    };
+    const deleteGalleryImage = async (id: string) => {
+        await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
+        setGalleryImages(curr => curr.filter(x => x.id !== id));
+    };
+    const reorderGallery = async (imgs: GalleryImage[]) => {
+        setGalleryImages(imgs);
+        for (const img of imgs) {
+            await fetch("/api/gallery", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: img.id, order: img.order }) });
+        }
+    };
 
     // Booking actions
     const addBooking = async (b: Booking): Promise<boolean> => {
@@ -606,6 +658,8 @@ export default function AdminPage() {
             {page === "amenity" && <AmenityManager cats={amenityCats} setCats={setAmenityCats} />}
             {page === "overview" && <HotelOverview hotel={hotel} rooms={effectiveRooms} onUpdate={updateHotel} />}
             {page === "nearby" && <NearbyAdmin places={nearbyPlaces} onAdd={addNearbyPlace} onUpdate={updateNearbyPlace} onDelete={deleteNearbyPlace} />}
+            {page === "cms" && <PagesCMS pages={cmsPages} onAdd={addPage} onUpdate={updatePage} onDelete={deletePage} />}
+            {page === "gallery" && <GalleryAdmin images={galleryImages} onAdd={addGalleryImage} onUpdate={updateGalleryImage} onDelete={deleteGalleryImage} onReorder={reorderGallery} />}
         </React.Fragment>
     );
 }

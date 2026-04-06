@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember, NearbyPlace } from "./types";
+import type { RoomItem, Room, Availability, Pricing, SeasonalPrice, AmenityCat, Hotel, Customer, Booking, MealPlan, HousekeepingTask, MaintenanceItem, PricingRule, StaffMember, NearbyPlace, CMSPage, GalleryImage } from "./types";
 import { uid } from "./ui";
 
 interface AdminContextType {
@@ -42,6 +42,10 @@ interface AdminContextType {
     setCurrency: (s: string) => void;
     nearbyPlaces: NearbyPlace[];
     setNearbyPlaces: (n: NearbyPlace[] | ((p: NearbyPlace[]) => NearbyPlace[])) => void;
+    cmsPages: CMSPage[];
+    setCmsPages: (p: CMSPage[] | ((p: CMSPage[]) => CMSPage[])) => void;
+    galleryImages: GalleryImage[];
+    setGalleryImages: (g: GalleryImage[] | ((p: GalleryImage[]) => GalleryImage[])) => void;
     runSeed: () => Promise<void>;
     updateHotel: (h: Hotel) => Promise<void>;
 }
@@ -68,6 +72,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     const [availability, setAvailability] = useState<Record<string, Availability>>({});
     const [currency, setCurrency] = useState("INR");
     const [nearbyPlaces, setNearbyPlaces] = useState<NearbyPlace[]>([]);
+    const [cmsPages, setCmsPages] = useState<CMSPage[]>([]);
+    const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
     useEffect(() => { fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/room-types").then(r => r.json()).then(d => { if (d.length) setRoomTypes(d); }).catch(() => { }); }, []);
@@ -81,6 +87,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => { fetch("/api/staff").then(r => r.json()).then(d => { if (d.length) setStaff(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/rooms").then(r => r.json()).then(d => { if (d.length) setRooms(d); }).catch(() => { }); }, []);
     useEffect(() => { fetch("/api/nearby").then(r => r.json()).then(d => { if (Array.isArray(d)) setNearbyPlaces(d); }).catch(() => { }); }, []);
+    useEffect(() => { fetch("/api/pages").then(r => r.json()).then(d => { if (Array.isArray(d)) setCmsPages(d); }).catch(() => { }); }, []);
+    useEffect(() => { fetch("/api/gallery").then(r => r.json()).then(d => { if (Array.isArray(d)) setGalleryImages(d); }).catch(() => { }); }, []);
 
     const runSeed = async () => {
         const res = await fetch("/api/seed");
@@ -117,7 +125,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         rooms, setRooms, mealPlans, setMealPlans, hkTasks, setHkTasks, maintenance, setMaintenance,
         pricingRules, setPricingRules, staff, setStaff, amenityCats, setAmenityCats,
         pricing, setPricing, availability, setAvailability, currency, setCurrency,
-        nearbyPlaces, setNearbyPlaces, runSeed, updateHotel
+        nearbyPlaces, setNearbyPlaces, cmsPages, setCmsPages, galleryImages, setGalleryImages, runSeed, updateHotel
     };
 
     return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;

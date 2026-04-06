@@ -1,16 +1,33 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+const FALLBACK_IMAGES = [
+  { src: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800", alt: "Grand Lobby", label: "Grand Lobby", tall: true },
+  { src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800", alt: "Infinity Pool", label: "Infinity Pool", tall: false },
+  { src: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800", alt: "Dining Hall", label: "Dining Hall", tall: true },
+  { src: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=800", alt: "Spa Sanctuary", label: "Spa Sanctuary", tall: false },
+  { src: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=800", alt: "Garden Suite", label: "Garden Suite", tall: false },
+];
 
 export default function Gallery() {
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [images, setImages] = useState(FALLBACK_IMAGES);
 
-  const images = [
-    { src: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800", alt: "Grand Lobby", label: "Grand Lobby", tall: true },
-    { src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800", alt: "Infinity Pool", label: "Infinity Pool", tall: false },
-    { src: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800", alt: "Dining Hall", label: "Dining Hall", tall: true },
-    { src: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=800", alt: "Spa Sanctuary", label: "Spa Sanctuary", tall: false },
-    { src: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=800", alt: "Garden Suite", label: "Garden Suite", tall: false },
-  ];
+  useEffect(() => {
+    fetch("/api/gallery")
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setImages(data.map((img: any, idx: number) => ({
+            src: img.url,
+            alt: img.label || `Gallery ${idx + 1}`,
+            label: img.label || "",
+            tall: idx % 3 === 0
+          })));
+        }
+      })
+      .catch(() => { /* use fallback */ });
+  }, []);
 
   return (
     <>

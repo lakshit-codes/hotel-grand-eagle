@@ -1,0 +1,76 @@
+[
+  {
+    "name": "Sony WH-1000XM5 Headphones",
+    "sku": "SONY-XM5-001",
+    "type": "physical",
+    "price": 349.99,
+    "compareAtPrice": 399.99,
+    "description": "Industry-leading noise canceling with two processors controlling 8 microphones, and Auto NC Optimizer for automatically optimizing noise canceling based on your wearing conditions and environment.",
+    "status": "active",
+    "categoryIds": ["electronics", "audio", "headphones"],
+    "images": [
+      "https://images.unsplash.com/photo-1618366712277-722026af94bf?auto=format&fit=crop&q=80&w=800"
+    ],
+    "gallery": [
+      {
+        "url": "https://images.unsplash.com/photo-1618366712277-722026af94bf?auto=format&fit=crop&q=80&w=800",
+        "alt": "Sony XM5 Black Front View",
+        "order": 0
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1546435770-a3e426ff472b?auto=format&fit=crop&q=80&w=800",
+        "alt": "Sony XM5 Black Side View",
+        "order": 1
+      }
+    ],
+    "options": [
+      { "label": "Color", "values": ["Black", "Silver", "Midnight Blue"] }
+    ],
+    "variants": [
+      {
+        "sku": "SONY-XM5-BLK",
+        "title": "Black Color",
+        "price": 349.99,
+        "stock": 45,
+        "optionValues": { "Color": "Black" }
+      },
+      {
+        "sku": "SONY-XM5-SLV",
+        "title": "Silver Color",
+        "price": 349.99,
+        "stock": 20,
+        "optionValues": { "Color": "Silver" }
+      },
+      {
+        "sku": "SONY-XM5-MBL",
+        "title": "Midnight Blue Color",
+        "price": 359.99,
+        "stock": 15,
+        "optionValues": { "Color": "Midnight Blue" }
+      }
+    ]
+  },
+  {
+    "name": "Ergonomic Office Chair",
+    "sku": "CHAIR-ERG-09",
+    "price": 289.0,
+    "description": "Breathable mesh back, adjustable lumbar support, and 4D armrests for maximum comfort during long working hours.",
+    "status": "active",
+    "categoryIds": ["furniture", "office"],
+    "businessType": ["retail", "office-supply"],
+    "images": [
+      "https://images.unsplash.com/photo-1505797149-43b00fe59c90?auto=format&fit=crop&q=80&w=800"
+    ]
+  },
+  {
+    "name": "Smart Fitness Watch",
+    "sku": "WATCH-FIT-X",
+    "price": 149.5,
+    "description": "Track your heart rate, steps, sleep, and workouts with ease. 7-day battery life and water resistant up to 50m.",
+    "status": "draft",
+    "categoryIds": ["electronics", "wearables"],
+    "images": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800"
+    ]
+  }
+]

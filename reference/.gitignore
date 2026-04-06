@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+.env
+.DS_Store
+*.log
+
+reference
+
+public/uploads

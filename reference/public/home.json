@@ -1,0 +1,528 @@
+{
+  "title": "Home",
+  "slug": "/",
+  "isPublished": true,
+  "metaTitle": "NestCraft - Sculpting Personal Spaces My Name",
+  "metaDescription": "Minimalist furniture designed for the modern home, blending sculptural forms with everyday functionality.",
+  "content": [
+    {
+      "id": "hero-section-wrapper",
+      "type": "section",
+      "adminTitle": "Hero",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "hero-carousel",
+            "type": "carousel",
+            "items": [
+              {
+                "id": "slide-1",
+                "adminTitle": "Modern Living Slide",
+                "type": "section",
+                "layout": "grid-2",
+                "columns": [
+                  [
+                    {
+                      "id": "slide1-label",
+                      "type": "heading",
+                      "level": "h5",
+                      "text": "Modern Living"
+                    },
+                    {
+                      "id": "slide1-heading",
+                      "type": "heading",
+                      "level": "h1",
+                      "text": "Furniture That Defines Your Space."
+                    },
+                    {
+                      "id": "slide1-desc",
+                      "type": "paragraph",
+                      "text": "Discover sculptural sofas, refined textures, and timeless furniture pieces crafted to bring warmth, comfort, and luxury into the modern home."
+                    },
+                    {
+                      "id": "slide1-btn",
+                      "type": "button",
+                      "buttons": [
+                        {
+                          "label": "Explore Collection",
+                          "link": "/shop",
+                          "actionType": "link"
+                        },
+                        {
+                          "label": "Shop New Arrivals",
+                          "link": "/shop/new",
+                          "actionType": "link"
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "id": "slide1-img",
+                      "type": "image",
+                      "url": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=1800",
+                      "alt": "The Archi Sofa"
+                    },
+                    {
+                      "id": "slide1-product-card",
+                      "type": "cards",
+                      "items": [
+                        {
+                          "title": "The Archi Sofa",
+                          "description": "Starting at ₹1,200\n\nPremium materials, sculptural comfort, and a refined silhouette designed for modern interiors."
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "id": "slide-2",
+                "adminTitle": "Bedroom Luxury Slide",
+                "type": "section",
+                "layout": "grid-2",
+                "columns": [
+                  [
+                    {
+                      "id": "slide2-label",
+                      "type": "heading",
+                      "level": "h5",
+                      "text": "Bedroom Luxury"
+                    },
+                    {
+                      "id": "slide2-heading",
+                      "type": "heading",
+                      "level": "h1",
+                      "text": "Designed For Quiet Comfort."
+                    },
+                    {
+                      "id": "slide2-desc",
+                      "type": "paragraph",
+                      "text": "Elevate your bedroom with calming palettes, elegant beds, and thoughtfully designed furniture that blends sophistication with everyday ease."
+                    },
+                    {
+                      "id": "slide2-btn",
+                      "type": "button",
+                      "buttons": [
+                        {
+                          "label": "Explore Collection",
+                          "link": "/shop",
+                          "actionType": "link"
+                        },
+                        {
+                          "label": "Shop New Arrivals",
+                          "link": "/shop/new",
+                          "actionType": "link"
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "id": "slide2-img",
+                      "type": "image",
+                      "url": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=1800",
+                      "alt": "The Haven Bed"
+                    },
+                    {
+                      "id": "slide2-product-card",
+                      "type": "cards",
+                      "items": [
+                        {
+                          "title": "The Haven Bed",
+                          "description": "Starting at ₹1,450\n\nPremium materials, sculptural comfort, and a refined silhouette designed for modern interiors."
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "id": "slide-3",
+                "adminTitle": "Dining Collection Slide",
+                "type": "section",
+                "layout": "grid-2",
+                "columns": [
+                  [
+                    {
+                      "id": "slide3-label",
+                      "type": "heading",
+                      "level": "h5",
+                      "text": "Dining Collection"
+                    },
+                    {
+                      "id": "slide3-heading",
+                      "type": "heading",
+                      "level": "h1",
+                      "text": "Gather Around Beautifully Crafted Tables."
+                    },
+                    {
+                      "id": "slide3-desc",
+                      "type": "paragraph",
+                      "text": "Create memorable dining moments with statement tables, elegant chairs, and premium finishes tailored for contemporary interiors."
+                    },
+                    {
+                      "id": "slide3-btn",
+                      "type": "button",
+                      "buttons": [
+                        {
+                          "label": "Explore Collection",
+                          "link": "/shop",
+                          "actionType": "link"
+                        },
+                        {
+                          "label": "Shop New Arrivals",
+                          "link": "/shop/new",
+                          "actionType": "link"
+                        }
+                      ]
+                    }
+                  ],
+                  [
+                    {
+                      "id": "slide3-img",
+                      "type": "image",
+                      "url": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&q=80&w=1800",
+                      "alt": "The Forma Table"
+                    },
+                    {
+                      "id": "slide3-product-card",
+                      "type": "cards",
+                      "items": [
+                        {
+                          "title": "The Forma Table",
+                          "description": "Starting at ₹980\n\nPremium materials, sculptural comfort, and a refined silhouette designed for modern interiors."
+                        }
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "usp-section-wrapper",
+      "type": "section",
+      "adminTitle": "USP",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "usp",
+            "type": "features",
+            "items": [
+              {
+                "title": "Fast Delivery",
+                "description": "Doorstep shipping worldwide"
+              },
+              {
+                "title": "Secure Checkout",
+                "description": "Protected payments & data"
+              },
+              {
+                "title": "Easy Returns",
+                "description": "14-day hassle-free policy"
+              },
+              {
+                "title": "Premium Craft",
+                "description": "Materials built for years"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "services-section",
+      "type": "section",
+      "adminTitle": "Services",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "services-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "Our Bespoke Services"
+          },
+          {
+            "id": "services-cards",
+            "type": "cards",
+            "items": [
+              {
+                "title": "Interior Design",
+                "description": "Personalized consultations to transform your living spaces into a reflection of your personality.",
+                "image": ""
+              },
+              {
+                "title": "Custom Crafting",
+                "description": "Each piece is tailored to your specific measurements and material preferences by master artisans.",
+                "image": ""
+              },
+              {
+                "title": "White-Glove Setup",
+                "description": "Room placement + assembly service so your furniture arrives ready to live beautifully.",
+                "image": ""
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "collections-section",
+      "type": "section",
+      "adminTitle": "Collections",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "collections-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "Our Collections"
+          },
+          {
+            "id": "collections-cards",
+            "type": "cards",
+            "items": [
+              {
+                "title": "Living Room",
+                "description": "",
+                "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80",
+                "link": "/category/living"
+              },
+              {
+                "title": "Bedroom",
+                "description": "",
+                "image": "https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&q=80",
+                "link": "/category/bedroom"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "featured-banner-section",
+      "type": "section",
+      "adminTitle": "FeaturedBanner",
+      "layout": "grid-2",
+      "columns": [
+        [
+          {
+            "id": "feat-img",
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&q=80&w=1200",
+            "alt": "Bed"
+          }
+        ],
+        [
+          {
+            "id": "feat-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "The Velvet Retreat Collection"
+          },
+          {
+            "id": "feat-p",
+            "type": "paragraph",
+            "text": "Crafted with premium Italian velvet and sustainable oak, our new bedroom series brings a tactile luxury to your most private space."
+          },
+          {
+            "id": "feat-btn",
+            "type": "button",
+            "buttons": [
+              {
+                "id": "btn-shop-series",
+                "label": "Shop The Series",
+                "link": "/shop",
+                "actionType": "link"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "craft-section",
+      "type": "section",
+      "adminTitle": "Craft",
+      "layout": "grid-2",
+      "columns": [
+        [
+          {
+            "id": "craft-img",
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&q=80&w=1600",
+            "alt": "Materials"
+          }
+        ],
+        [
+          {
+            "id": "craft-heading",
+            "type": "heading",
+            "level": "h3",
+            "text": "Premium wood, soft textiles, timeless forms."
+          },
+          {
+            "id": "craft-p",
+            "type": "paragraph",
+            "text": "Every piece is engineered for longevity—chosen materials, durable joinery, and finishes that age beautifully."
+          },
+          {
+            "id": "craft-list",
+            "type": "list",
+            "items": [
+              "Solid oak + sustainable sourcing",
+              "Stain-resistant fabrics & velvet",
+              "Tested for daily wear + stability",
+              "Care guide included with every order"
+            ]
+          },
+          {
+            "id": "craft-btn",
+            "type": "button",
+            "buttons": [
+              {
+                "id": "btn-shop-mat",
+                "label": "Shop Materials",
+                "link": "/shop",
+                "actionType": "link"
+              },
+              {
+                "id": "btn-book",
+                "label": "Book a Consultant",
+                "link": "/contact",
+                "actionType": "link"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "testimonials-section",
+      "type": "section",
+      "adminTitle": "Testimonials",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "test-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "What People Say"
+          },
+          {
+            "id": "test-1",
+            "type": "testimonial",
+            "quote": "The Aura chair isn't just furniture; it's a piece of art that redefined my entire living room aesthetic.",
+            "author": "Sarah Jenkins",
+            "role": "Interior Architect",
+            "avatar": ""
+          },
+          {
+            "id": "test-2",
+            "type": "testimonial",
+            "quote": "Exquisite attention to detail. The oak table we ordered is the centerpiece of every dinner party we host.",
+            "author": "Marcus Thorne",
+            "role": "Homeowner",
+            "avatar": ""
+          }
+        ]
+      ]
+    },
+    {
+      "id": "blog-section",
+      "type": "section",
+      "adminTitle": "Blog",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "blog-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "The Journal"
+          },
+          {
+            "id": "blog-cards",
+            "type": "cards",
+            "items": [
+              {
+                "title": "The Rise of Soft Minimalism",
+                "description": "Design Trends",
+                "image": "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80&w=1200",
+                "link": "/blog/soft-minimalism"
+              },
+              {
+                "title": "Working with Sustainable Oak",
+                "description": "Craftsmanship",
+                "image": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&q=80&w=1200",
+                "link": "/blog/sustainable-oak"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "faq-section-wrapper",
+      "type": "section",
+      "adminTitle": "FAQ",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "faq-heading",
+            "type": "heading",
+            "level": "h2",
+            "text": "Frequently Asked Questions"
+          },
+          {
+            "id": "faq-items",
+            "type": "features",
+            "items": [
+              {
+                "title": "What materials do you use?",
+                "description": "We use sustainably sourced European Oak, Italian Velvet, and high-grade Belgian linens."
+              },
+              {
+                "title": "How long does shipping take?",
+                "description": "Standard pieces ship within 2-3 weeks. Custom bespoke orders typically take 8-10 weeks."
+              },
+              {
+                "title": "XXXXX",
+                "description": "XXXXX0 weeks."
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "id": "cta-section-wrapper",
+      "type": "section",
+      "adminTitle": "CTA",
+      "layout": "grid-1",
+      "columns": [
+        [
+          {
+            "id": "cta-bottom",
+            "type": "cta",
+            "title": "Ready to transform your home?",
+            "subtitle": "",
+            "description": "Join 10,000+ homeowners who have elevated their living experience with NestCraft Interiors.",
+            "buttonLabel": "Shop Collection",
+            "buttonLink": "/shop"
+          }
+        ]
+      ]
+    }
+  ]
+}

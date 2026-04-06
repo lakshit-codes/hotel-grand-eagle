@@ -113,7 +113,7 @@ export default function VelourFooter() {
                 <Link href="#">Events &amp; Banquets</Link>
               </li>
               <li>
-                <Link href="/gallery">Gallery</Link>
+                <Link href="/contact">Contact Us</Link>
               </li>
             </ul>
           </div>
