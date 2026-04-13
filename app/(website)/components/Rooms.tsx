@@ -88,7 +88,7 @@ export default function Rooms() {
         ) : (
           rooms.map((room, idx) => (
             <div key={idx} className="room-card">
-              <div className="room-img-wrap">
+              <Link href={`/rooms/${room.slug}`} className="room-img-wrap" style={{ display: 'block' }}>
                 <img 
                   src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"} 
                   alt={room.roomName} 
@@ -98,10 +98,12 @@ export default function Rooms() {
                 <div className="room-price">
                   ₹{room.basePrice?.toLocaleString()} <span>/night</span>
                 </div>
-              </div>
+              </Link>
               <div className="room-body">
                 <div className="room-cat">{room.roomCategory}</div>
-                <div className="room-name font-display">{room.roomName}</div>
+                <Link href={`/rooms/${room.slug}`} className="room-name font-display" style={{ display: 'block', textDecoration: 'none' }}>
+                  {room.roomName}
+                </Link>
                 <div className="room-meta">
                   <div className="room-meta-item">
                     <svg
@@ -138,7 +140,7 @@ export default function Rooms() {
                    <span className="tag">Mini Bar</span>
                    <span className="tag">24hr Service</span>
                 </div>
-                <Link href={`/rooms`} className="btn-room" style={{ textDecoration: 'none' }}>
+                <Link href={`/rooms/${room.slug}`} className="btn-room" style={{ textDecoration: 'none' }}>
                   View Details
                   <svg
                     width="14"

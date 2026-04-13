@@ -69,7 +69,7 @@ export default function RoomsPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 32 }}>
                         {rooms.map((room) => (
                             <div key={room.id} className="room-card fade-in-up" style={{ width: "100%", margin: 0 }}>
-                                <div className="room-img-wrap" style={{ height: 260, position: 'relative', overflow: 'hidden' }}>
+                                <Link href={`/rooms/${room.slug}`} className="room-img-wrap" style={{ height: 260, position: 'relative', overflow: 'hidden', display: 'block' }}>
                                     <div className="featured-badge" style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>{room.roomCategory}</div>
                                     <img 
                                         src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"} 
@@ -80,10 +80,12 @@ export default function RoomsPage() {
                                     <div className="room-price">
                                         ₹{room.basePrice?.toLocaleString() ?? "N/A"} <span>/night</span>
                                     </div>
-                                </div>
+                                </Link>
                                 <div className="room-body">
                                     <div className="room-cat">{room.roomCategory}</div>
-                                    <div className="room-name font-display">{room.roomName}</div>
+                                    <Link href={`/rooms/${room.slug}`} className="room-name font-display" style={{ display: 'block', textDecoration: 'none' }}>
+                                        {room.roomName}
+                                    </Link>
                                     <div className="room-meta">
                                         <div className="room-meta-item">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="1.5">
@@ -106,7 +108,7 @@ export default function RoomsPage() {
                                         <span className="tag">Mini Bar</span>
                                         <span className="tag">24hr Service</span>
                                     </div>
-                                    <Link href={`/rooms`} className="btn-room" style={{ textDecoration: "none" }}>
+                                    <Link href={`/rooms/${room.slug}`} className="btn-room" style={{ textDecoration: "none" }}>
                                         View Details
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
                                             <path d="M5 12h14M12 5l7 7-7 7" />
