@@ -1,12 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Room, AmenityCat } from "../../../components/types";
 
 export default function RoomDetailsPage() {
     const params = useParams();
-    const router = useRouter();
     const [room, setRoom] = useState<Room | null>(null);
     const [amenities, setAmenities] = useState<AmenityCat[]>([]);
     const [loading, setLoading] = useState(true);
@@ -21,25 +20,37 @@ export default function RoomDetailsPage() {
         ]).then(([rData, aData]) => {
             const found = rData.find((rm: Room) => rm.slug === slug);
             if (found) setRoom(found);
-            if (aData.length) setAmenities(aData);
+            if (aData && Array.isArray(aData)) setAmenities(aData);
             setLoading(false);
         }).catch(() => setLoading(false));
     }, [params]);
 
-    if (loading) return <div className="min-h-screen pt-40 text-center text-gray-500">Loading room details...</div>;
+    if (loading) {
+        return (
+            <div className="rd-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--gold)', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '13px' }}>
+                    Unveiling Sanctuary...
+                </div>
+            </div>
+        );
+    }
     
     if (!room) {
         return (
-            <div className="min-h-screen pt-40 px-4 text-center">
-                <h1 className="text-4xl font-serif text-[#0f1623] mb-6">Room Not Found</h1>
-                <p className="text-gray-500 mb-8">We couldn't find the room you were looking for.</p>
-                <Link href="/rooms" className="text-[#f59e0b] font-bold tracking-wider uppercase border-b-2 border-[#f59e0b] pb-1">Back to Rooms</Link>
+            <div className="rd-container" style={{ textAlign: 'center', paddingTop: '160px' }}>
+                <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 40px' }}>
+                    <h1 className="rd-section-title" style={{ border: 'none', padding: 0, textAlign: 'center' }}>Sanctuary Not Found</h1>
+                    <p style={{ color: 'var(--ivory-dim)', marginBottom: '40px', lineHeight: 1.8 }}>The specific retreat you are looking for may have been moved or is currently being renewed.</p>
+                    <Link href="/rooms" className="btn-outline">Return to Collection</Link>
+                </div>
             </div>
         );
     }
 
     const facilityMap = amenities.reduce<Record<string, string>>((acc, cat) => {
-        cat.facilities.forEach(fac => { acc[fac.id] = fac.name; });
+        if (cat.facilities && Array.isArray(cat.facilities)) {
+            cat.facilities.forEach(fac => { acc[fac.id] = fac.name; });
+        }
         return acc;
     }, {});
 
@@ -47,115 +58,142 @@ export default function RoomDetailsPage() {
     const gallery = room.images?.slice(1) || [];
 
     return (
-        <div className="w-full bg-white pb-24">
-            {/* Hero Image */}
-            <div className="relative h-[60vh] min-h-[400px] w-full bg-gray-900">
-                <img src={heroImg} alt={room.roomName} className="w-full h-full object-cover mix-blend-overlay opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-10 left-0 w-full px-4 text-center">
-                    <span className="text-[#f59e0b] font-bold tracking-widest text-sm uppercase mb-3 block">{room.roomCategory}</span>
-                    <h1 className="text-4xl md:text-6xl font-serif text-white font-bold drop-shadow-xl">{room.roomName}</h1>
+        <div className="rd-container">
+            {/* Hero Section */}
+            <div className="rd-hero">
+                <div className="rd-hero-bg">
+                    <img src={heroImg} alt={room.roomName} />
+                </div>
+                <div className="rd-hero-overlay"></div>
+                <div className="rd-hero-content">
+                    <span className="rd-hero-eyebrow">{room.roomCategory}</span>
+                    <h1 className="rd-hero-title">{room.roomName}</h1>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 mt-16 grid grid-cols-1 lg:grid-cols-3 gap-16">
-                
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-16">
-                    {/* Quick Info Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-8 border-y border-gray-100 text-center">
-                        <div>
-                            <span className="block text-xl mb-2">👥</span>
-                            <span className="block font-bold text-gray-800 text-sm">Up to {room.maxOccupancy} Guests</span>
-                        </div>
-                        <div>
-                            <span className="block text-xl mb-2">📐</span>
-                            <span className="block font-bold text-gray-800 text-sm">{room.roomSize} m²</span>
-                        </div>
-                        <div>
-                            <span className="block text-xl mb-2">🛏️</span>
-                            <span className="block font-bold text-gray-800 text-sm">{room.bedType} Bed</span>
-                        </div>
-                        <div>
-                            <span className="block text-xl mb-2">🪟</span>
-                            <span className="block font-bold text-gray-800 text-sm">{room.view}</span>
-                        </div>
-                    </div>
-
-                    {/* Room Overview */}
-                    <div>
-                        <h2 className="text-2xl font-serif font-bold text-[#0f1623] mb-6">Room Overview</h2>
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-gray-600">
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Bathroom</span> <span className="font-semibold text-gray-800">{room.bathroomType}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Soundproofing</span> <span className="font-semibold text-gray-800">{room.soundproofingLevel}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Theme</span> <span className="font-semibold text-gray-800">{room.roomTheme}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Smoking</span> <span className="font-semibold text-gray-800">{room.smokingPolicy}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Floor</span> <span className="font-semibold text-gray-800">{room.floorPreference}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Entertainment</span> <span className="font-semibold text-gray-800">{room.entertainmentOptions}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Balcony</span> <span className="font-semibold text-gray-800">{room.balconyAvailable ? "Yes" : "No"}</span></li>
-                            <li className="flex justify-between border-b border-gray-100 pb-2"><span>Workspace</span> <span className="font-semibold text-gray-800">{room.inRoomWorkspace ? "Yes" : "No"}</span></li>
-                        </ul>
-                    </div>
-
-                    {/* Amenities */}
-                    {room.amenityIds?.length > 0 && (
-                        <div>
-                            <h2 className="text-2xl font-serif font-bold text-[#0f1623] mb-6">In-Room Amenities</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {room.amenityIds.map(id => (
-                                    <div key={id} className="flex items-center gap-3 text-gray-600 bg-gray-50 px-4 py-3 rounded-sm border border-gray-100">
-                                        <span className="text-[#f59e0b]">✓</span>
-                                        <span className="text-sm font-medium">{facilityMap[id] || id}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Gallery Sidebar items if we had more than 1 image */}
-                    {gallery.length > 0 && (
-                        <div>
-                            <h2 className="text-2xl font-serif font-bold text-[#0f1623] mb-6">Gallery</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {gallery.map((img, i) => (
-                                    <div key={i} className="aspect-square bg-gray-200 overflow-hidden">
-                                        <img src={img} alt={`${room.roomName} view ${i}`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Booking Sticky Sidebar */}
-                <div className="lg:col-span-1">
-                    <div className="sticky top-32 bg-[#0f1623] text-white p-8 shadow-2xl rounded-sm">
-                        <div className="text-center pb-8 border-b border-gray-700 mb-8">
-                            <span className="block text-gray-400 text-sm font-bold tracking-widest uppercase mb-2">From</span>
-                            <span className="text-4xl text-[#f59e0b] font-bold">₹{room.basePrice.toLocaleString()}</span>
-                            <span className="block text-gray-400 text-sm mt-2">per night, excluding taxes</span>
-                        </div>
+            <div className="max-w">
+                <div className="rd-grid">
+                    
+                    {/* Main Content */}
+                    <div className="rd-content-main">
                         
-                        <div className="space-y-4 mb-8">
-                            <div className="flex justify-between text-sm text-gray-300">
-                                <span>Extra Bed Option</span>
-                                <span className="font-semibold text-white">{room.extraBedPrice > 0 ? `+₹${room.extraBedPrice}` : "Available"}</span>
+                        {/* Quick Info Grid */}
+                        <div className="rd-info-row">
+                            <div className="rd-info-item">
+                                <span className="rd-info-icon">👥</span>
+                                <span className="rd-info-label">Occupancy</span>
+                                <span className="rd-info-val">Up to {room.maxOccupancy} Guests</span>
                             </div>
-                            <div className="flex justify-between text-sm text-gray-300">
-                                <span>Cancellation</span>
-                                <span className="font-semibold text-white">{room.refundable ? "Refundable" : "Non-Refundable"}</span>
+                            <div className="rd-info-item">
+                                <span className="rd-info-icon">📐</span>
+                                <span className="rd-info-label">Space</span>
+                                <span className="rd-info-val">{room.roomSize} m²</span>
+                            </div>
+                            <div className="rd-info-item">
+                                <span className="rd-info-icon">🛏️</span>
+                                <span className="rd-info-label">Bedding</span>
+                                <span className="rd-info-val">{room.bedType}</span>
+                            </div>
+                            <div className="rd-info-item">
+                                <span className="rd-info-icon">🪟</span>
+                                <span className="rd-info-label">The View</span>
+                                <span className="rd-info-val">{room.view}</span>
                             </div>
                         </div>
 
-                        <Link 
-                            href={`/book?room=${room.slug}`} 
-                            className="block w-full text-center bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold tracking-wider uppercase py-4 transition-colors"
-                        >
-                            Select Dates
-                        </Link>
-                    </div>
-                </div>
+                        {/* Room Overview */}
+                        <div>
+                            <h2 className="rd-section-title">Room Overview</h2>
+                            <div className="rd-desc" style={{ marginBottom: '40px' }}>
+                                A masterfully designed retreat that blends contemporary luxury with functional elegance. 
+                                Every element of this sanctuary has been selected to provide an unparalleled stay experience.
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px 48px' }}>
+                                {[
+                                    { l: "Bathroom Type", v: room.bathroomType },
+                                    { l: "Soundproofing", v: room.soundproofingLevel },
+                                    { l: "Room Theme", v: room.roomTheme },
+                                    { l: "Smoking Policy", v: room.smokingPolicy },
+                                    { l: "Floor Preference", v: room.floorPreference },
+                                    { l: "Entertainment", v: room.entertainmentOptions },
+                                    { l: "Balcony Access", v: room.balconyAvailable ? "Yes" : "None" },
+                                    { l: "Workspace", v: room.inRoomWorkspace ? "Available" : "On Request" }
+                                ].map((item, i) => (
+                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(212,168,87,0.1)', paddingBottom: '12px' }}>
+                                        <span style={{ fontSize: '13px', color: 'var(--ivory-dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{item.l}</span>
+                                        <span style={{ fontSize: '14px', color: 'var(--ivory)', fontWeight: 500 }}>{item.v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
+                        {/* Amenities */}
+                        {room.amenityIds?.length > 0 && (
+                            <div>
+                                <h2 className="rd-section-title">In-Room Amenities</h2>
+                                <div className="rd-amenities-grid">
+                                    {room.amenityIds.map(id => (
+                                        <div key={id} className="rd-amenity-item">
+                                            <span className="rd-amenity-icon">✓</span>
+                                            <span className="rd-amenity-text">{facilityMap[id] || id}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Gallery */}
+                        {gallery.length > 0 && (
+                            <div>
+                                <h2 className="rd-section-title">Visual Gallery</h2>
+                                <div className="rd-gallery-grid">
+                                    {gallery.map((img, i) => (
+                                        <div key={i} className="rd-gallery-item">
+                                            <img src={img} alt={`${room.roomName} detail`} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Booking Sidebar */}
+                    <div className="lg:col-span-1">
+                        <div className="rd-sidebar-card">
+                            <span className="rd-sidebar-price-label">Starting From</span>
+                            <span className="rd-sidebar-price">
+                                ₹{room.basePrice.toLocaleString()} <span>/night</span>
+                            </span>
+                            
+                            <div className="rd-sidebar-meta">
+                                <div className="rd-sidebar-meta-item">
+                                    <span>Extra Bed Option</span>
+                                    <span className="rd-sidebar-meta-val">{room.extraBedPrice > 0 ? `+₹${room.extraBedPrice}` : "Available"}</span>
+                                </div>
+                                <div className="rd-sidebar-meta-item">
+                                    <span>Booking Policy</span>
+                                    <span className="rd-sidebar-meta-val">{room.refundable ? "Refundable" : "Non-Refundable"}</span>
+                                </div>
+                                <div className="rd-sidebar-meta-item">
+                                    <span>Check-in</span>
+                                    <span className="rd-sidebar-meta-val">14:00 PM</span>
+                                </div>
+                            </div>
+
+                            <Link href={`/book?room=${room.slug}`} className="rd-btn-book">
+                                Reserve Sanctuary
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                            
+                            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '11px', color: 'var(--ivory-dim)', lineHeight: 1.6 }}>
+                                Best price guaranteed when booking directly through our sanctuary portal.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     );
