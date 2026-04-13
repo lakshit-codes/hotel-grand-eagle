@@ -359,6 +359,13 @@ export interface HomeTextSection {
     pillars?: HomePillar[];
 }
 
+export interface HomeQuoteSection {
+    id: string;
+    type: "quote";
+    eyebrow: string;
+    text: string;
+}
+
 export interface HomeTestimonialsSection {
     id: string;
     type: "testimonials";
