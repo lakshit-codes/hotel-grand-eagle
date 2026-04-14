@@ -118,12 +118,11 @@ const BOOK_STYLES = `
   }
 `;
 
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-const dtIn = tomorrow.toISOString().split("T")[0];
-const dayAfter = new Date(tomorrow);
-dayAfter.setDate(dayAfter.getDate() + 1);
-const dtOut = dayAfter.toISOString().split("T")[0];
+const dtIn = new Date().toLocaleDateString('en-CA');
+const dtTomorrow = new Date();
+dtTomorrow.setDate(dtTomorrow.getDate() + 1);
+const dtOut = dtTomorrow.toLocaleDateString('en-CA');
+const dtToday = dtIn;
 
 function BookingForm() {
     const searchParams = useSearchParams();
@@ -327,11 +326,11 @@ function BookingForm() {
                             <form onSubmit={handleSearch} className="book-search-form">
                                 <div>
                                     <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Arrival</label>
-                                    <input className="form-input" type="date" required value={checkIn} onChange={e => handleCheckInChange(e.target.value)} min={dtIn} style={{ colorScheme: 'dark' }} />
+                                    <input className="form-input" type="date" required value={checkIn} onChange={e => handleCheckInChange(e.target.value)} min={dtToday} style={{ colorScheme: 'dark' }} />
                                 </div>
                                 <div>
                                     <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Departure</label>
-                                    <input className="form-input" type="date" required value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || dtIn} style={{ colorScheme: 'dark' }} />
+                                    <input className="form-input" type="date" required value={checkOut} onChange={e => setCheckOut(e.target.value)} min={new Date(new Date(checkIn || dtToday).getTime() + 86400000).toISOString().split("T")[0]} style={{ colorScheme: 'dark' }} />
                                 </div>
                                 <div>
                                     <label className="input-label" style={{ color: "var(--ivory-dim)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10, display: "block" }}>Guests</label>

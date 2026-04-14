@@ -5,7 +5,7 @@ import { Badge, Btn, Confirm, Field, Inp, Sel, Ic, statusColor, uid, fmtDate, BO
 import { SimplePicker } from "./DateRangePicker";
 import InvoiceModal from "./Invoice";
 
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = new Date().toLocaleDateString('en-CA');
 
 /** A booking is locked once its check-out date is in the past */
 function isLocked(b: Booking): boolean {
@@ -49,8 +49,10 @@ type BookingStatus = Booking["status"];
 const ALL_STATUSES: BookingStatus[] = ["confirmed", "checked-in", "checked-out", "cancelled", "no-show", "pending"];
 
 function buildBlankBooking(rooms: Room[], mealPlans: MealPlan[]): Booking {
-    const tod = new Date().toISOString().slice(0, 10);
-    const tom = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+    const tod = new Date().toLocaleDateString('en-CA');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tom = tomorrow.toLocaleDateString('en-CA');
     return {
         id: uid(), bookingRef: "BK" + Math.floor(100000 + Math.random() * 900000),
         customerId: "", guestName: "", guestEmail: "", guestPhone: "",

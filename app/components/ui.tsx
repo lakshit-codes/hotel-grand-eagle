@@ -533,7 +533,7 @@ export const slugify = (s: string) => s.toLowerCase().replace(/\s+/g, "-").repla
 export const uid = () => `id_${Math.random().toString(36).slice(2, 9)}`;
 export const fmt = (n: number) => (n || 0).toLocaleString();
 export const fmtDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-export const today = () => new Date().toISOString().slice(0, 10);
+export const today = () => new Date().toLocaleDateString('en-CA');
 
 type InpProps = { value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: string; placeholder?: string; className?: string; style?: React.CSSProperties; disabled?: boolean; autoFocus?: boolean; onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void; min?: string; max?: string; size?: "sm" | "md" | "lg"; };
 export const Inp = ({ value, onChange, type = "text", placeholder, className = "", style, disabled, autoFocus, onKeyDown, min, max, size = "md" }: InpProps) => (

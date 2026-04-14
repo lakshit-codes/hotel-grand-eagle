@@ -46,10 +46,10 @@ function renderParagraphs(description: string, highlightTerms: string) {
 
 function HeroRenderer({ sec }: { sec: HeroSection }) {
     const router = useRouter();
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString('en-CA');
     const tomorrowDate = new Date();
     tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-    const tomorrow = tomorrowDate.toISOString().split("T")[0];
+    const tomorrow = tomorrowDate.toLocaleDateString('en-CA');
 
     const [checkIn, setCheckIn] = useState(today);
     const [checkOut, setCheckOut] = useState(tomorrow);
