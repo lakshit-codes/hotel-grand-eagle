@@ -1,10 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { HousekeepingTask } from "./types";
+import { HousekeepingTask, StaffMember } from "./types";
 import { Btn, Badge, Sel, PRIORITY_COLOR } from "./ui";
 
 interface Props {
     tasks: HousekeepingTask[];
+    staff: StaffMember[];
     onUpdate: (t: HousekeepingTask) => void;
 }
 
@@ -19,9 +20,13 @@ const STATUS_META: Record<HKStatus, { label: string; emoji: string; color: strin
     "out-of-order": { label: "Out of Order", emoji: "🔴", color: "#dc2626" },
 };
 
-const STAFF = ["Maria Lopez", "David Chen", "Sundaram K", "Pradeep R", "Arun M", "Ramesh V", "Prita S"];
+export default function HousekeepingPage({ tasks, staff, onUpdate }: Props) {
+    const hkStaffNames = staff
+        .filter(s => s.role === "Housekeeping" && s.status === "Active")
+        .map(s => `${s.firstName} ${s.lastName}`);
 
-export default function HousekeepingPage({ tasks, onUpdate }: Props) {
+    // Fallback if no specific HK staff found
+    const displayStaff = hkStaffNames.length > 0 ? hkStaffNames : ["Unassigned", ...hkStaffNames];
     const [filterStatus, setFilterStatus] = useState<string>("all");
     const [filterRoom, setFilterRoom] = useState("");
     const [editing, setEditing] = useState<string | null>(null);
@@ -90,7 +95,7 @@ export default function HousekeepingPage({ tasks, onUpdate }: Props) {
                                         {HK_STATUSES.map(s => <option key={s} value={s}>{STATUS_META[s].label}</option>)}
                                     </select>
                                     <select className="sel" value={task.assignedTo} onChange={e => onUpdate({ ...task, assignedTo: e.target.value })} style={{ fontSize: 12 }}>
-                                        {STAFF.map(s => <option key={s} value={s}>{s}</option>)}
+                                        {displayStaff.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
                                     <select className="sel" value={task.priority} onChange={e => onUpdate({ ...task, priority: e.target.value as "low" | "medium" | "high" })} style={{ fontSize: 12 }}>
                                         <option value="low">Low Priority</option>
@@ -109,7 +114,7 @@ export default function HousekeepingPage({ tasks, onUpdate }: Props) {
             <div className="card mt-20">
                 <div className="card-header"><span className="card-title">👤 Staff Workload</span></div>
                 <div className="card-body">
-                    {STAFF.map(s => {
+                    {displayStaff.map(s => {
                         const assigned = tasks.filter(t => t.assignedTo === s);
                         const dirty = assigned.filter(t => t.status === "dirty").length;
                         return (

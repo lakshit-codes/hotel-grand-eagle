@@ -127,6 +127,9 @@ export const GlobalStyles = () => (
     .inp { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
     .inp:focus { border-color: #E4C581; box-shadow: 0 0 0 3px rgba(212,175,55,0.12); }
     .inp::placeholder { color: #c4c4c4; }
+    .inp-sm { padding: 6px 10px; font-size: 12.5px; }
+    .inp-lg { padding: 12px 16px; font-size: 15px; }
+
     .sel { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; outline: none; cursor: pointer; transition: border-color 0.15s; }
     .sel:focus { border-color: #E4C581; box-shadow: 0 0 0 3px rgba(212,175,55,0.12); }
     .textarea { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13.5px; font-family: inherit; color: #111827; background: #fff; outline: none; resize: vertical; min-height: 72px; transition: border-color 0.15s; }
@@ -532,9 +535,9 @@ export const fmt = (n: number) => (n || 0).toLocaleString();
 export const fmtDate = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 export const today = () => new Date().toISOString().slice(0, 10);
 
-type InpProps = { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: string; placeholder?: string; className?: string; style?: React.CSSProperties; disabled?: boolean; autoFocus?: boolean; onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void; min?: string; max?: string; };
-export const Inp = ({ value, onChange, type = "text", placeholder, className = "", style, disabled, autoFocus, onKeyDown, min, max }: InpProps) => (
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={`inp ${className}`} style={style} disabled={disabled} autoFocus={autoFocus} onKeyDown={onKeyDown} min={min} max={max} />
+type InpProps = { value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; type?: string; placeholder?: string; className?: string; style?: React.CSSProperties; disabled?: boolean; autoFocus?: boolean; onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void; min?: string; max?: string; size?: "sm" | "md" | "lg"; };
+export const Inp = ({ value, onChange, type = "text", placeholder, className = "", style, disabled, autoFocus, onKeyDown, min, max, size = "md" }: InpProps) => (
+    <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={`inp inp-${size} ${className}`} style={style} disabled={disabled} autoFocus={autoFocus} onKeyDown={onKeyDown} min={min} max={max} />
 );
 
 type NumInpProps = { value: number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; min?: number; max?: number; };

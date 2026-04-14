@@ -1,20 +1,22 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Room } from "../../components/types";
+import { Room, AmenityCat } from "../../components/types";
 
 export default function RoomsPage() {
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [amenities, setAmenities] = useState<AmenityCat[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/room-types")
-            .then(r => r.json())
-            .then(d => {
-                if (Array.isArray(d)) setRooms(d);
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
+        Promise.all([
+            fetch("/api/room-types").then(r => r.json()),
+            fetch("/api/amenities").then(r => r.json())
+        ]).then(([rData, aData]) => {
+            if (Array.isArray(rData)) setRooms(rData);
+            if (Array.isArray(aData)) setAmenities(aData);
+            setLoading(false);
+        }).catch(() => setLoading(false));
     }, []);
 
     useEffect(() => {
@@ -38,6 +40,13 @@ export default function RoomsPage() {
         return () => clearTimeout(timeoutId);
     }, [rooms, loading]);
 
+    const facilityMap = amenities.reduce<Record<string, string>>((acc, cat) => {
+        if (cat.facilities && Array.isArray(cat.facilities)) {
+            cat.facilities.forEach(fac => { acc[fac.id] = fac.name; });
+        }
+        return acc;
+    }, {});
+
     return (
         <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: 160, paddingBottom: 112 }}>
             <div className="max-w">
@@ -56,7 +65,6 @@ export default function RoomsPage() {
                     </p>
                 </div>
 
-                {/* Rooms Content */}
                 {loading ? (
                     <div className="fade-in-up" style={{ textAlign: "center", padding: "100px 0", color: "var(--gold)" }}>
                         <div style={{ fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase" }}>Loading Sanctuary...</div>
@@ -65,16 +73,56 @@ export default function RoomsPage() {
                     <div className="fade-in-up" style={{ textAlign: "center", padding: "100px 0", color: "var(--ivory-dim)" }}>
                         No suites available at this moment. Please check back soon.
                     </div>
+                ) : rooms.length === 1 ? (
+                    // Single Room Banner Layout
+                    (() => {
+                        const room = rooms[0];
+                        return (
+                            <div className="room-banner fade-in-up">
+                                <div className="room-banner-bg">
+                                    <img
+                                        src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=1200"}
+                                        alt={room.roomName}
+                                    />
+                                    <div className="room-banner-overlay"></div>
+                                </div>
+                                <div className="room-banner-content">
+                                    <span className="room-banner-cat">{room.roomCategory}</span>
+                                    <h2 className="room-banner-name font-display">{room.roomName}</h2>
+                                    <div className="tags" style={{ marginBottom: 32 }}>
+                                        {room.amenityIds?.slice(0, 4).map(id => (
+                                            <span key={id} className="tag">{facilityMap[id] || id}</span>
+                                        ))}
+                                        {(!room.amenityIds || room.amenityIds.length === 0) && (
+                                            <span className="tag" style={{ borderStyle: 'dashed', opacity: 0.5 }}>No specific amenities listed</span>
+                                        )}
+                                    </div>
+                                    <div className="room-banner-footer">
+                                        <div className="room-banner-price">
+                                            ₹{room.basePrice?.toLocaleString() ?? "N/A"} <span>/night</span>
+                                        </div>
+                                        <Link href={`/rooms/${room.slug}`} className="room-banner-btn">
+                                            Explore The Room
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                            </svg>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()
                 ) : (
+                    // Multiple Rooms Grid Layout
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 32 }}>
                         {rooms.map((room) => (
                             <div key={room.id} className="room-card fade-in-up" style={{ width: "100%", margin: 0 }}>
                                 <Link href={`/rooms/${room.slug}`} className="room-img-wrap" style={{ height: 260, position: 'relative', overflow: 'hidden', display: 'block' }}>
                                     <div className="featured-badge" style={{ position: 'absolute', top: 12, left: 12, zIndex: 2 }}>{room.roomCategory}</div>
-                                    <img 
-                                        src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"} 
-                                        alt={room.roomName} 
-                                        loading="lazy" 
+                                    <img
+                                        src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"}
+                                        alt={room.roomName}
+                                        loading="lazy"
                                     />
                                     <div className="room-img-overlay"></div>
                                     <div className="room-price">
@@ -103,10 +151,12 @@ export default function RoomsPage() {
                                         </div>
                                     </div>
                                     <div className="tags">
-                                        <span className="tag">City View</span>
-                                        <span className="tag">Free Wi-Fi</span>
-                                        <span className="tag">Mini Bar</span>
-                                        <span className="tag">24hr Service</span>
+                                        {room.amenityIds?.slice(0, 4).map(id => (
+                                            <span key={id} className="tag">{facilityMap[id] || id}</span>
+                                        ))}
+                                        {(!room.amenityIds || room.amenityIds.length === 0) && (
+                                            <span className="tag" style={{ borderStyle: 'dashed', opacity: 0.5 }}>Essentials Included</span>
+                                        )}
                                     </div>
                                     <Link href={`/rooms/${room.slug}`} className="btn-room" style={{ textDecoration: "none" }}>
                                         View Details

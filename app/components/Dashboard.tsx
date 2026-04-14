@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Booking, Customer, HousekeepingTask, MaintenanceItem, Room, Availability } from "./types";
 import { Badge, Ic, statusColor, fmtDate, fmt } from "./ui";
 
@@ -11,10 +12,10 @@ interface Props {
     customers: Customer[];
     hkTasks: HousekeepingTask[];
     maintenance: MaintenanceItem[];
-    onNav: (page: string) => void;
 }
 
-export default function Dashboard({ hotel, rooms, availability, bookings, customers, hkTasks, maintenance, onNav }: Props) {
+export default function Dashboard({ hotel, rooms, availability, bookings, customers, hkTasks, maintenance }: Props) {
+    const router = useRouter();
     const today = new Date().toISOString().slice(0, 10);
 
     const stats = useMemo(() => {
@@ -59,7 +60,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                     <div className="page-sub">{hotel.name} &middot; {hotel.city}, {hotel.country} &middot; Today: {fmtDate(today)}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                    <button className="btn btn-md btn-primary" onClick={() => onNav("checkin")}>
+                    <button className="btn btn-md btn-primary" onClick={() => router.push("/admin/checkin")}>
                         <Ic.CheckIn /> Quick Check-in
                     </button>
                 </div>
@@ -81,7 +82,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                 <div className="card">
                     <div className="card-header">
                         <span className="card-title">🚪 Arrivals Today ({stats.arrivals.length})</span>
-                        <button className="btn btn-sm btn-outline" onClick={() => onNav("checkin")}><Ic.CheckIn /> Check-in</button>
+                        <button className="btn btn-sm btn-outline" onClick={() => router.push("/admin/checkin")}><Ic.CheckIn /> Check-in</button>
                     </div>
                     {stats.arrivals.length === 0
                         ? <div className="card-body text-gray text-center" style={{ padding: "24px 20px" }}>No arrivals scheduled for today.</div>
@@ -131,7 +132,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                                     <div style={{ fontWeight: 600 }}>{stats.dirtyRooms} rooms need cleaning</div>
                                     <div style={{ fontSize: 12, color: "#6b7280" }}>Housekeeping action required</div>
                                 </div>
-                                <button className="btn btn-sm btn-secondary" onClick={() => onNav("housekeeping")}>View</button>
+                                <button className="btn btn-sm btn-secondary" onClick={() => router.push("/admin/hk")}>View</button>
                             </div>
                         )}
                         {stats.openMaint > 0 && (
@@ -141,7 +142,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
                                     <div style={{ fontWeight: 600 }}>{stats.openMaint} maintenance issues open</div>
                                     <div style={{ fontSize: 12, color: "#6b7280" }}>Requires attention</div>
                                 </div>
-                                <button className="btn btn-sm btn-secondary" onClick={() => onNav("maintenance")}>View</button>
+                                <button className="btn btn-sm btn-secondary" onClick={() => router.push("/admin/maint")}>View</button>
                             </div>
                         )}
                         {stats.dirtyRooms === 0 && stats.openMaint === 0 && (
@@ -176,7 +177,7 @@ export default function Dashboard({ hotel, rooms, availability, bookings, custom
             <div className="card">
                 <div className="card-header">
                     <span className="card-title">📋 Recent Bookings</span>
-                    <button className="btn btn-sm btn-secondary" onClick={() => onNav("bookings")}>View All</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => router.push("/admin/bookings")}>View All</button>
                 </div>
                 <div style={{ overflowX: "auto" }}>
                     <table className="data-table">

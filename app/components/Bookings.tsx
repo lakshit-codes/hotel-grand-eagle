@@ -63,7 +63,7 @@ function buildBlankBooking(rooms: Room[], mealPlans: MealPlan[]): Booking {
         status: "confirmed", bookingSource: "Direct", specialRequests: "",
         earlyCheckIn: false, lateCheckOut: false, earlyCheckInTime: "", lateCheckOutTime: "",
         checkInActual: null, checkOutActual: null, primaryAadharNo: "", primaryAadharFileUrl: "",
-        overrideRoomPrice: undefined, createdAt: tod,
+        overrideRoomPrice: undefined, createdAt: new Date().toISOString(),
     };
 }
 
@@ -126,7 +126,7 @@ function CoGuestSection({
             // Remove extra slots from the end
             onChange(coGuests.slice(0, totalAdditional));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [adults, children]);
 
     const upd = (id: string, f: keyof CoGuest, v: string | boolean) =>
@@ -227,9 +227,9 @@ function RoomPicker({ roomNumbers, roomTypeId, checkIn, checkOut, selected, book
     );
 }
 
-function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, customers, allBookings, onSave, onClose, readOnly }: {
+function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, customers, allBookings, onSave, onDelete, onClose, readOnly }: {
     booking: Booking; roomTypes: Room[]; physicalRooms: RoomItem[]; mealPlans: MealPlan[]; customers: Customer[];
-    allBookings: Booking[]; onSave: (b: Booking) => void; onClose: () => void; readOnly?: boolean;
+    allBookings: Booking[]; onSave: (b: Booking) => void; onDelete: (id: string) => void; onClose: () => void; readOnly?: boolean;
 }) {
     const [b, setB] = useState<Booking>(() => {
         const defaults: Partial<Booking> = { coGuests: [], earlyCheckIn: false, lateCheckOut: false, earlyCheckInTime: "", lateCheckOutTime: "" };
@@ -524,6 +524,14 @@ function BookingModal({ booking: init, roomTypes, physicalRooms, mealPlans, cust
                 </div>
 
                 <div className="modal-footer">
+                    {init.guestName && (
+                        <Btn variant="danger" style={{ marginRight: "auto" }} onClick={() => {
+                            if (window.confirm("Are you sure you want to delete this booking?")) {
+                                onDelete(b.id);
+                                onClose();
+                            }
+                        }}>Delete Booking</Btn>
+                    )}
                     <Btn variant="secondary" onClick={onClose}>{readOnly ? "Close" : "Cancel"}</Btn>
                     {!readOnly && <Btn onClick={() => onSave(b)} disabled={!b.guestName.trim() || !!conflict}>Save Booking</Btn>}
                 </div>
@@ -556,7 +564,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
     const [search, setSearch] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [monthFilter, setMonthFilter] = useState("all"); // "all" or a YYYY-MM-DD (first day of month)
-    const [sortField, setSortField] = useState<"checkIn" | "guestName" | "bookingRef" | "roomTypeName" | "createdAt">("createdAt");
+    const [sortField, setSortField] = useState<"checkIn" | "guestName" | "bookingRef" | "roomTypeName" | "createdAt">("checkIn");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const todStr = now.toISOString().slice(0, 10);
 
@@ -610,6 +618,10 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
             else if (sortField === "bookingRef") cmp = (a?.bookingRef || "").localeCompare(b?.bookingRef || "");
             else if (sortField === "roomTypeName") cmp = (a?.roomTypeName || "").localeCompare(b?.roomTypeName || "");
             else if (sortField === "createdAt") cmp = (a?.createdAt || "").localeCompare(b?.createdAt || "");
+            
+            // Tie-breaker for same date/timestamp: use bookingRef or id
+            if (cmp === 0) cmp = (a?.bookingRef || "").localeCompare(b?.bookingRef || "");
+            
             return sortOrder === "asc" ? cmp : -cmp;
         });
     }, [bookings, search, filterStatus, monthFilter, sortField, sortOrder]);
@@ -623,6 +635,10 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                     const isNew = !modal.guestName;
                     const ok = isNew ? await onAdd(b) : await onUpdate(b);
                     if (ok) setModal(null);
+                }}
+                onDelete={id => {
+                    onDelete(id);
+                    setModal(null);
                 }}
                 onClose={() => setModal(null)} />}
             {delId && <Confirm msg="Delete this booking permanently?" onOk={() => { onDelete(delId); setDelId(null); }} onCancel={() => setDelId(null)} />}
@@ -673,123 +689,123 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                         </div>
 
 
-                    {/* --- SCROLLABLE BODY --- */}
-                    <div style={{ display: "flex", position: "relative" }}>
+                        {/* --- SCROLLABLE BODY --- */}
+                        <div style={{ display: "flex", position: "relative" }}>
 
-                        {/* Left Column (Sticky Rooms) */}
-                        <div style={{ width: 140, flexShrink: 0, position: "sticky", left: 0, background: "#fff", zIndex: 20, boxShadow: "2px 0 8px rgba(0,0,0,0.05)" }}>
-                            {unassignedBookings.length > 0 && <div style={{ height: Math.max(50, unassignedBookings.length * 40 + 10), borderBottom: "1px solid #e5e7eb", padding: "8px 12px", background: "#fef2f2", fontWeight: 700, fontSize: 13, color: "#dc2626", borderRight: "1px solid #fecaca" }}>Unassigned</div>}
-                            {roomTypes.map(rt => {
-                                const typeRooms = roomsByType.get(rt.id) ?? [];
-                                if (typeRooms.length === 0) return null;
-                                return (
-                                    <React.Fragment key={rt.id}>
-                                        <div style={{ background: "#f9fafb", padding: "8px 12px", fontSize: 11, fontWeight: 800, color: "#4b5563", textTransform: "uppercase", letterSpacing: 0.5, borderBottom: "1px solid #e5e7eb", borderRight: "1px solid #e5e7eb" }}>{rt.roomName}</div>
-                                        {typeRooms.map(r => (
-                                            <div key={r.id} style={{ height: 50, padding: "0 12px", display: "flex", alignItems: "center", borderBottom: "1px solid #e5e7eb", fontSize: 13, fontWeight: 700, color: "#111827", background: "#fff", borderRight: "1px solid #e5e7eb" }} title={`Floor ${r.floor} · ${r.status}`}>
-                                                Rm {r.roomNumber}
-                                                <span style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: "50%", background: r.status === "maintenance" ? "#f59e0b" : r.status === "out-of-order" ? "#dc2626" : "transparent" }} />
-                                            </div>
-                                        ))}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
-
-                        {/* Right Timelines Grid */}
-                        <div style={{ position: "relative", minHeight: "100%", background: "#fff", flexGrow: 1 }}>
-
-                            {/* Grid background lines */}
-                            <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0, display: "flex", pointerEvents: "none", zIndex: 1 }}>
-                                {timelineDates.map(d => (
-                                    <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px dashed #e5e7eb", background: d.date === todStr ? "rgba(59, 130, 246, 0.03)" : "transparent" }} />
-                                ))}
-                            </div>
-
-                            {/* Unassigned row content */}
-                            {unassignedBookings.length > 0 && (
-                                <div style={{ position: "relative", height: Math.max(50, unassignedBookings.length * 40 + 10), borderBottom: "1px solid #fecaca", background: "#fef2f2" }}>
-                                    {unassignedBookings.map((b, idx) => {
-                                        const inTime = new Date(b.checkIn).getTime();
-                                        const outTime = new Date(b.checkOut).getTime();
-                                        const startTime = new Date(startDateStr).getTime();
-                                        if (outTime <= startTime || inTime >= startTime + daysToShow * 86400000) return null; // out of view
-
-                                        const startOffsetDays = Math.max(0, (inTime - startTime) / 86400000);
-                                        const visualNights = Math.min(daysToShow - startOffsetDays, b.nights - Math.max(0, (startTime - inTime) / 86400000));
-
-                                        const left = startOffsetDays * colW;
-                                        const width = visualNights * colW;
-
-                                        return (
-                                            <div key={b.id} onClick={() => setModal(b)} style={{
-                                                position: "absolute", left, width, top: 5 + idx * 40, height: 32, borderRadius: 6,
-                                                background: "#fff", border: "2px solid #ef4444", color: "#991b1b",
-                                                display: "flex", alignItems: "center", padding: "0 8px", fontSize: 11, fontWeight: 600,
-                                                cursor: "pointer", zIndex: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: "0 2px 5px rgba(0,0,0,0.05)"
-                                            }} title={`${b.guestName} (${b.checkIn} to ${b.checkOut})`}>
-                                                {b.guestName}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            {/* Room Rows Content */}
-                            <div style={{ position: "relative", zIndex: 2 }}>
+                            {/* Left Column (Sticky Rooms) */}
+                            <div style={{ width: 140, flexShrink: 0, position: "sticky", left: 0, background: "#fff", zIndex: 20, boxShadow: "2px 0 8px rgba(0,0,0,0.05)" }}>
+                                {unassignedBookings.length > 0 && <div style={{ height: Math.max(50, unassignedBookings.length * 40 + 10), borderBottom: "1px solid #e5e7eb", padding: "8px 12px", background: "#fef2f2", fontWeight: 700, fontSize: 13, color: "#dc2626", borderRight: "1px solid #fecaca" }}>Unassigned</div>}
                                 {roomTypes.map(rt => {
                                     const typeRooms = roomsByType.get(rt.id) ?? [];
                                     if (typeRooms.length === 0) return null;
                                     return (
                                         <React.Fragment key={rt.id}>
-                                            <div style={{ height: 32, borderBottom: "1px solid #e5e7eb", background: "#f9fafb" }} /> {/* Spacer for type header */}
-                                            {typeRooms.map(r => {
-                                                const roomBks = bookings.filter(b => b.roomNumber === r.roomNumber && b.roomTypeId === r.roomTypeId && b.status !== "cancelled" && b.status !== "no-show");
-                                                return (
-                                                    <div key={r.id} style={{ height: 50, borderBottom: "1px solid #e5e7eb", position: "relative" }}>
-                                                        {roomBks.map(b => {
-                                                            const inTime = new Date(b.checkIn).getTime();
-                                                            const outTime = new Date(b.checkOut).getTime();
-                                                            const startTime = new Date(startDateStr).getTime();
-                                                            if (outTime <= startTime || inTime >= startTime + daysToShow * 86400000) return null;
-
-                                                            const startOffsetDays = (inTime - startTime) / 86400000;
-                                                            const actualLeft = startOffsetDays * colW + colW / 2;
-                                                            const baseWidth = b.nights * colW;
-
-                                                            const renderLeft = Math.max(0, actualLeft);
-                                                            const renderWidth = Math.min(daysToShow * colW - renderLeft, baseWidth - (renderLeft - actualLeft));
-
-                                                            if (renderWidth <= 0) return null;
-
-                                                            const isCheckedIn = b.status === "checked-in";
-                                                            const color = isCheckedIn ? "#16a34a" : b.status === "confirmed" ? "#E4C581" : "#d97706";
-                                                            const bg = isCheckedIn ? "#dcfce7" : b.status === "confirmed" ? "#fcf8ed" : "#fef3c7";
-
-                                                            return (
-                                                                <div key={b.id} onClick={() => setModal(b)} style={{
-                                                                    position: "absolute", left: renderLeft, width: renderWidth, top: 4, height: 42, borderRadius: 6,
-                                                                    background: bg, border: `2px solid ${color}`, color: color === "#d97706" ? "#b45309" : color,
-                                                                    display: "flex", alignItems: "center", padding: "0 6px", fontSize: 11, fontWeight: 700,
-                                                                    cursor: "pointer", zIndex: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "clip", boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
-                                                                }} title={`${b.guestName} (${b.checkIn} to ${b.checkOut}) - ${b.status}`}>
-                                                                    {actualLeft >= renderLeft && <span style={{ marginRight: 4, opacity: 0.7, fontSize: 10 }}>▶</span>}
-                                                                    <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-                                                                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", lineHeight: "1.2" }}>{b.guestName}</span>
-                                                                        <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 600, lineHeight: "1.2" }}>{isCheckedIn ? "OCCUPIED" : b.status.toUpperCase()}</span>
-                                                                    </div>
-                                                                    {b.earlyCheckIn && <span style={{ marginLeft: "auto", fontSize: 10 }}>🌅</span>}
-                                                                    {(renderLeft + renderWidth) >= (actualLeft + baseWidth) && <span style={{ marginLeft: "auto", opacity: 0.7, fontSize: 10, paddingLeft: 4 }}>◀</span>}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                );
-                                            })}
+                                            <div style={{ background: "#f9fafb", padding: "8px 12px", fontSize: 11, fontWeight: 800, color: "#4b5563", textTransform: "uppercase", letterSpacing: 0.5, borderBottom: "1px solid #e5e7eb", borderRight: "1px solid #e5e7eb" }}>{rt.roomName}</div>
+                                            {typeRooms.map(r => (
+                                                <div key={r.id} style={{ height: 50, padding: "0 12px", display: "flex", alignItems: "center", borderBottom: "1px solid #e5e7eb", fontSize: 13, fontWeight: 700, color: "#111827", background: "#fff", borderRight: "1px solid #e5e7eb" }} title={`Floor ${r.floor} · ${r.status}`}>
+                                                    Rm {r.roomNumber}
+                                                    <span style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: "50%", background: r.status === "maintenance" ? "#f59e0b" : r.status === "out-of-order" ? "#dc2626" : "transparent" }} />
+                                                </div>
+                                            ))}
                                         </React.Fragment>
                                     );
                                 })}
                             </div>
+
+                            {/* Right Timelines Grid */}
+                            <div style={{ position: "relative", minHeight: "100%", background: "#fff", flexGrow: 1 }}>
+
+                                {/* Grid background lines */}
+                                <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0, display: "flex", pointerEvents: "none", zIndex: 1 }}>
+                                    {timelineDates.map(d => (
+                                        <div key={d.date} style={{ width: colW, flexShrink: 0, borderRight: "1px dashed #e5e7eb", background: d.date === todStr ? "rgba(59, 130, 246, 0.03)" : "transparent" }} />
+                                    ))}
+                                </div>
+
+                                {/* Unassigned row content */}
+                                {unassignedBookings.length > 0 && (
+                                    <div style={{ position: "relative", height: Math.max(50, unassignedBookings.length * 40 + 10), borderBottom: "1px solid #fecaca", background: "#fef2f2" }}>
+                                        {unassignedBookings.map((b, idx) => {
+                                            const inTime = new Date(b.checkIn).getTime();
+                                            const outTime = new Date(b.checkOut).getTime();
+                                            const startTime = new Date(startDateStr).getTime();
+                                            if (outTime <= startTime || inTime >= startTime + daysToShow * 86400000) return null; // out of view
+
+                                            const startOffsetDays = Math.max(0, (inTime - startTime) / 86400000);
+                                            const visualNights = Math.min(daysToShow - startOffsetDays, b.nights - Math.max(0, (startTime - inTime) / 86400000));
+
+                                            const left = startOffsetDays * colW;
+                                            const width = visualNights * colW;
+
+                                            return (
+                                                <div key={b.id} onClick={() => setModal(b)} style={{
+                                                    position: "absolute", left, width, top: 5 + idx * 40, height: 32, borderRadius: 6,
+                                                    background: "#fff", border: "2px solid #ef4444", color: "#991b1b",
+                                                    display: "flex", alignItems: "center", padding: "0 8px", fontSize: 11, fontWeight: 600,
+                                                    cursor: "pointer", zIndex: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: "0 2px 5px rgba(0,0,0,0.05)"
+                                                }} title={`${b.guestName} (${b.checkIn} to ${b.checkOut})`}>
+                                                    {b.guestName}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Room Rows Content */}
+                                <div style={{ position: "relative", zIndex: 2 }}>
+                                    {roomTypes.map(rt => {
+                                        const typeRooms = roomsByType.get(rt.id) ?? [];
+                                        if (typeRooms.length === 0) return null;
+                                        return (
+                                            <React.Fragment key={rt.id}>
+                                                <div style={{ height: 32, borderBottom: "1px solid #e5e7eb", background: "#f9fafb" }} /> {/* Spacer for type header */}
+                                                {typeRooms.map(r => {
+                                                    const roomBks = bookings.filter(b => b.roomNumber === r.roomNumber && b.roomTypeId === r.roomTypeId && b.status !== "cancelled" && b.status !== "no-show");
+                                                    return (
+                                                        <div key={r.id} style={{ height: 50, borderBottom: "1px solid #e5e7eb", position: "relative" }}>
+                                                            {roomBks.map(b => {
+                                                                const inTime = new Date(b.checkIn).getTime();
+                                                                const outTime = new Date(b.checkOut).getTime();
+                                                                const startTime = new Date(startDateStr).getTime();
+                                                                if (outTime <= startTime || inTime >= startTime + daysToShow * 86400000) return null;
+
+                                                                const startOffsetDays = (inTime - startTime) / 86400000;
+                                                                const actualLeft = startOffsetDays * colW + colW / 2;
+                                                                const baseWidth = b.nights * colW;
+
+                                                                const renderLeft = Math.max(0, actualLeft);
+                                                                const renderWidth = Math.min(daysToShow * colW - renderLeft, baseWidth - (renderLeft - actualLeft));
+
+                                                                if (renderWidth <= 0) return null;
+
+                                                                const isCheckedIn = b.status === "checked-in";
+                                                                const color = isCheckedIn ? "#16a34a" : b.status === "confirmed" ? "#E4C581" : "#d97706";
+                                                                const bg = isCheckedIn ? "#dcfce7" : b.status === "confirmed" ? "#fcf8ed" : "#fef3c7";
+
+                                                                return (
+                                                                    <div key={b.id} onClick={() => setModal(b)} style={{
+                                                                        position: "absolute", left: renderLeft, width: renderWidth, top: 4, height: 42, borderRadius: 6,
+                                                                        background: bg, border: `2px solid ${color}`, color: color === "#d97706" ? "#b45309" : color,
+                                                                        display: "flex", alignItems: "center", padding: "0 6px", fontSize: 11, fontWeight: 700,
+                                                                        cursor: "pointer", zIndex: 5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "clip", boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+                                                                    }} title={`${b.guestName} (${b.checkIn} to ${b.checkOut}) - ${b.status}`}>
+                                                                        {actualLeft >= renderLeft && <span style={{ marginRight: 4, opacity: 0.7, fontSize: 10 }}>▶</span>}
+                                                                        <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+                                                                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", lineHeight: "1.2" }}>{b.guestName}</span>
+                                                                            <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 600, lineHeight: "1.2" }}>{isCheckedIn ? "OCCUPIED" : b.status.toUpperCase()}</span>
+                                                                        </div>
+                                                                        {b.earlyCheckIn && <span style={{ marginLeft: "auto", fontSize: 10 }}>🌅</span>}
+                                                                        {(renderLeft + renderWidth) >= (actualLeft + baseWidth) && <span style={{ marginLeft: "auto", opacity: 0.7, fontSize: 10, paddingLeft: 4 }}>◀</span>}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -829,43 +845,40 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                                 {filteredBookings.map(b => {
                                     const locked = isLocked(b);
                                     return (
-                                    <tr key={b.id} style={{ background: locked ? "#f9fafb" : undefined, opacity: locked ? 0.85 : 1 }}>
-                                        <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>
-                                            {b.bookingRef}
-                                            {locked && <span style={{ marginLeft: 5, fontSize: 10, background: "#e5e7eb", color: "#6b7280", borderRadius: 4, padding: "1px 5px" }}>🔒 Locked</span>}
-                                        </td>
-                                        <td>
-                                            <div style={{ fontWeight: 500 }}>{b.guestName}</div>
-                                            <div style={{ fontSize: 11, color: "#9ca3af" }}>{b.bookingSource}</div>
-                                        </td>
-                                        <td style={{ fontSize: 12 }}>{b.roomTypeName}<br />{b.roomNumber ? <span style={{ color: "#E4C581", fontWeight: 600 }}>Rm {b.roomNumber}</span> : <span style={{ color: "#9ca3af" }}>Unassigned</span>}</td>
-                                        <td style={{ fontSize: 12 }}>{fmtDate(b.checkIn)}<br /><span style={{ color: "#9ca3af" }}>{fmtDate(b.checkOut)} ({b.nights}N)</span></td>
-                                        <td style={{ fontSize: 12 }}>{b.adults}A{b.children > 0 ? ` ${b.children}C` : ""}{b.coGuests?.length > 0 && <span style={{ color: "#7c3aed", display: "block", fontSize: 11 }}>+{b.coGuests.length} co</span>}</td>
-                                        <td><Badge color="indigo">{b.mealPlanCode}</Badge></td>
-                                        <td>
-                                            {b.earlyCheckIn && <div style={{ fontSize: 11, color: "#7c3aed" }}>🌅 Early CI</div>}
-                                            {b.lateCheckOut && <div style={{ fontSize: 11, color: "#7c3aed" }}>🌙 Late CO</div>}
-                                            {b.specialRequests && <div style={{ fontSize: 11, color: "#d97706" }}>⚠ SR</div>}
-                                        </td>
-                                        <td style={{ fontWeight: 600 }}>₹{b.grandTotal.toLocaleString()}</td>
-                                        <td><Badge color={statusColor[b.status]}>{b.status}</Badge></td>
-                                        <td>
-                                            <div style={{ display: "flex", gap: 4 }}>
-                                                <span title="View Invoice">
-                                                    <Btn size="sm" variant="ghost" onClick={() => setInvoiceBooking(b)}><span style={{ fontSize: 13 }}>🧾</span></Btn>
-                                                </span>
-                                                <span title={locked ? "View (locked)" : "Edit"}>
-                                                    <Btn size="sm" variant="ghost"
-                                                        onClick={() => setModal(b)}>
-                                                        {locked ? <span style={{ fontSize: 13 }}>👁</span> : <Ic.Edit />}
-                                                    </Btn>
-                                                </span>
-                                                {!locked && (
+                                        <tr key={b.id} style={{ background: locked ? "#f9fafb" : undefined, opacity: locked ? 0.85 : 1 }}>
+                                            <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>
+                                                {b.bookingRef}
+                                            </td>
+                                            <td>
+                                                <div style={{ fontWeight: 500 }}>{b.guestName}</div>
+                                                <div style={{ fontSize: 11, color: "#9ca3af" }}>{b.bookingSource}</div>
+                                            </td>
+                                            <td style={{ fontSize: 12 }}>{b.roomTypeName}<br />{b.roomNumber ? <span style={{ color: "#E4C581", fontWeight: 600 }}>Rm {b.roomNumber}</span> : <span style={{ color: "#9ca3af" }}>Unassigned</span>}</td>
+                                            <td style={{ fontSize: 12 }}>{fmtDate(b.checkIn)}<br /><span style={{ color: "#9ca3af" }}>{fmtDate(b.checkOut)} ({b.nights}N)</span></td>
+                                            <td style={{ fontSize: 12 }}>{b.adults}A{b.children > 0 ? ` ${b.children}C` : ""}{b.coGuests?.length > 0 && <span style={{ color: "#7c3aed", display: "block", fontSize: 11 }}>+{b.coGuests.length} co</span>}</td>
+                                            <td><Badge color="indigo">{b.mealPlanCode}</Badge></td>
+                                            <td>
+                                                {b.earlyCheckIn && <div style={{ fontSize: 11, color: "#7c3aed" }}>🌅 Early CI</div>}
+                                                {b.lateCheckOut && <div style={{ fontSize: 11, color: "#7c3aed" }}>🌙 Late CO</div>}
+                                                {b.specialRequests && <div style={{ fontSize: 11, color: "#d97706" }}>⚠ SR</div>}
+                                            </td>
+                                            <td style={{ fontWeight: 600 }}>₹{b.grandTotal.toLocaleString()}</td>
+                                            <td><Badge color={statusColor[b.status]}>{b.status}</Badge></td>
+                                            <td>
+                                                <div style={{ display: "flex", gap: 4 }}>
+                                                    <span title="View Invoice">
+                                                        <Btn size="sm" variant="ghost" onClick={() => setInvoiceBooking(b)}><span style={{ fontSize: 13 }}>🧾</span></Btn>
+                                                    </span>
+                                                    <span title={locked ? "View (locked)" : "Edit"}>
+                                                        <Btn size="sm" variant="ghost"
+                                                            onClick={() => setModal(b)}>
+                                                            {locked ? <span style={{ fontSize: 13 }}>👁</span> : <Ic.Edit />}
+                                                        </Btn>
+                                                    </span>
                                                     <Btn size="sm" variant="ghost" style={{ color: "#dc2626" }} onClick={() => setDelId(b.id)}><Ic.Trash /></Btn>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     );
                                 })}
                             </tbody>

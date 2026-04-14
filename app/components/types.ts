@@ -45,6 +45,12 @@ export interface Availability {
     minimumStay: number;
     maximumStay: number;
     blackoutDates: string[];
+    status: "Available" | "Closed" | "Fully Booked" | "On Request";
+    bookedCount: number;
+    maintenanceCount: number;
+    totalCount: number;
+    overbookingLimit: number;
+    instantBooking: boolean;
 }
 
 export interface SeasonalPrice {
