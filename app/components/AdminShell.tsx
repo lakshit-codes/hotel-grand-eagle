@@ -1,44 +1,45 @@
-"use client";
 import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Ic } from "./ui";
 import { useAdmin } from "./AdminContext";
 
 export const NAV_GROUPS = [
     {
         label: "Operations", items: [
-            { id: "dashboard", label: "Dashboard", Icon: Ic.Dashboard },
-            { id: "bookings", label: "Bookings", Icon: Ic.Bookings },
-            { id: "customers", label: "Guests", Icon: Ic.Customers },
-            { id: "reports", label: "Reports & Audit", Icon: Ic.Reports },
+            { id: "dashboard", label: "Dashboard", Icon: Ic.Dashboard, path: "/admin/dashboard" },
+            { id: "bookings", label: "Bookings", Icon: Ic.Bookings, path: "/admin/bookings" },
+            { id: "customers", label: "Guests", Icon: Ic.Customers, path: "/admin/guests" },
+            { id: "reports", label: "Reports & Audit", Icon: Ic.Reports, path: "/admin/reports" },
         ]
     },
     {
         label: "Hotel", items: [
-            { id: "room-types", label: "Room Types", Icon: Ic.Rooms },
-            { id: "rooms", label: "Rooms", Icon: Ic.Rooms },
-            { id: "meals", label: "Meal Plans", Icon: Ic.Meals },
-            { id: "hk", label: "Housekeeping", Icon: Ic.HK },
-            { id: "maint", label: "Maintenance", Icon: Ic.Maint },
-            { id: "staff", label: "Staff", Icon: Ic.Staff },
-            { id: "testimonials", label: "Testimonials", Icon: Ic.Customers },
+            { id: "room-types", label: "Room Types", Icon: Ic.Rooms, path: "/admin/room-types" },
+            { id: "rooms", label: "Rooms", Icon: Ic.Rooms, path: "/admin/rooms" },
+            { id: "meals", label: "Meal Plans", Icon: Ic.Meals, path: "/admin/meals" },
+            { id: "hk", label: "Housekeeping", Icon: Ic.HK, path: "/admin/hk" },
+            { id: "maint", label: "Maintenance", Icon: Ic.Maint, path: "/admin/maint" },
+            { id: "staff", label: "Staff", Icon: Ic.Staff, path: "/admin/staff" },
+            { id: "testimonials", label: "Testimonials", Icon: Ic.Customers, path: "/admin/testimonials" },
         ]
     },
     {
         label: "Configuration", items: [
-            { id: "pricing", label: "Pricing", Icon: Ic.Pricing },
-            { id: "avail", label: "Availability", Icon: Ic.Avail },
-            { id: "amenity", label: "Amenity Manager", Icon: Ic.Amenity },
-            { id: "cms", label: "Pages CMS", Icon: Ic.Hotel },
-            { id: "gallery", label: "Gallery", Icon: Ic.Hotel },
-            { id: "overview", label: "Hotel Overview", Icon: Ic.Hotel },
-            { id: "nearby", label: "Nearby Places", Icon: Ic.Maint },
+            { id: "pricing", label: "Pricing", Icon: Ic.Pricing, path: "/admin/pricing" },
+            { id: "avail", label: "Availability", Icon: Ic.Avail, path: "/admin/avail" },
+            { id: "amenity", label: "Amenity Manager", Icon: Ic.Amenity, path: "/admin/amenity" },
+            { id: "cms", label: "Pages CMS", Icon: Ic.Hotel, path: "/admin/cms" },
+            { id: "gallery", label: "Gallery", Icon: Ic.Hotel, path: "/admin/gallery" },
+            { id: "overview", label: "Hotel Overview", Icon: Ic.Hotel, path: "/admin/overview" },
+            { id: "nearby", label: "Nearby Places", Icon: Ic.Maint, path: "/admin/nearby" },
         ]
     },
 ];
 
 export function Sidebar() {
-    const { page, setPage, collapsed, setCollapsed, mobileNavOpen, setMobileNavOpen } = useAdmin();
-    const handleNav = (id: string) => { setPage(id); setMobileNavOpen(false); };
+    const { collapsed, setCollapsed, mobileNavOpen, setMobileNavOpen } = useAdmin();
+    const pathname = usePathname();
     
     return (
         <>
@@ -51,12 +52,12 @@ export function Sidebar() {
                     {NAV_GROUPS.map(group => (
                         <div key={group.label}>
                             <div className="nav-group-label">{group.label}</div>
-                            {group.items.map(({ id, label, Icon }) => (
-                                <button key={id} onClick={() => handleNav(id)} title={collapsed ? label : ""}
-                                    className={`nav-item ${page === id ? "active" : ""}`}>
+                            {group.items.map(({ id, label, Icon, path }) => (
+                                <Link key={id} href={path} onClick={() => setMobileNavOpen(false)} title={collapsed ? label : ""}
+                                    className={`nav-item ${pathname === path ? "active" : ""}`}>
                                     <span className="nav-item-icon"><Icon /></span>
                                     <span className="nav-item-label">{label}</span>
-                                </button>
+                                </Link>
                             ))}
                         </div>
                     ))}
@@ -79,13 +80,13 @@ export function SearchOverlay() {
     const results = useMemo(() => {
         if (!q.trim()) return [];
         const lq = q.toLowerCase();
-        const res: { type: string; main: string; sub: string; page: string }[] = [];
+        const res: { type: string; main: string; sub: string; path: string }[] = [];
         bookings.filter(b => b.guestName.toLowerCase().includes(lq) || b.bookingRef.toLowerCase().includes(lq)).slice(0, 5)
-            .forEach(b => res.push({ type: "Booking", main: `${b.bookingRef} — ${b.guestName}`, sub: `${b.roomTypeName} · ${b.status}`, page: "bookings" }));
+            .forEach(b => res.push({ type: "Booking", main: `${b.bookingRef} — ${b.guestName}`, sub: `${b.roomTypeName} · ${b.status}`, path: "/admin/bookings" }));
         customers.filter(c => `${c.firstName} ${c.lastName} ${c.email} ${c.aadharNo}`.toLowerCase().includes(lq)).slice(0, 5)
-            .forEach(c => res.push({ type: "Guest", main: `${c.firstName} ${c.lastName}`, sub: `${c.nationality} · ${c.loyaltyTier}`, page: "customers" }));
+            .forEach(c => res.push({ type: "Guest", main: `${c.firstName} ${c.lastName}`, sub: `${c.nationality} · ${c.loyaltyTier}`, path: "/admin/guests" }));
         roomTypes.filter(r => r.roomName.toLowerCase().includes(lq)).slice(0, 3)
-            .forEach(r => res.push({ type: "Room Type", main: r.roomName, sub: `${r.roomCategory} · ₹${r.basePrice.toLocaleString()}/night`, page: "room-types" }));
+            .forEach(r => res.push({ type: "Room Type", main: r.roomName, sub: `${r.roomCategory} · ₹${r.basePrice.toLocaleString()}/night`, path: "/admin/room-types" }));
         return res.slice(0, 10);
     }, [q, bookings, customers, roomTypes]);
 
@@ -107,13 +108,13 @@ export function SearchOverlay() {
                     {results.length === 0 && q && <div className="search-empty">No results for "{q}"</div>}
                     {!q && <div className="search-empty">Type to search across all hotel data…</div>}
                     {results.map((r, i) => (
-                        <div key={i} className="search-result-item" onClick={() => { setPage(r.page); setSearchOpen(false); }}>
+                        <Link key={i} href={r.path} className="search-result-item" onClick={() => setSearchOpen(false)}>
                             <span className="search-result-type">{r.type}</span>
                             <div>
                                 <div className="search-result-main">{r.main}</div>
                                 <div className="search-result-sub">{r.sub}</div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>
@@ -122,8 +123,9 @@ export function SearchOverlay() {
 }
 
 export function Topbar() {
-    const { hotel, page, setMobileNavOpen, setSearchOpen, bookings, runSeed } = useAdmin();
-    const pageLabel = NAV_GROUPS.flatMap(g => g.items).find(n => n.id === page)?.label ?? "Dashboard";
+    const { hotel, setMobileNavOpen, setSearchOpen, bookings, runSeed } = useAdmin();
+    const pathname = usePathname();
+    const pageLabel = NAV_GROUPS.flatMap(g => g.items).find(n => n.path === pathname)?.label ?? "Hotel Admin";
 
     return (
         <div className="topbar">

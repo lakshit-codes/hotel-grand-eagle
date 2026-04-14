@@ -51,7 +51,7 @@ export default function Rooms() {
             className="fade-in-up visible"
             style={{ fontSize: "13px", color: "var(--ivory-dim)", lineHeight: 1.7, maxWidth: "260px" }}
           >
-            Each space meticulously crafted for an unparalleled retreat. Choose your sanctuary.
+            Well-designed rooms offering comfort, convenience, and everything you need for a relaxing stay.
           </p>
           <Link
             href="/rooms"
@@ -79,20 +79,20 @@ export default function Rooms() {
       <div className="rooms-scroll fade-in-up visible">
         {loading ? (
           <div style={{ width: "100%", textAlign: "center", color: "var(--gold)", padding: "40px" }}>
-             Discovery in progress...
+            Discovery in progress...
           </div>
         ) : rooms.length === 0 ? (
           <div style={{ width: "100%", textAlign: "center", color: "var(--ivory-dim)", padding: "40px" }}>
-             Our sanctuaries are currently being prepared. Check back soon.
+            Our sanctuaries are currently being prepared. Check back soon.
           </div>
         ) : (
           rooms.map((room, idx) => (
             <div key={idx} className="room-card">
               <Link href={`/rooms/${room.slug}`} className="room-img-wrap" style={{ display: 'block' }}>
-                <img 
-                  src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"} 
-                  alt={room.roomName} 
-                  loading="lazy" 
+                <img
+                  src={room.images?.[0] || "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=800"}
+                  alt={room.roomName}
+                  loading="lazy"
                 />
                 <div className="room-img-overlay"></div>
                 <div className="room-price">
@@ -135,10 +135,10 @@ export default function Rooms() {
                   </div>
                 </div>
                 <div className="tags">
-                   <span className="tag">City View</span>
-                   <span className="tag">Free Wi-Fi</span>
-                   <span className="tag">Mini Bar</span>
-                   <span className="tag">24hr Service</span>
+                  <span className="tag">City View</span>
+                  <span className="tag">Free Wi-Fi</span>
+                  <span className="tag">Mini Bar</span>
+                  <span className="tag">24hr Service</span>
                 </div>
                 <Link href={`/rooms/${room.slug}`} className="btn-room" style={{ textDecoration: 'none' }}>
                   View Details

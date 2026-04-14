@@ -48,7 +48,7 @@ function normalizeBooking(body: Record<string, unknown>): Record<string, unknown
     // Resolve totals  (website sends totalAmount; admin uses grandTotal)
     const totalRoomCost = Number(body.totalRoomCost ?? body.roomCost ?? 0);
     const totalMealCost = Number(body.totalMealCost ?? body.mealCost ?? 0);
-    const grandTotal    = Number(body.grandTotal ?? body.totalAmount ?? body.total ?? totalRoomCost + totalMealCost);
+    const grandTotal = Number(body.grandTotal ?? body.totalAmount ?? body.total ?? totalRoomCost + totalMealCost);
 
     // Nights
     const nights = Number(body.nights ?? (() => {
@@ -62,9 +62,9 @@ function normalizeBooking(body: Record<string, unknown>): Record<string, unknown
 
     return {
         // IDs
-        id:           body.id ?? `bk_${Date.now()}`,
-        bookingRef:   body.bookingRef ?? `BK${Math.floor(Date.now() / 1000).toString().slice(-6)}`,
-        customerId:   body.customerId ?? "",
+        id: body.id ?? `bk_${Date.now()}`,
+        bookingRef: body.bookingRef ?? `BK${Math.floor(Date.now() / 1000).toString().slice(-6)}`,
+        customerId: body.customerId ?? "",
 
         // Guest
         guestName,
@@ -72,22 +72,22 @@ function normalizeBooking(body: Record<string, unknown>): Record<string, unknown
         guestPhone,
 
         // Room
-        roomTypeId:    body.roomTypeId   ?? "",
-        roomTypeName:  body.roomTypeName ?? "",
-        roomNumber:    body.roomNumber   ?? null,
+        roomTypeId: body.roomTypeId ?? "",
+        roomTypeName: body.roomTypeName ?? "",
+        roomNumber: body.roomNumber ?? null,
 
         // Dates
-        checkIn:  body.checkIn  ?? "",
+        checkIn: body.checkIn ?? "",
         checkOut: body.checkOut ?? "",
         nights,
 
         // People
-        adults:   Number(body.adults ?? body.guests ?? 1),
+        adults: Number(body.adults ?? body.guests ?? 1),
         children: Number(body.children ?? 0),
         coGuests: Array.isArray(body.coGuests) ? body.coGuests : [],
 
         // Meal plan
-        mealPlanId:   body.mealPlanId   ?? "",
+        mealPlanId: body.mealPlanId ?? "",
         mealPlanCode: body.mealPlanCode ?? "RO",
 
         // Financials
@@ -97,18 +97,18 @@ function normalizeBooking(body: Record<string, unknown>): Record<string, unknown
         currency: "INR",
 
         // Status & source
-        status:        (body.status as string) ?? "confirmed",
+        status: (body.status as string) ?? "confirmed",
         bookingSource: (body.bookingSource ?? body.source ?? "Direct") as string,
 
         // Misc
         specialRequests: (body.specialRequests ?? "") as string,
-        earlyCheckIn:     Boolean(body.earlyCheckIn ?? false),
-        lateCheckOut:     Boolean(body.lateCheckOut ?? false),
+        earlyCheckIn: Boolean(body.earlyCheckIn ?? false),
+        lateCheckOut: Boolean(body.lateCheckOut ?? false),
         earlyCheckInTime: (body.earlyCheckInTime ?? "") as string,
         lateCheckOutTime: (body.lateCheckOutTime ?? "") as string,
-        checkInActual:    body.checkInActual   ?? null,
-        checkOutActual:   body.checkOutActual  ?? null,
-        primaryAadharNo:      (body.primaryAadharNo      ?? "") as string,
+        checkInActual: body.checkInActual ?? null,
+        checkOutActual: body.checkOutActual ?? null,
+        primaryAadharNo: (body.primaryAadharNo ?? "") as string,
         primaryAadharFileUrl: (body.primaryAadharFileUrl ?? "") as string,
         createdAt: (body.createdAt as string | undefined) ?? new Date().toISOString(),
     };
@@ -116,9 +116,9 @@ function normalizeBooking(body: Record<string, unknown>): Record<string, unknown
 
 export async function POST(req: Request) {
     try {
-        const raw  = await req.json();
+        const raw = await req.json();
         const body = normalizeBooking(raw);
-        const db   = await getDatabase();
+        const db = await getDatabase();
 
         // Backend double-booking validation
         if (body.roomNumber && body.checkIn && body.checkOut && body.roomTypeId) {
@@ -228,10 +228,22 @@ export async function DELETE(req: Request) {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
         if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+        
         const db = await getDatabase();
+        
+        // Before deleting, check if we need to free up a room
+        const booking = await db.collection("bookings").findOne({ id });
+        if (booking && booking.status === "checked-in" && booking.roomNumber) {
+            await db.collection("rooms").updateOne(
+                { roomNumber: booking.roomNumber },
+                { $set: { status: "available" } }
+            );
+        }
+
         await db.collection("bookings").deleteOne({ id });
         return NextResponse.json({ success: true });
-    } catch {
+    } catch (err) {
+        console.error("[DELETE /api/bookings]", err);
         return NextResponse.json({ error: "Failed to delete booking" }, { status: 500 });
     }
 }

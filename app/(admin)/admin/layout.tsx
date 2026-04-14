@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import { AdminProvider } from "../../components/AdminContext";
-import { AdminLayoutContent } from "../../components/AdminLayoutContent";
+import { AdminProvider } from "@/app/components/AdminContext";
+import { AdminLayoutContent } from "@/app/components/AdminLayoutContent";
 import { getSession } from "@/app/utils/auth";
 import { redirect } from "next/navigation";
 
