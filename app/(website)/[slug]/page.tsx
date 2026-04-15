@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getDatabase } from "@/app/utils/getDatabase";
 import type { Metadata } from "next";
 import { CmsRenderer } from "@/app/components/cms/CmsRenderer";
+import type { LegalSection } from "@/app/components/types";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -141,6 +142,37 @@ export default async function DynamicCMSPage({ params }: PageProps) {
                                     {para}
                                 </p>
                             ))
+                        )}
+
+                    {/* Legal Sections Rendering */}
+                    {page.sections && page.sections.length > 0 && (
+                        <div className="legal-sections" style={{ marginTop: page.content ? 40 : 0 }}>
+                            {page.sections.map((sec: any) => {
+                                if (sec.type === "legal-block") {
+                                    return (
+                                        <div key={sec.id} className="legal-block" style={{ marginBottom: 40 }}>
+                                            <h2 style={{ 
+                                                fontSize: 22, 
+                                                color: "var(--gold, #d4a857)", 
+                                                marginBottom: 16,
+                                                fontFamily: "'Cormorant Garamond', serif"
+                                            }}>
+                                                {sec.heading}
+                                            </h2>
+                                            <div style={{ 
+                                                fontSize: 15, 
+                                                lineHeight: 1.8, 
+                                                color: "var(--ivory-dim, #d4cfc8)",
+                                                whiteSpace: "pre-wrap"
+                                            }}>
+                                                {sec.description}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </div>
                     )}
                 </div>
 

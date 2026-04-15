@@ -332,7 +332,7 @@ export default function AboutPageEditor({ initialData, onSave, onCancel }: About
     const [isPublished, setIsPublished] = useState(initialData?.isPublished ?? true);
     const [sections, setSections] = useState<AboutSection[]>(
         initialData?.sections && initialData.sections.length > 0
-            ? initialData.sections
+            ? (initialData.sections as AboutSection[])
             : DEFAULT_SECTIONS
     );
     const [saving, setSaving] = useState(false);

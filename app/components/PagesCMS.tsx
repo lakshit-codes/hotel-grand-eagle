@@ -4,6 +4,7 @@ import type { CMSPage } from "./types";
 import { PageEditor } from "./cms/PageEditor";
 import AboutPageEditor from "./cms/AboutPageEditor";
 import HomePageEditor from "./cms/HomePageEditor";
+import LegalPageEditor from "./cms/LegalPageEditor";
 
 interface PagesCMSProps {
     pages: CMSPage[];
@@ -24,7 +25,7 @@ function fmtDate(iso: string) {
 }
 
 export default function PagesCMS({ pages, onAdd, onUpdate, onDelete }: PagesCMSProps) {
-    const [view, setView] = useState<"list" | "add" | "edit" | "about" | "home">("list");
+    const [view, setView] = useState<"list" | "add" | "edit" | "about" | "home" | "legal">("list");
     const [target, setTarget] = useState<CMSPage | null>(null);
     const [delId, setDelId] = useState<string | null>(null);
 
@@ -35,6 +36,9 @@ export default function PagesCMS({ pages, onAdd, onUpdate, onDelete }: PagesCMSP
             setView("about");
         } else if (page.slug === "home") {
             setView("home");
+        } else if (page.slug === "terms-and-conditions" || page.slug === "privacy-policy") {
+            setTarget(page);
+            setView("legal");
         } else {
             setView("edit");
         }
@@ -99,6 +103,24 @@ export default function PagesCMS({ pages, onAdd, onUpdate, onDelete }: PagesCMSP
             />
         );
     }
+    if (view === "legal") {
+        return (
+            <LegalPageEditor
+                initialData={target}
+                onSave={async (p) => {
+                    const updatedPage = p as CMSPage;
+                    const existingIdx = pages.findIndex(x => x.slug === target?.slug);
+                    if (existingIdx >= 0) {
+                        onUpdate({ ...pages[existingIdx], ...updatedPage });
+                    } else {
+                        onAdd(updatedPage);
+                    }
+                    setView("list");
+                }}
+                onCancel={() => setView("list")}
+            />
+        );
+    }
 
     const aboutPage = pages.find(p => p.slug === "about");
     const homePage = pages.find(p => p.slug === "home");
@@ -128,12 +150,32 @@ export default function PagesCMS({ pages, onAdd, onUpdate, onDelete }: PagesCMSP
                         </span>
                     </div>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
                     <Btn variant="secondary" onClick={openHome} style={{ borderRadius: 9 }}>
                         🏠 Edit Home Page
                     </Btn>
                     <Btn variant="secondary" onClick={openAbout} style={{ borderRadius: 9 }}>
                         ✨ Edit About Page
+                    </Btn>
+                    <Btn 
+                        variant="secondary" 
+                        onClick={() => {
+                            const p = pages.find(x => x.slug === "terms-and-conditions");
+                            if (p) openEdit(p);
+                        }} 
+                        style={{ borderRadius: 9 }}
+                    >
+                        📜 Terms
+                    </Btn>
+                    <Btn 
+                        variant="secondary" 
+                        onClick={() => {
+                            const p = pages.find(x => x.slug === "privacy-policy");
+                            if (p) openEdit(p);
+                        }} 
+                        style={{ borderRadius: 9 }}
+                    >
+                        🔒 Privacy
                     </Btn>
                     <Btn onClick={openAdd} style={{ borderRadius: 9 }}>
                         <Ic.Plus /> Add New Page
@@ -209,6 +251,38 @@ export default function PagesCMS({ pages, onAdd, onUpdate, onDelete }: PagesCMSP
                         ✏️ Edit Content
                     </button>
                 </div>
+            </div>
+
+            {/* Legal Pages Quick Section */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+                {["terms-and-conditions", "privacy-policy"].map(slug => {
+                    const p = pages.find(x => x.slug === slug);
+                    const isTerms = slug === "terms-and-conditions";
+                    return (
+                        <div key={slug} style={{
+                            background: "rgba(255,255,255,0.03)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: 12, padding: "16px 20px",
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                        }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ fontSize: 18 }}>{isTerms ? "📜" : "🔒"}</div>
+                                <div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{isTerms ? "Terms & Conditions" : "Privacy Policy"}</div>
+                                    <div style={{ fontSize: 11, color: p?.isPublished ? "#4ade80" : "#94a3b8", marginTop: 2 }}>
+                                        {p?.isPublished ? "Published" : "Draft"}
+                                    </div>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => p && openEdit(p)}
+                                style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "#e2e8f0", borderRadius: 6, padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}
+                            >
+                                Edit
+                            </button>
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Pages list */}

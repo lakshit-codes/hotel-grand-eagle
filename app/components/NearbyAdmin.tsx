@@ -11,7 +11,7 @@ interface Props {
 }
 
 const BLANK: Omit<NearbyPlace, "id" | "createdAt"> = {
-    name: "", description: "", distance: "", image: "",
+    name: "", description: "", distance: "", image: "", lat: 0, lng: 0,
 };
 
 function PlaceModal({ place: init, onSave, onClose }: {
@@ -23,7 +23,7 @@ function PlaceModal({ place: init, onSave, onClose }: {
     const [uploading, setUploading] = useState(false);
     const [uploadErr, setUploadErr] = useState("");
     const s = (k: keyof typeof BLANK) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-        setF(p => ({ ...p, [k]: e.target.value }));
+        setF(p => ({ ...p, [k]: k === "lat" || k === "lng" ? parseFloat(e.target.value) || 0 : e.target.value }));
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -68,6 +68,16 @@ function PlaceModal({ place: init, onSave, onClose }: {
                         <textarea className="textarea" value={f.description} onChange={s("description")}
                             placeholder="Brief description of this place..." style={{ minHeight: 90 }} />
                     </div>
+                    <div className="grid-2 mb-12" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <div>
+                            <label className="field-label">Latitude</label>
+                            <input className="inp" type="number" step="any" value={f.lat} onChange={s("lat")} placeholder="26.7..." />
+                        </div>
+                        <div>
+                            <label className="field-label">Longitude</label>
+                            <input className="inp" type="number" step="any" value={f.lng} onChange={s("lng")} placeholder="75.8..." />
+                        </div>
+                    </div>
                     <div className="mb-12">
                         <label className="field-label">Image</label>
                         {/* File upload */}
@@ -102,6 +112,8 @@ function PlaceModal({ place: init, onSave, onClose }: {
                             description: f.description.trim(),
                             distance: f.distance.trim(),
                             image: f.image.trim(),
+                            lat: f.lat,
+                            lng: f.lng,
                             createdAt: (init as NearbyPlace).createdAt || new Date().toISOString(),
                         });
                     }}>Save Place</Btn>

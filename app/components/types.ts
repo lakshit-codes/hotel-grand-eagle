@@ -261,12 +261,21 @@ export interface LostFoundItem {
     notes: string;
 }
 
+export interface LegalSection {
+    id: string;
+    type: "legal-block";
+    heading: string;
+    description: string;
+}
+
 export interface NearbyPlace {
     id: string;
     name: string;
     description: string;
     distance: string;
     image: string;
+    lat?: number;
+    lng?: number;
     createdAt: string;
 }
 
@@ -313,7 +322,7 @@ export interface CMSPage {
     title: string;
     slug: string;
     subtitle?: string;              // eyebrow / tagline (e.g. "Our Heritage")
-    sections?: AboutSection[];      // used by About Page CMS
+    sections?: (AboutSection | LegalSection)[];      // used by About & Legal CMS
     content: PageBlock[];
     metaTitle?: string;
     metaDescription?: string;
@@ -393,11 +402,12 @@ export interface GalleryImage {
 export interface Testimonial {
     id: string;
     name: string;
-    role: string;
+    // role: string;      // Removed for simplification
     location: string;
     text: string;
     rating: number;
-    img: string;
+    // img: string;       // Removed for simplification
     isActive: boolean;
+    stayDate: string;     // Added: format YYYY-MM
     createdAt: string;
 }

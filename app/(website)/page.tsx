@@ -6,6 +6,7 @@ import Rooms from "./components/Rooms";
 import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Loading from "./components/Loading";
+import NearbyPlaces from "./components/NearbyPlaces";
 import type { CMSPage, HeroSection, HomeTextSection, HomeQuoteSection, HomeTestimonialsSection, TextImageSection, AboutSection, AmenityCat } from "../components/types";
 
 // ─── Highlight helper (same as About page) ────────────────────────────────────
@@ -264,6 +265,7 @@ function TextImageRenderer({ sec }: { sec: HomeTextSection }) {
                             }
                         </h2>
                         {renderParagraphs(sec.description, sec.highlightTerms)}
+                        {sec.heading === "Budget-Friendly Stay in Jaipur" && <NearbyPlaces />}
                         {(sec.pillars && sec.pillars.length > 0) ? (
                             <div className="pillars" style={{ marginTop: 40 }}>
                                 {sec.pillars.map(p => (

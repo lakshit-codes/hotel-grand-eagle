@@ -20,30 +20,38 @@ export default function Testimonials({ data, eyebrow, title, titleEm }: {
     }
   }, [data]);
 
+  const formatStayDate = (ds: string) => {
+    if (!ds) return "";
+    try {
+      const [y, m] = ds.split("-");
+      return new Date(Number(y), Number(m) - 1).toLocaleString("default", { month: "long", year: "numeric" });
+    } catch (e) { return ds; }
+  };
+
   const testimonials = data && data.length > 0 ? data : (dbData.length > 0 ? dbData : [
     {
       id: "t1",
       text: '"Hotel Grand Eagle transcends the concept of a stay. It is an immersive cultural experience delivered through the lens of flawless modern hospitality."',
       name: "Aditi Sharma",
-      role: "Travel Editor, Condé Nast Traveller India",
       location: "Delhi, India",
-      img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80",
+      stayDate: "2026-03",
+      rating: 5,
     },
     {
       id: "t2",
       text: '"The Presidential Suite felt like a private palace. From the moment our butler greeted us to the final handwritten farewell note, every interaction was orchestrated with exceptional care."',
       name: "James Whitmore",
-      role: "CEO, Meridian Capital",
       location: "London, UK",
-      img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80",
+      stayDate: "2026-02",
+      rating: 5,
     },
     {
       id: "t3",
       text: '"As an architect who obsesses over space and proportion, walking into Hotel Grand Eagle was like seeing all my ideals made tangible. The design is masterful."',
       name: "Priya Nair",
-      role: "Principal Architect, Nair & Partners",
       location: "Mumbai, India",
-      img: "https://images.unsplash.com/photo-1494790108755-2616b12c4c66?w=80",
+      stayDate: "2026-01",
+      rating: 5,
     },
   ]);
 
@@ -110,28 +118,25 @@ export default function Testimonials({ data, eyebrow, title, titleEm }: {
             opacity: fade ? 1 : 0,
             transform: fade ? "translateY(0)" : "translateY(10px)",
             transition: "opacity 0.3s, transform 0.3s",
+            padding: "40px 60px"
           }}
         >
-          <div className="stars">
-            <span className="star">★</span>
-            <span className="star">★</span>
-            <span className="star">★</span>
-            <span className="star">★</span>
-            <span className="star">★</span>
+          <div className="stars" style={{ marginBottom: 20 }}>
+            {Array.from({ length: t.rating || 5 }).map((_, i) => (
+               <span key={i} className="star">★</span>
+            ))}
           </div>
-          <blockquote className="testi-quote font-display">{t.text}</blockquote>
-          <div className="testi-author">
-            <div className="testi-avatar">
-              {t.img ? (
-                <img src={t.img} alt={t.name} />
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 20, background: "#f3f4f6" }}>👤</div>
-              )}
-            </div>
-            <div style={{ textAlign: "left" }}>
-              <div className="testi-name">{t.name}</div>
-              <div className="testi-role">{t.role}</div>
-              <div className="testi-location">{t.location}</div>
+          <blockquote className="testi-quote font-display" style={{ fontSize: "1.25rem", marginBottom: 30 }}>{t.text}</blockquote>
+          <div className="testi-author" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <div className="testi-name" style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--gold)" }}>{t.name}</div>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", fontSize: "0.9rem", color: "#6b7280" }}>
+               <span>{t.location}</span>
+               {t.stayDate && (
+                 <>
+                   <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#d1d5db" }}></span>
+                   <span>{formatStayDate(t.stayDate)}</span>
+                 </>
+               )}
             </div>
           </div>
         </div>

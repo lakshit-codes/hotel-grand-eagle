@@ -1,48 +1,79 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Hotel, NearbyPlace } from "../../components/types";
+import React, { useState } from "react";
+import NearbyMap from "../components/NearbyMap";
+
+interface Attraction {
+    name: string;
+    timing: string;
+}
+
+interface Category {
+    id: string;
+    title: string;
+    items: Attraction[];
+}
+
+const CATEGORIES: Category[] = [
+    {
+        id: "airport",
+        title: "AIRPORT",
+        items: [
+            { name: "Jaipur International Airport", timing: "20min" }
+        ]
+    },
+    {
+        id: "landmark",
+        title: "LANDMARK",
+        items: [
+            { name: "D'Mart", timing: "3 min" },
+            { name: "Sitapura Industrial Area", timing: "3 min" },
+            { name: "Viva city mall", timing: "4 min" },
+            { name: "Capital Mall", timing: "5 min" },
+            { name: "Akshay Patra Temple", timing: "5 min" },
+            { name: "Jagatpura Railway Station", timing: "8 min" }
+        ]
+    },
+    {
+        id: "schools",
+        title: "School's & Colleges",
+        items: [
+            { name: "JECRC University", timing: "5 min" },
+            { name: "Poornima University", timing: "5 min" },
+            { name: "VIT University", timing: "5 min" },
+            { name: "Gyan vihar University", timing: "4 min" },
+            { name: "Maharaja sawai bhawani Singh school", timing: "8 min" },
+            { name: "SRN International school", timing: "5 min" },
+            { name: "Jaishree Periwal Global school", timing: "5 min" },
+            { name: "Ryan International school", timing: "5 min" }
+        ]
+    },
+    {
+        id: "hospitals",
+        title: "Hospitals",
+        items: [
+            { name: "Bombay hospital", timing: "3 min" },
+            { name: "Jeevan rekha hospital", timing: "4 min" },
+            { name: "Medical college hospital", timing: "5 min" },
+            { name: "Mahatma Gandhi hospital", timing: "5 min" },
+            { name: "Narayana multi speciality hospital", timing: "8 min" }
+        ]
+    }
+];
 
 export default function NearbyPage() {
-    const [hotel, setHotel] = useState<Hotel | null>(null);
-    const [places, setPlaces] = useState<NearbyPlace[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetch("/api/hotel-settings")
-            .then(r => r.json())
-            .then(d => { if (d.name) setHotel(d); })
-            .catch(() => {});
-        
-        fetch("/api/nearby")
-            .then(r => r.json())
-            .then(d => { if (Array.isArray(d)) setPlaces(d); })
-            .catch(() => {})
-            .finally(() => setLoading(false));
-    }, []);
-
-    useEffect(() => {
-        if (loading || places.length === 0) return;
-        const timeoutId = setTimeout(() => {
-            const fadeEls = document.querySelectorAll('.fade-in-up');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry, i) => {
-                    if (entry.isIntersecting) {
-                        (entry.target as HTMLElement).style.transitionDelay = (i * 0.05) + 's';
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, { threshold: 0.1 });
-            fadeEls.forEach(el => observer.observe(el));
-            return () => observer.disconnect();
-        }, 100);
-        return () => clearTimeout(timeoutId);
-    }, [places, loading]);
-
-    const mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3561.7611843130764!2d75.8118021!3d26.7838531!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396dc90cb30907d7%3A0x632594e50accb62a!2sHotel%20Grand%20Eagle!5e0!3m2!1sen!2sin!4v1711982741512!5m2!1sen!2sin";
+    const [activeCategory, setActiveCategory] = useState<string>("airport");
 
     return (
-        <div style={{ background: "var(--midnight)", minHeight: "100vh", paddingTop: 160, paddingBottom: 112, position: "relative", overflow: "hidden" }}>
-            {/* Background Text */}
+        <div style={{ 
+            background: "var(--midnight)", 
+            minHeight: "100vh", 
+            paddingTop: "160px", 
+            paddingBottom: "112px",
+            fontFamily: "var(--font-primary)",
+            position: "relative",
+            overflow: "hidden"
+        }}>
+            {/* Background Branding Text */}
             <div style={{ 
                 position: "absolute", 
                 top: 100, 
@@ -56,74 +87,148 @@ export default function NearbyPage() {
                 pointerEvents: "none",
                 textTransform: "uppercase"
             }}>
-                Nearby Places
+                Nearby Attractions
             </div>
 
             <div className="max-w" style={{ position: "relative", zIndex: 1 }}>
                 {/* Header Section */}
                 <div style={{ textAlign: "center", marginBottom: 80 }}>
-                    <div className="section-eyebrow fade-in-up" style={{ justifyContent: "center" }}>
+                    <div className="section-eyebrow fade-in-up visible" style={{ justifyContent: "center" }}>
                         <span className="line"></span>
                         <span>Local Discoveries</span>
                         <span className="line"></span>
                     </div>
-                    <h1 className="section-title fade-in-up" style={{ fontSize: "clamp(32px, 6vw, 64px)", textTransform: "uppercase" }}>
+                    <h1 className="section-title fade-in-up visible" style={{ fontSize: "clamp(32px, 6vw, 64px)", textTransform: "uppercase" }}>
                         Nearby <em>Attractions</em>
                     </h1>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 40, alignItems: "start" }}>
-                    {/* Left Column: Places List */}
-                    <div className="fade-in-up">
-                        {loading ? (
-                            <div style={{ color: "var(--gold)", padding: 40, textAlign: "center" }}>Loading local map...</div>
-                        ) : places.length === 0 ? (
-                            <div style={{ color: "var(--ivory-dim)", padding: 40, textAlign: "center" }}>No nearby places found.</div>
-                        ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                                {places.map((place) => (
-                                    <div key={place.id} style={{ 
-                                        background: "var(--gold)", 
-                                        padding: "16px 24px", 
-                                        borderRadius: "2px", 
+                <div style={{ 
+                    display: "grid", 
+                    gridTemplateColumns: "1.2fr 1fr", 
+                    gap: "60px", 
+                    alignItems: "start" 
+                }}>
+                    {/* Left: Accordion */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                        {CATEGORIES.map((cat) => {
+                            const isActive = activeCategory === cat.id;
+                            return (
+                                <div 
+                                    key={cat.id}
+                                    onMouseEnter={() => setActiveCategory(cat.id)}
+                                    style={{
+                                        background: isActive ? "var(--gold)" : "rgba(255,255,255,0.03)",
+                                        border: isActive ? "1px solid var(--gold)" : "1px solid rgba(212,168,87,0.1)",
+                                        borderRadius: "2px",
+                                        padding: isActive ? "32px 40px" : "24px 40px",
+                                        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                                        cursor: "default",
+                                        color: isActive ? "var(--midnight)" : "var(--ivory)"
+                                    }}
+                                >
+                                    <div style={{ 
                                         display: "flex", 
                                         justifyContent: "space-between", 
                                         alignItems: "center",
-                                        cursor: "pointer",
-                                        transition: "transform 0.3s ease",
-                                        color: "var(--midnight)"
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = "translateX(8px)"}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = "translateX(0px)"}
-                                    >
-                                        <div style={{ display: "flex", flexDirection: "column" }}>
-                                            <span style={{ fontWeight: 700, fontSize: 13, letterSpacing: "0.05em" }}>{place.name}</span>
-                                            <span style={{ fontSize: 11, opacity: 0.8 }}>- {place.distance}</span>
-                                        </div>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                            <path d="M5 12h14M12 5l7 7-7 7" />
-                                        </svg>
+                                        marginBottom: isActive ? "24px" : "0"
+                                    }}>
+                                        <h2 style={{ 
+                                            margin: 0, 
+                                            fontSize: "13px", 
+                                            fontWeight: 700, 
+                                            letterSpacing: "0.15em",
+                                            textTransform: "uppercase"
+                                        }}>
+                                            {cat.title}
+                                        </h2>
+                                        {!isActive && (
+                                            <div style={{ 
+                                                width: "20px", 
+                                                height: "20px", 
+                                                display: "flex", 
+                                                alignItems: "center", 
+                                                justifyContent: "center",
+                                                color: "var(--gold)",
+                                                opacity: 0.6
+                                            }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+
+                                    {isActive && (
+                                        <ul style={{ 
+                                            listStyle: "none", 
+                                            padding: 0, 
+                                            margin: 0,
+                                            animation: "fadeIn 0.5s ease-out"
+                                        }}>
+                                            {cat.items.map((item, idx) => (
+                                                <li key={idx} style={{ 
+                                                    marginBottom: "14px", 
+                                                    fontSize: "14px", 
+                                                    display: "flex",
+                                                    alignItems: "start",
+                                                    lineHeight: "1.6"
+                                                }}>
+                                                    <span style={{ 
+                                                        marginRight: "16px", 
+                                                        marginTop: "10px", 
+                                                        width: "30px", 
+                                                        height: "1px", 
+                                                        background: "var(--midnight)", 
+                                                        opacity: 0.3, 
+                                                        flexShrink: 0 
+                                                    }} />
+                                                    <span>
+                                                        <strong style={{ fontWeight: 700 }}>{item.name}</strong>
+                                                        <span style={{ opacity: 0.7, marginLeft: "8px" }}>— {item.timing}</span>
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
-                    {/* Right Column: Interactive Map */}
-                    <div className="fade-in-up" style={{ background: "rgba(255,255,255,0.05)", borderRadius: "4px", overflow: "hidden", border: "1px solid rgba(212,168,87,0.2)", height: "500px" }}>
-                        <iframe
-                            src={mapSrc}
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            allowFullScreen={true}
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                        ></iframe>
+                    {/* Right: Map */}
+                    <div className="fade-in-up visible" style={{ 
+                        position: "sticky", 
+                        top: "160px",
+                        height: "650px", 
+                        borderRadius: "2px", 
+                        overflow: "hidden",
+                        border: "1px solid rgba(212,168,87,0.2)",
+                        boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
+                    }}>
+                        <NearbyMap places={[]} />
                     </div>
                 </div>
-
             </div>
+
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateX(-10px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+
+                @media (max-width: 1024px) {
+                    .max-w {
+                        grid-template-columns: 1fr !important;
+                    }
+                    div[style*="position: sticky"] {
+                        position: relative !important;
+                        top: 0 !important;
+                        margin-top: 48px;
+                        height: 500px !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

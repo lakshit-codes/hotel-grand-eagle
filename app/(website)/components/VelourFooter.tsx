@@ -7,32 +7,28 @@ export default function VelourFooter() {
   const [hotel, setHotel] = useState<any>(null);
 
   useEffect(() => {
-    fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => {});
+    fetch("/api/hotel-settings").then(r => r.json()).then(d => { if (d.name) setHotel(d); }).catch(() => { });
   }, []);
 
   return (
     <footer style={{ borderTop: "1px solid rgba(212,168,87,0.1)", background: "var(--midnight)", paddingTop: "60px", paddingBottom: "30px" }}>
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 40px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "40px", marginBottom: "40px" }}>
-          
+
           {/* COLUMN 1: Logo & Description */}
           <div>
             <div style={{ marginBottom: "20px" }}>
               <img src="/logo.png" alt="HOTEL GRAND EAGLE" style={{ height: "50px", width: "auto", objectFit: "contain" }} />
             </div>
             <p style={{ fontSize: "13px", color: "var(--ivory-dim)", lineHeight: "1.7", maxWidth: "400px" }}>
-              Experience the charm of comfortable living at Hotel Grand Eagle. A thoughtfully designed stay in the heart 
-              of Sitapura, Jaipur, offering essential amenities, clean spaces, and warm hospitality for a truly pleasant experience.
+              Experience the charm of comfortable living at Hotel Grand Eagle.
             </p>
             <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
               <a href="#" title="Facebook" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold)", textDecoration: "none", transition: "all 0.3s ease", border: "1px solid rgba(212,168,87,0.15)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.color = "var(--midnight)"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "var(--gold)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" /></svg>
               </a>
               <a href="#" title="Instagram" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold)", textDecoration: "none", transition: "all 0.3s ease", border: "1px solid rgba(212,168,87,0.15)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.color = "var(--midnight)"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "var(--gold)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-              </a>
-              <a href="#" title="Twitter" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold)", textDecoration: "none", transition: "all 0.3s ease", border: "1px solid rgba(212,168,87,0.15)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "var(--gold)"; e.currentTarget.style.color = "var(--midnight)"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "var(--gold)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+                <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
               </a>
             </div>
           </div>
@@ -91,19 +87,19 @@ export default function VelourFooter() {
             </span>
           </div>
           <div id="footer-legal-links" style={{ display: "flex", gap: "20px" }}>
-            <Link 
-              href="/privacy-policy" 
+            <Link
+              href="/privacy-policy"
               className="footer-link"
               style={{ fontSize: "11px", color: "rgba(200,192,176,0.6)", textDecoration: "none", transition: "color 0.3s ease" }}
             >
               Privacy Policy
             </Link>
-            <Link 
-              href="/terms-of-service" 
+            <Link
+              href="/terms-and-conditions"
               className="footer-link"
               style={{ fontSize: "11px", color: "rgba(200,192,176,0.6)", textDecoration: "none", transition: "color 0.3s ease" }}
             >
-              Terms of Service
+              Terms and Conditions
             </Link>
           </div>
           <style>{`

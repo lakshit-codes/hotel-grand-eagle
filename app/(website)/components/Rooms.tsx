@@ -135,7 +135,7 @@ export default function Rooms({ roomsData = [], amenitiesData = [] }: RoomsProps
                 <div className="tags">
                   <span className="tag">City View</span>
                   <span className="tag">Free Wi-Fi</span>
-                  <span className="tag">Mini Bar</span>
+                  {rooms[0].roomName !== "Deluxe Room" && <span className="tag">Mini Bar</span>}
                   <span className="tag">24hr Service</span>
                 </div>
                 <Link href={`/room/${rooms[0]?.id}`} className="btn-room" style={{ textDecoration: 'none' }}>
@@ -209,7 +209,7 @@ export default function Rooms({ roomsData = [], amenitiesData = [] }: RoomsProps
                   <div className="tags">
                     <span className="tag">City View</span>
                     <span className="tag">Free Wi-Fi</span>
-                    <span className="tag">Mini Bar</span>
+                    {room.roomName !== "Deluxe Room" && <span className="tag">Mini Bar</span>}
                     <span className="tag">24hr Service</span>
                   </div>
                   <Link href={`/room/${room?.id}`} className="btn-room" style={{ textDecoration: 'none' }}>

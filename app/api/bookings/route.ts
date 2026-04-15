@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDatabase } from "@/app/utils/getDatabase";
+import { sendAdminBookingNotification } from "@/app/utils/email";
 
 /** Returns true if the given room has any overlapping active booking, excluding `excludeId` */
 async function hasRoomConflict(
@@ -138,6 +139,9 @@ export async function POST(req: Request) {
         }
 
         const result = await db.collection("bookings").insertOne(body);
+
+        // Notify Admin (Await for reliability)
+        await sendAdminBookingNotification(body);
 
         // Sync room status if checking in immediately
         if (body.roomNumber && body.status === "checked-in") {

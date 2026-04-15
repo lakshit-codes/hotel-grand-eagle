@@ -85,15 +85,15 @@ export default function Hero() {
     <section className="hero" id="hero">
       {/* Backgrounds */}
       {images.map((img: any, idx: number) => (
-        <div 
+        <div
           key={idx}
-          className="hero-bg" 
-          style={{ 
+          className="hero-bg"
+          style={{
             backgroundImage: `url('${img.url}')`,
             opacity: activeImgIndex === idx ? 1 : 0,
             transition: 'opacity 1.5s ease-in-out',
             zIndex: activeImgIndex === idx ? 1 : 0
-          }} 
+          }}
         />
       ))}
       <div className="hero-grad1" style={{ zIndex: 2 }} />
@@ -103,8 +103,8 @@ export default function Hero() {
       {images.length > 1 && (
         <div className="slide-dots" style={{ zIndex: 10 }}>
           {images.map((_: any, idx: number) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`dot ${activeImgIndex === idx ? 'active' : ''}`}
               onClick={() => setActiveImgIndex(idx)}
             />
@@ -122,7 +122,7 @@ export default function Hero() {
             <span className="eyebrow-text">WELCOME TO HOTEL GRAND EAGLE</span>
           </div>
 
-          <h1 
+          <h1
             className="hero-headline font-display"
             dangerouslySetInnerHTML={{ __html: title.replace(/\n/g, '<br />').replace(/\*(.*?)\*/g, '<em>$1</em>') }}
           />

@@ -530,9 +530,9 @@ const DEFAULT_SECTIONS: HomeSection[] = [
         secondaryButtonLink: "#about",
         images: [{ url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070&auto=format&fit=crop" }],
         stats: [
-            { id: uid(), value: "24+", label: "Years of Excellence" },
+            { id: uid(), value: "10+", label: "Years of Comfort" },
             { id: uid(), value: "340+", label: "Happy Guests" },
-            { id: uid(), value: "4.9", label: "Guest Rating" },
+            // { id: uid(), value: "4.9", label: "Guest Rating" },
         ],
     },
 ];

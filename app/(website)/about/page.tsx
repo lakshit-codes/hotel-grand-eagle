@@ -175,7 +175,7 @@ export default function AboutPage() {
 
     const title = cmsData!.title || "About Us";
     const subtitle = cmsData!.subtitle || "Our Heritage";
-    const sections: AboutSection[] = cmsData!.sections!;
+    const sections = (cmsData!.sections || []) as AboutSection[];
 
     // Render the page title with italic last word (e.g. "A legacy of _excellence_")
     const renderTitle = (t: string) => {

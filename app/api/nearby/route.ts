@@ -23,6 +23,8 @@ export async function POST(req: Request) {
             description: body.description?.trim() ?? "",
             distance: body.distance?.trim() ?? "",
             image: body.image?.trim() ?? "",
+            lat: typeof body.lat === "number" ? body.lat : undefined,
+            lng: typeof body.lng === "number" ? body.lng : undefined,
             createdAt: new Date().toISOString(),
         };
         await db.collection("nearby").insertOne(place);

@@ -33,13 +33,13 @@ if (!uri) {
 }
 
 const nearbyPlaces = [
-  { name: "JECC JAIPUR", distance: "2.3 KM", description: "Jaipur Exhibition & Convention Centre, the region's largest integrated convention center." },
-  { name: "MAHATMA GANDHI HOSPITAL", distance: "2.6 KM", description: "Premier multi-specialty healthcare provider in Sitapura." },
-  { name: "BOMBAY HOSPITAL", distance: "3.1 KM", description: "Advanced medical facility offering comprehensive specialized care." },
-  { name: "CHATRALA CIRCLE", distance: "500 MTR", description: "The central hub of Sitapura Industrial Area, just a short walk away." },
-  { name: "JAIPUR INTERNATIONAL AIRPORT", distance: "10 KM", description: "Easily accessible international gateway connecting Jaipur to the world." },
-  { name: "AKSHAYA PATRA TEMPLE", distance: "4.8 KM", description: "A divine architectural marvel and spiritual center dedicated to Lord Krishna." },
-  { name: "INDIA GATE", distance: "2.3 KM", description: "A popular local landmark and meeting point in the heart of Sitapura." }
+  { name: "JECC JAIPUR", distance: "2.3 KM", lat: 26.7828, lng: 75.8351, description: "Jaipur Exhibition & Convention Centre, the region's largest integrated convention center." },
+  { name: "MAHATMA GANDHI HOSPITAL", distance: "2.6 KM", lat: 26.7645, lng: 75.8234, description: "Premier multi-specialty healthcare provider in Sitapura." },
+  { name: "BOMBAY HOSPITAL", distance: "3.1 KM", lat: 26.7850, lng: 75.8430, description: "Advanced medical facility offering comprehensive specialized care." },
+  { name: "CHATRALA CIRCLE", distance: "500 MTR", lat: 26.7795, lng: 75.8110, description: "The central hub of Sitapura Industrial Area, just a short walk away." },
+  { name: "JAIPUR INTERNATIONAL AIRPORT", distance: "10 KM", lat: 26.8300, lng: 75.8050, description: "Easily accessible international gateway connecting Jaipur to the world." },
+  { name: "AKSHAYA PATRA TEMPLE", distance: "4.8 KM", lat: 26.8150, lng: 75.8350, description: "A divine architectural marvel and spiritual center dedicated to Lord Krishna." },
+  { name: "INDIA GATE", distance: "2.3 KM", lat: 26.7870, lng: 75.8340, description: "A popular local landmark and meeting point in the heart of Sitapura." }
 ].map((p, i) => ({
   id: `np_${Date.now()}_${i}`,
   ...p,
@@ -139,6 +139,61 @@ const inventoryRooms = [
   createdAt: new Date().toISOString()
 }));
 
+const cmsPages = [
+  {
+    id: "pg_terms",
+    slug: "terms-and-conditions",
+    title: "Terms & Conditions",
+    subtitle: "Rules & Regulations",
+    isPublished: true,
+    sections: [
+      {
+        id: "l1",
+        type: "legal-block",
+        heading: "1. Acceptance of Terms",
+        description: "By accessing and using Hotel Grand Eagle's services, you agree to be bound by these terms. If you do not agree, please refrain from using our website or booking services."
+      },
+      {
+        id: "l2",
+        type: "legal-block",
+        heading: "2. Booking Policy",
+        description: "All bookings are subject to availability. A valid ID proof (Aadhar for Indians, Passport for Foreigners) is mandatory at the time of check-in."
+      }
+    ],
+    content: [],
+    metaTitle: "Terms & Conditions | Hotel Grand Eagle",
+    metaDescription: "Read the official terms and conditions for staying at Hotel Grand Eagle, Jaipur.",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: "pg_privacy",
+    slug: "privacy-policy",
+    title: "Privacy Policy",
+    subtitle: "Your Data Security",
+    isPublished: true,
+    sections: [
+      {
+        id: "p1",
+        type: "legal-block",
+        heading: "Information Collection",
+        description: "We collect only the necessary information required for your booking and stay, such as name, contact details, and ID proofs as per local regulations."
+      },
+      {
+        id: "p2",
+        type: "legal-block",
+        heading: "Data Protection",
+        description: "Hotel Grand Eagle employs industry-standard security measures to protect your personal information from unauthorized access or disclosure."
+      }
+    ],
+    content: [],
+    metaTitle: "Privacy Policy | Hotel Grand Eagle",
+    metaDescription: "Learn how Hotel Grand Eagle protects your personal information and stays compliant with data laws.",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 async function seed() {
   const client = new MongoClient(uri);
   try {
@@ -167,6 +222,17 @@ async function seed() {
     console.log("Seeding room inventory...");
     await db.collection("rooms").insertMany(inventoryRooms);
     console.log(`Seeded ${inventoryRooms.length} room inventory docs.`);
+
+    // Seed CMS Pages
+    console.log("Seeding legal pages...");
+    for (const page of cmsPages) {
+      await db.collection("pages").updateOne(
+        { slug: page.slug },
+        { $set: page },
+        { upsert: true }
+      );
+    }
+    console.log("CMS legal pages ensured.");
 
     console.log("Seeding completed successfully!");
   } catch (error) {

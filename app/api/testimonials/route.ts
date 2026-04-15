@@ -20,12 +20,11 @@ export async function POST(req: Request) {
         const testimonial = {
             id: `tst_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             name: body.name.trim(),
-            role: body.role?.trim() ?? "",
             location: body.location?.trim() ?? "",
             text: body.text?.trim() ?? "",
             rating: Number(body.rating) || 5,
-            img: body.img?.trim() ?? "",
             isActive: body.isActive ?? true,
+            stayDate: body.stayDate ?? "",
             createdAt: new Date().toISOString(),
         };
         
