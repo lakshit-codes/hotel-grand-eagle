@@ -4,7 +4,7 @@ import { useAdmin } from "@/app/components/AdminContext";
 import CustomersPage from "@/app/components/Customers";
 
 export default function AdminGuestsPage() {
-    const { customers, bookings, mealPlans, addCustomer, updateCustomer } = useAdmin();
+    const { customers, bookings, mealPlans, addCustomer, updateCustomer, deleteCustomer } = useAdmin();
 
     return (
         <CustomersPage 
@@ -13,6 +13,7 @@ export default function AdminGuestsPage() {
             mealPlans={mealPlans} 
             onAdd={addCustomer} 
             onUpdate={updateCustomer} 
+            onDelete={deleteCustomer}
         />
     );
 }

@@ -118,7 +118,7 @@ export interface Customer {
     nationality: string;
     aadharNo: string;
     dob: string;
-    loyaltyTier: "Bronze" | "Silver" | "Gold" | "Platinum";
+    loyaltyTier?: "Bronze" | "Silver" | "Gold" | "Platinum";
     vip: boolean;
     preferredRoom: string;
     dietaryPref: string;

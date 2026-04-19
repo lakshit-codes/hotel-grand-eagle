@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Room, AmenityCat } from "../../../components/types";
 import Loading from "../../components/Loading";
 import { 
-  FaWifi, FaBolt, FaSnowflake, FaConciergeBell, FaShower, FaTv, FaBed, FaUserFriends, FaRulerCombined, FaChevronLeft, FaChevronRight 
+  FaWifi, FaBolt, FaSnowflake, FaConciergeBell, FaShower, FaTv, FaBed, FaUserFriends, FaRulerCombined, FaChevronLeft, FaChevronRight, FaHotTub 
 } from "react-icons/fa";
 import { 
   MdAir, MdElevator, MdCleaningServices, MdOutput, MdRestaurant, MdRoomService, MdKitchen, MdOutlinePolicy, MdOutlineCoffeeMaker 
@@ -29,6 +29,8 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   "Smart TV": <FaTv />,
   "Rain Shower": <FaShower />,
   "Coffee Maker": <MdOutlineCoffeeMaker />,
+  "Geyser": <FaHotTub />,
+  "24hr Service": <FaConciergeBell />,
 };
 
 const DEFAULT_ICON = <IoShieldCheckmarkOutline />;

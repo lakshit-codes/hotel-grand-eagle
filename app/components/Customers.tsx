@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from "react";
 import { Customer, Booking, MealPlan } from "./types";
-import { Btn, Badge, Field, Inp, Sel, Ic, fmtDate, DIETARY_PREFS, LOYALTY_TIERS, uid } from "./ui";
+import { Btn, Badge, Field, Inp, Sel, Ic, fmtDate, DIETARY_PREFS, uid, Confirm } from "./ui";
 
 interface Props {
     customers: Customer[];
@@ -9,11 +9,12 @@ interface Props {
     mealPlans: MealPlan[];
     onAdd: (c: Customer) => void;
     onUpdate: (c: Customer) => void;
+    onDelete: (id: string) => void;
 }
 
 const BLANK_CUSTOMER: Customer = {
     id: "", firstName: "", lastName: "", email: "", phone: "", nationality: "",
-    aadharNo: "", dob: "", loyaltyTier: "Bronze", vip: false,
+    aadharNo: "", dob: "", vip: false,
     preferredRoom: "", dietaryPref: "Non-Veg", address: "", company: "", notes: "",
 };
 
@@ -45,10 +46,7 @@ function CustomerModal({ cust: init, onSave, onClose }: { cust: Customer; onSave
                         <Field label="Company / Corp Account"><Inp value={c.company} onChange={s("company")} /></Field>
                         <Field label="Address"><Inp value={c.address} onChange={s("address")} /></Field>
                     </div>
-                    <div className="grid-3 mb-12">
-                        <Field label="Loyalty Tier">
-                            <Sel value={c.loyaltyTier} onChange={e => setC(p => ({ ...p, loyaltyTier: e.target.value as Customer["loyaltyTier"] }))} opts={[...LOYALTY_TIERS]} />
-                        </Field>
+                    <div className="grid-2 mb-12">
                         <Field label="Dietary Preference">
                             <Sel value={c.dietaryPref} onChange={s("dietaryPref")} opts={DIETARY_PREFS} />
                         </Field>
@@ -71,27 +69,20 @@ function CustomerModal({ cust: init, onSave, onClose }: { cust: Customer; onSave
     );
 }
 
-const TIER_BG: Record<string, { bg: string; text: string; border: string }> = {
-    Bronze: { bg: "#fdf4e7", text: "#92400e", border: "#fde68a" },
-    Silver: { bg: "#f3f4f6", text: "#4b5563", border: "#d1d5db" },
-    Gold: { bg: "#fefce8", text: "#854d0e", border: "#fde047" },
-    Platinum: { bg: "#f0fdf4", text: "#065f46", border: "#6ee7b7" },
-};
 
-export default function CustomersPage({ customers, bookings, mealPlans, onAdd, onUpdate }: Props) {
+export default function CustomersPage({ customers, bookings, mealPlans, onAdd, onUpdate, onDelete }: Props) {
     const [search, setSearch] = useState("");
-    const [tierFilter, setTierFilter] = useState("all");
     const [modal, setModal] = useState<Customer | null>(null);
+    const [delId, setDelId] = useState<string | null>(null);
     const [selected, setSelected] = useState<Customer | null>(null);
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
         return customers.filter(c => {
             const match = !q || `${c.firstName} ${c.lastName} ${c.email} ${c.phone} ${c.nationality} ${c.aadharNo}`.toLowerCase().includes(q);
-            const tier = tierFilter === "all" || c.loyaltyTier === tierFilter;
-            return match && tier;
+            return match;
         });
-    }, [customers, search, tierFilter]);
+    }, [customers, search]);
 
     const guestBookings = useMemo(() => {
         if (!selected) return [];
@@ -109,6 +100,7 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
     return (
         <div>
             {modal && <CustomerModal cust={modal} onSave={c => { c.id === modal.id && modal.firstName ? onUpdate(c) : onAdd(c); setModal(null); }} onClose={() => setModal(null)} />}
+            {delId && <Confirm msg="Are you sure you want to delete this guest profile? This action cannot be undone." onOk={() => { onDelete(delId); setDelId(null); if (selected?.id === delId) setSelected(null); }} onCancel={() => setDelId(null)} />}
             <div className="page-header">
                 <div>
                     <div className="page-title">Guests &amp; Customers</div>
@@ -124,46 +116,39 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                         <div style={{ flex: 1, minWidth: 200 }}>
                             <Inp value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, passport, phone..." />
                         </div>
-                        <select className="sel" style={{ width: 140 }} value={tierFilter} onChange={e => setTierFilter(e.target.value)}>
-                            <option value="all">All Tiers</option>
-                            {LOYALTY_TIERS.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
                     </div>
                     <div style={{ overflowX: "auto" }}>
                         <table className="data-table">
                         <thead>
-                            <tr><th>Guest</th><th>Contact</th><th>Nationality</th><th>Loyalty</th><th>Diet</th><th>Bookings</th><th></th></tr>
+                            <tr><th>Guest</th><th>Contact</th><th>Nationality</th><th>Diet</th><th>Bookings</th><th></th></tr>
                         </thead>
                         <tbody>
                             {filtered.map(c => {
                                 const bCount = bookings.filter(b => b.customerId === c.id).length;
-                                const tierStyle = TIER_BG[c.loyaltyTier];
-                                return (
-                                    <tr key={c.id} className="clickable" onClick={() => setSelected(s => s?.id === c.id ? null : c)}>
-                                        <td>
-                                            <div style={{ fontWeight: 600 }}>
-                                                {c.vip && <span style={{ fontSize: 12, color: "#7c3aed", marginRight: 4 }}>👑</span>}
-                                                {c.firstName} {c.lastName}
-                                            </div>
-                                            <div style={{ fontSize: 11.5, color: "#9ca3af" }}>{c.aadharNo} &middot; DOB: {c.dob || "—"}</div>
-                                        </td>
-                                        <td>
-                                            <div style={{ fontSize: 13 }}>{c.phone}</div>
-                                            <div style={{ fontSize: 11.5, color: "#6b7280" }}>{c.email}</div>
-                                        </td>
-                                        <td style={{ fontSize: 13 }}>{c.nationality}</td>
-                                        <td>
-                                            <span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 8px", borderRadius: 12, background: tierStyle.bg, color: tierStyle.text, border: `1px solid ${tierStyle.border}` }}>
-                                                {c.loyaltyTier}
-                                            </span>
-                                        </td>
-                                        <td style={{ fontSize: 12 }}>{c.dietaryPref}</td>
-                                        <td style={{ fontWeight: 600 }}>{bCount}</td>
-                                        <td onClick={e => e.stopPropagation()}>
-                                            <Btn size="sm" variant="ghost" onClick={() => setModal(c)}><Ic.Edit /></Btn>
-                                        </td>
-                                    </tr>
-                                );
+                                    return (
+                                        <tr key={c.id} className="clickable" onClick={() => setSelected(s => s?.id === c.id ? null : c)}>
+                                            <td>
+                                                <div style={{ fontWeight: 600 }}>
+                                                    {c.vip && <span style={{ fontSize: 12, color: "#7c3aed", marginRight: 4 }}>👑</span>}
+                                                    {c.firstName} {c.lastName}
+                                                </div>
+                                                <div style={{ fontSize: 11.5, color: "#9ca3af" }}>{c.aadharNo} &middot; DOB: {c.dob || "—"}</div>
+                                            </td>
+                                            <td>
+                                                <div style={{ fontSize: 13 }}>{c.phone}</div>
+                                                <div style={{ fontSize: 11.5, color: "#6b7280" }}>{c.email}</div>
+                                            </td>
+                                            <td style={{ fontSize: 13 }}>{c.nationality}</td>
+                                            <td style={{ fontSize: 12 }}>{c.dietaryPref}</td>
+                                            <td style={{ fontWeight: 600 }}>{bCount}</td>
+                                            <td onClick={e => e.stopPropagation()}>
+                                                <div style={{ display: "flex", gap: 4 }}>
+                                                    <Btn size="sm" variant="ghost" onClick={() => setModal(c)}><Ic.Edit /></Btn>
+                                                    <Btn size="sm" variant="ghost" style={{ color: "#dc2626" }} onClick={() => setDelId(c.id)}><Ic.Trash /></Btn>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
                             })}
                         </tbody>
                     </table>
@@ -188,11 +173,6 @@ export default function CustomersPage({ customers, bookings, mealPlans, onAdd, o
                                         {selected.vip && "👑 "}{selected.firstName} {selected.lastName}
                                     </div>
                                     {selected.company && <div style={{ fontSize: 12, color: "#6b7280" }}>{selected.company}</div>}
-                                    <div style={{ marginTop: 6 }}>
-                                        <span style={{ fontSize: 11.5, fontWeight: 600, padding: "3px 10px", borderRadius: 12, background: TIER_BG[selected.loyaltyTier].bg, color: TIER_BG[selected.loyaltyTier].text, border: `1px solid ${TIER_BG[selected.loyaltyTier].border}` }}>
-                                            ✦ {selected.loyaltyTier} Member
-                                        </span>
-                                    </div>
                                 </div>
 
                                 <div style={{ fontSize: 12.5, lineHeight: 2.2, color: "#374151", marginBottom: 16 }}>

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { Room, AmenityCat } from "../../components/types";
 import { 
-  FaWifi, FaBolt, FaSnowflake, FaConciergeBell, FaShower, FaTv 
+  FaWifi, FaBolt, FaSnowflake, FaConciergeBell, FaShower, FaTv, FaHotTub 
 } from "react-icons/fa";
 import { 
   MdAir, MdElevator, MdCleaningServices, MdOutput, MdRestaurant, MdRoomService, MdKitchen 
@@ -26,6 +26,9 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   "Mineral Water": <IoWaterOutline />,
   "Smart TV": <FaTv />,
   "Rain Shower": <FaShower />,
+  "Coffee Maker": <MdOutput />,
+  "Geyser": <FaHotTub />,
+  "24hr Service": <FaConciergeBell />,
 };
 
 const DEFAULT_ICON = <IoShieldCheckmarkOutline />;
@@ -66,7 +69,7 @@ export default function Rooms({ roomsData = [], amenitiesData = [] }: RoomsProps
     c.name.toLowerCase().includes("basic") || c.id.toLowerCase().includes("basic")
   ) || amenities[0];
 
-  const basicFacilities = basicAmenitiesCat?.facilities?.slice(0, 8) || [];
+  const basicFacilities = basicAmenitiesCat?.facilities?.slice(0, 10) || [];
 
   const isSingleRoom = rooms.length === 1;
 
@@ -132,12 +135,11 @@ export default function Rooms({ roomsData = [], amenitiesData = [] }: RoomsProps
                     {rooms[0].bedType}
                   </div>
                 </div>
-                <div className="tags">
-                  <span className="tag">City View</span>
-                  <span className="tag">Free Wi-Fi</span>
-                  {rooms[0].roomName !== "Deluxe Room" && <span className="tag">Mini Bar</span>}
-                  <span className="tag">24hr Service</span>
-                </div>
+                  <div className="tags">
+                    <span className="tag">City View</span>
+                    <span className="tag">Free Wi-Fi</span>
+                    <span className="tag">24hr Service</span>
+                  </div>
                 <Link href={`/room/${rooms[0]?.id}`} className="btn-room" style={{ textDecoration: 'none' }}>
                   View Details
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" strokeWidth="2">
@@ -209,7 +211,6 @@ export default function Rooms({ roomsData = [], amenitiesData = [] }: RoomsProps
                   <div className="tags">
                     <span className="tag">City View</span>
                     <span className="tag">Free Wi-Fi</span>
-                    {room.roomName !== "Deluxe Room" && <span className="tag">Mini Bar</span>}
                     <span className="tag">24hr Service</span>
                   </div>
                   <Link href={`/room/${room?.id}`} className="btn-room" style={{ textDecoration: 'none' }}>
