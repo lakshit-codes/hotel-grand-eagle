@@ -98,9 +98,12 @@ export default function NearbyPage() {
                         <span>Local Discoveries</span>
                         <span className="line"></span>
                     </div>
-                    <h1 className="section-title fade-in-up visible" style={{ fontSize: "clamp(32px, 6vw, 64px)", textTransform: "uppercase" }}>
+                    <h1 className="section-title fade-in-up visible" style={{ fontSize: "clamp(32px, 6vw, 64px)", textTransform: "uppercase", marginBottom: 24 }}>
                         Nearby <em>Attractions</em>
                     </h1>
+                    <p className="fade-in-up visible" style={{ fontSize: "16px", color: "var(--ivory-dim)", lineHeight: 1.8, maxWidth: "800px", margin: "0 auto" }}>
+                        Stay close to everything that matters. Hotel Grand Eagle is ideally situated near major landmarks, hospitals, shopping areas, and transport hubs, ensuring comfort, convenience, and easy connectivity throughout your visit.
+                    </p>
                 </div>
 
                 <div style={{ 

@@ -62,6 +62,7 @@ interface AdminContextType {
     deleteBooking: (id: string) => Promise<void>;
     addCustomer: (c: Customer) => Promise<void>;
     updateCustomer: (c: Customer) => Promise<void>;
+    deleteCustomer: (id: string) => Promise<void>;
     addRoomType: (r: Room) => Promise<void>;
     editRoomType: (r: Room) => Promise<void>;
     deleteRoomType: (id: string) => Promise<void>;
@@ -200,6 +201,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     // ── Customer Handlers ──
     const addCustomer = async (c: Customer) => { await fetch("/api/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(c) }); setCustomers(p => [...p, c]); };
     const updateCustomer = async (c: Customer) => { await fetch("/api/customers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(c) }); setCustomers(p => p.map(x => x.id === c.id ? c : x)); };
+    const deleteCustomer = async (id: string) => { await fetch(`/api/customers?id=${id}`, { method: "DELETE" }); setCustomers(p => p.filter(x => x.id !== id)); };
 
     // ── Room Type Handlers ──
     const addRoomType = async (r: Room) => {
@@ -354,7 +356,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         addPage, updatePage, deletePage,
         addGalleryImage, updateGalleryImage, deleteGalleryImage, reorderGallery,
         addBooking, updateBooking, deleteBooking,
-        addCustomer, updateCustomer,
+        addCustomer, updateCustomer, deleteCustomer,
         addRoomType, editRoomType, deleteRoomType,
         addRoom, updateRoom, deleteRoom, deleteFloor,
         updateHkTask,

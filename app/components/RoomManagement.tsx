@@ -49,7 +49,7 @@ function RoomForm({ initial, amenityCats, onSave, onCancel }: { initial?: Room; 
     const THEMES = ["Classic", "Modern", "Art Deco", "Minimalist", "Colonial", "Boutique", "Contemporary", "Industrial", "Tropical", "Scandinavian"];
     const SOUNDPROOF = ["Standard", "Enhanced", "Premium", "Maximum"];
     const BATHROOMS = ["Shower Only", "Walk-in Shower", "Rain Shower", "Rain Shower + Tub", "Soaking Tub", "Spa Bathroom", "Shared"];
-    const ENTERTAIN = ["Smart TV", "Smart TV + Mini Bar", "Smart TV + Sound System", "Home Theatre", "Tablet + Smart TV", "Gaming Console + TV"];
+    const ENTERTAIN = ["Smart TV", "Smart TV + Sound System", "Home Theatre", "Tablet + Smart TV", "Gaming Console + TV"];
     const FLOORS = ["Any", "Ground Floor", "Lower Floor", "Mid Floor", "Upper Floor", "Top Floor", "Penthouse Level"];
     const SMOKING = ["Non-Smoking", "Smoking", "Designated Area"];
 

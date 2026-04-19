@@ -568,6 +568,8 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
     const [monthFilter, setMonthFilter] = useState("all"); // "all" or a YYYY-MM-DD (first day of month)
     const [sortField, setSortField] = useState<"checkIn" | "guestName" | "bookingRef" | "roomTypeName" | "createdAt">("checkIn");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [showBulkDelConfirm, setShowBulkDelConfirm] = useState(false);
     const todStr = now.toISOString().slice(0, 10);
 
     const timelineDates = useMemo(() => {
@@ -620,13 +622,42 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
             else if (sortField === "bookingRef") cmp = (a?.bookingRef || "").localeCompare(b?.bookingRef || "");
             else if (sortField === "roomTypeName") cmp = (a?.roomTypeName || "").localeCompare(b?.roomTypeName || "");
             else if (sortField === "createdAt") cmp = (a?.createdAt || "").localeCompare(b?.createdAt || "");
-            
+
             // Tie-breaker for same date/timestamp: use bookingRef or id
             if (cmp === 0) cmp = (a?.bookingRef || "").localeCompare(b?.bookingRef || "");
-            
+
             return sortOrder === "asc" ? cmp : -cmp;
         });
     }, [bookings, search, filterStatus, monthFilter, sortField, sortOrder]);
+
+    // Selection logic
+    const toggleOne = (id: string) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
+    const toggleAll = () => {
+        if (selectedIds.size === filteredBookings.length && filteredBookings.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredBookings.map(b => b.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        for (const id of selectedIds) {
+            await onDelete(id);
+        }
+        setSelectedIds(new Set());
+        setShowBulkDelConfirm(false);
+    };
+
+    // Reset selection when filters change
+    React.useEffect(() => {
+        setSelectedIds(new Set());
+    }, [search, filterStatus, monthFilter]);
 
     return (
         <div>
@@ -644,6 +675,7 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                 }}
                 onClose={() => setModal(null)} />}
             {delId && <Confirm msg="Delete this booking permanently?" onOk={() => { onDelete(delId); setDelId(null); }} onCancel={() => setDelId(null)} />}
+            {showBulkDelConfirm && <Confirm msg={`Are you sure you want to delete ${selectedIds.size} selected bookings? This action cannot be undone.`} onOk={handleBulkDelete} onCancel={() => setShowBulkDelConfirm(false)} />}
 
             <div className="page-header">
                 <div><div className="page-title">Bookings</div><div className="page-sub">{bookings.length} total · {bookings.filter(b => b.status === "confirmed").length} confirmed · {bookings.filter(b => b.status === "checked-in").length} in-house</div></div>
@@ -833,6 +865,11 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                             <option value="desc">Desc ⬇</option>
                             <option value="asc">Asc ⬆</option>
                         </select>
+                        {selectedIds.size > 0 && (
+                            <Btn variant="danger" size="sm" style={{ padding: "0 16px", height: 38 }} onClick={() => setShowBulkDelConfirm(true)}>
+                                <span style={{ marginRight: 6, display: "flex", alignItems: "center" }}><Ic.Trash /></span> Delete {selectedIds.size} Selected
+                            </Btn>
+                        )}
                     </div>
                     {/* Month quick-filter pills */}
                     <div style={{ padding: "0 16px" }}>
@@ -841,13 +878,32 @@ export default function BookingsPage({ bookings, customers, roomTypes, rooms, me
                     <div style={{ overflowX: "auto" }}>
                         <table className="data-table">
                             <thead>
-                                <tr><th>Ref</th><th>Primary Guest</th><th>Room</th><th>Dates</th><th>Guests</th><th>Meal</th><th>Flags</th><th>Total</th><th>Status</th><th></th></tr>
+                                <tr>
+                                    <th style={{ width: 40, textAlign: "center" }}>
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedIds.size === filteredBookings.length && filteredBookings.length > 0} 
+                                            onChange={toggleAll}
+                                            style={{ cursor: "pointer", transform: "scale(1.2)" }}
+                                        />
+                                    </th>
+                                    <th>Ref</th><th>Primary Guest</th><th>Room</th><th>Dates</th><th>Guests</th><th>Meal</th><th>Flags</th><th>Total</th><th>Status</th><th></th>
+                                </tr>
                             </thead>
                             <tbody>
                                 {filteredBookings.map(b => {
                                     const locked = isLocked(b);
+                                    const isSelected = selectedIds.has(b.id);
                                     return (
-                                        <tr key={b.id} style={{ background: locked ? "#f9fafb" : undefined, opacity: locked ? 0.85 : 1 }}>
+                                        <tr key={b.id} style={{ background: isSelected ? "#fef8ed" : (locked ? "#f9fafb" : undefined), opacity: locked ? 0.85 : 1 }}>
+                                            <td style={{ textAlign: "center" }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isSelected} 
+                                                    onChange={() => toggleOne(b.id)}
+                                                    style={{ cursor: "pointer", transform: "scale(1.2)" }}
+                                                />
+                                            </td>
                                             <td style={{ fontWeight: 600, color: "#E4C581", fontSize: 12 }}>
                                                 {b.bookingRef}
                                             </td>

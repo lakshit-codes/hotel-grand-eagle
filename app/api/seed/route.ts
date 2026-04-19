@@ -177,6 +177,7 @@ export async function GET() {
                     { id: "fb3", name: "Power Backup" }, { id: "fb4", name: "Elevator / Lift" },
                     { id: "fb5", name: "Housekeeping" }, { id: "fb6", name: "Air Conditioning" },
                     { id: "fb7", name: "Wi-Fi (Free)" }, { id: "fb8", name: "Express Check-out" },
+                    { id: "fb9", name: "Geyser" }, { id: "fb10", name: "24hr Service" },
                 ]
             },
             {
